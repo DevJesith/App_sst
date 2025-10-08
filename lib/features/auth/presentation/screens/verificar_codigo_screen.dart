@@ -6,14 +6,18 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:flutter/cupertino.dart';
 
+/// Pantalla para validar el código de recuperación enviado por correo.
+/// Si el código es correcto, redirige a la pantalla para crear nueva contraseña.
 class VerificarCodigoScreen extends HookConsumerWidget {
-  final String email;
+  final String email; // Email del usuario que está recuperando su cuenta
 
   const VerificarCodigoScreen({super.key, required this.email});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final codigoIngresado = useState('');
+    final codigoIngresado = useState(
+      '',
+    ); // Estado para almacenar el código digitado
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -38,6 +42,7 @@ class VerificarCodigoScreen extends HookConsumerWidget {
                     ),
                     const SizedBox(height: 20),
 
+                    /// Título
                     const Text(
                       'Recuperación de Contraseña',
                       style: TextStyle(
@@ -49,6 +54,7 @@ class VerificarCodigoScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 10),
 
+                    /// Texto explicativo y email
                     Text(
                       'Se envió un código a:',
                       style: TextStyle(fontSize: 16, color: Colors.grey[700]),
@@ -65,6 +71,7 @@ class VerificarCodigoScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Instrucción para ingresar el código
                     const Text(
                       'Ingresa el código de verificación',
                       style: TextStyle(
@@ -77,6 +84,7 @@ class VerificarCodigoScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Campo para ingresar el código (PIN)
                     PinCodeTextField(
                       appContext: context,
                       length: 5,
@@ -102,26 +110,35 @@ class VerificarCodigoScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Botón para validar el código
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          final valido = await ref.read(verificarCodigoProvider({
-                            'email': email,
-                            'codigo': codigoIngresado.value.trim(),
-                          }).future);
+                          /// Verifica si el código ingresado es válido
+                          final valido = await ref.read(
+                            verificarCodigoProvider({
+                              'email': email,
+                              'codigo': codigoIngresado.value.trim(),
+                            }).future,
+                          );
 
                           if (valido) {
+                            /// Si es válido, redirige a la pantalla de nueva contraseña
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => NuevaContrasenaScreen(email: email),
+                                builder: (_) =>
+                                    NuevaContrasenaScreen(email: email),
                               ),
                             );
                           } else {
+                            /// Si no es válido, muestra error
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('El código ingresado es incorrecto'),
+                                content: Text(
+                                  'El código ingresado es incorrecto',
+                                ),
                                 backgroundColor: Colors.red,
                               ),
                             );

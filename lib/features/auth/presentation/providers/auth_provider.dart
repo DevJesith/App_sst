@@ -1,23 +1,27 @@
-import 'dart:ffi';
-
-import 'package:app_sst/features/auth/domain/usecases/actualizar_usuario.dart';
-import 'package:app_sst/features/auth/domain/usecases/obtener_usuarios.dart';
-import 'package:app_sst/features/auth/domain/usecases/validar_codigo_recuperacion.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../../data/database/app_database.dart';
 import '../../domain/entities/usuarios.dart';
+import '../../data/repositories_impl/usuario_repository_impl.dart';
+
+//USECASES
+import '../../domain/usecases/actualizar_usuario.dart';
+import '../../domain/usecases/obtener_usuarios.dart';
+import '../../domain/usecases/validar_codigo_recuperacion.dart';
 import '../../domain/usecases/registrar_usuario.dart';
 import '../../domain/usecases/Login_usuario.dart';
 import '../../domain/usecases/Verificar_usuario.dart';
 import '../../domain/usecases/esta_verificado.dart';
-import '../../data/repositories_impl/usuario_repository_impl.dart';
-import '../../../../data/database/app_database.dart';
 
-//Repositorio
+/// Proveedor del repositorio que conecta con la base de datos local.
+/// Se inyecta en los casos de uso.
 final usuarioRepositoryProvider = Provider<UsuarioRepositoryImpl>((ref) {
   return UsuarioRepositoryImpl(AppDatabase());
 });
 
-//Usecases
+/// Usecases
+
+/// Proveedores de casos de uso que encapsulan la lógica de negocio.
+/// Cada uno recibe el repositorio como dependencia.
 
 final registrarUsuarioUseCaseProvider = Provider<RegistrarUsuario>((ref) {
   final repo = ref.read(usuarioRepositoryProvider);
@@ -110,7 +114,8 @@ final obtenerTodosUsuariosProvider = FutureProvider<List<Usuarios>>((
   return await usecase();
 });
 
-final verificarCodigoProvider = FutureProvider.family<bool, Map<String, String>> ((ref, data) async {
-  final usecase = ref.read(validarCodigoRecuperacionUseCaseProvider);
-  return await usecase(data['email']!, data['codigo']!);
-});
+final verificarCodigoProvider =
+    FutureProvider.family<bool, Map<String, String>>((ref, data) async {
+      final usecase = ref.read(validarCodigoRecuperacionUseCaseProvider);
+      return await usecase(data['email']!, data['codigo']!);
+    });

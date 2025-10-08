@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+/// Tarjeta interactiva para representar un tipo de formulario.
+/// Muestra un ícono dentro de un botón circular y una etiqueta debajo.
 class CardForm extends StatelessWidget {
   final VoidCallback onPressed;
   final Widget icono;
@@ -16,12 +18,15 @@ class CardForm extends StatelessWidget {
     required this.icono,
     this.color,
     required this.typeForm,
-    this.typeStyle = const TextStyle(fontSize: 15, color: Colors.black, fontWeight: FontWeight.w500),
+    this.typeStyle = const TextStyle(
+      fontSize: 15,
+      color: Colors.black,
+      fontWeight: FontWeight.w500,
+    ),
     //this.height = 10.0,
     //this.width = 10.0,
     this.borderRadius = 12.0,
     this.size = 100,
-    
   });
 
   @override
@@ -41,10 +46,16 @@ class CardForm extends StatelessWidget {
             width: size,
             alignment: Alignment.center,
             child: icono,
-          )
+          ),
         ),
-        const SizedBox(height: 10,),
-        Text(typeForm, style: typeStyle, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,),
+        const SizedBox(height: 10),
+        Text(
+          typeForm,
+          style: typeStyle,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }

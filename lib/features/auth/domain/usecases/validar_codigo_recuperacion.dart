@@ -1,5 +1,7 @@
 import '../repositories/usuarios_repository.dart';
 
+/// Caso de uso para validar el código de recuperación de cuenta.
+/// Retorna `true` si el código es válido para el email dado.
 class ValidarCodigoRecuperacion {
   
   final UsuariosRepository repository;

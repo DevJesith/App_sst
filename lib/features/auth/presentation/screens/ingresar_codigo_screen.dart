@@ -5,9 +5,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:flutter/cupertino.dart';
 
+/// Pantalla para ingresar el código de verificación enviado por correo.
+/// Si el código es correcto, redirige a la pantalla de información personal.
 class IngresarCodigoScreen extends HookConsumerWidget {
-  final String emailRecibido;
-  final String codigoCorrecto;
+  final String emailRecibido; // Email al que se envió el código
+  final String codigoCorrecto; // Código que debe coincidir
 
   const IngresarCodigoScreen({
     super.key,
@@ -17,7 +19,9 @@ class IngresarCodigoScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final codigoIngresado = useState('');
+    final codigoIngresado = useState(
+      '',
+    ); // Estado para almacenar el código digitado
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -35,6 +39,7 @@ class IngresarCodigoScreen extends HookConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    /// Ícono de verificación
                     const Icon(
                       Icons.verified_user,
                       size: 80,
@@ -42,6 +47,7 @@ class IngresarCodigoScreen extends HookConsumerWidget {
                     ),
                     const SizedBox(height: 20),
 
+                    /// Título principal
                     const Text(
                       'Verificación de Cuenta',
                       style: TextStyle(
@@ -53,6 +59,7 @@ class IngresarCodigoScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 10),
 
+                    /// Texto explicativo y email
                     Text(
                       'Se envió un código a:',
                       style: TextStyle(fontSize: 16, color: Colors.grey[700]),
@@ -69,6 +76,7 @@ class IngresarCodigoScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Instrucción para ingresar el código
                     const Text(
                       'Ingresa el código de verificación',
                       style: TextStyle(
@@ -81,6 +89,7 @@ class IngresarCodigoScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Campo para ingresar el código (PIN)
                     PinCodeTextField(
                       appContext: context,
                       length: 5,
@@ -106,11 +115,13 @@ class IngresarCodigoScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Botón para validar el código
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
                           if (codigoIngresado.value == codigoCorrecto) {
+                            /// Si el código es correcto, redirige a la pantalla de información
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
@@ -119,6 +130,7 @@ class IngresarCodigoScreen extends HookConsumerWidget {
                               ),
                             );
                           } else {
+                            /// Si el código es incorrecto, muestra error
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(

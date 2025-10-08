@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+
+/// Campo de texto reutilizable con validación, estilo y opciones.
+/// Ideal para formularios con múltiples tipos de entrada.
 class inputReutilizables extends StatelessWidget {
   final TextEditingController controller;
   //final String label;
@@ -11,7 +14,7 @@ class inputReutilizables extends StatelessWidget {
   final InputDecoration? decoration;
   final int maxLines;
   final int? maxLenght;
-  
+  final Widget? suffixIcon;
 
   const inputReutilizables({
     Key? key,
@@ -24,6 +27,7 @@ class inputReutilizables extends StatelessWidget {
     this.maxLenght,
     this.obscuredText = false,
     this.keyboardType = TextInputType.text,
+    this.suffixIcon,
   }) : super(key: key);
 
   @override
@@ -41,7 +45,7 @@ class inputReutilizables extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 10,),
+        const SizedBox(height: 10),
 
         TextFormField(
           controller: controller,
@@ -50,17 +54,26 @@ class inputReutilizables extends StatelessWidget {
           obscureText: obscuredText,
           maxLines: maxLines,
           maxLength: maxLenght,
-          decoration: decoration ?? InputDecoration(
-            border: OutlineInputBorder(),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: CupertinoColors.inactiveGray, width: 2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide( color: CupertinoColors.activeBlue, width: 2),
-              borderRadius: BorderRadius.circular(5)
-            )
-          ),
+          decoration:
+              decoration ??
+              InputDecoration(
+                border: OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: CupertinoColors.inactiveGray,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: CupertinoColors.activeBlue,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                suffixIcon: suffixIcon,
+              ),
         ),
       ],
     );

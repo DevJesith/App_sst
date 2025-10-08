@@ -10,11 +10,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Pantalla que permite al usuario completar su información personal.
+/// Se usa después de verificar el correo para finalizar el registro.
 class InformacionScreen extends HookConsumerWidget {
-  final String email;
+  final String email; // Email del usuario que ya fue verificado
 
   const InformacionScreen({super.key, required this.email});
 
+  /// Encripta la contraseña usando SHA256
   String encriptar(String texto) {
     final butes = utf8.encode(texto);
     final hash = sha256.convert(butes);
@@ -23,11 +26,19 @@ class InformacionScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>(); // Llave para validar el formulario
 
-    final nameController = useTextEditingController();
-    final passwordController = useTextEditingController();
-    final isLoading = useState(false);
+    final nameController =
+        useTextEditingController(); // Controlador para el nombre
+
+    final passwordController =
+        useTextEditingController(); // Controlador para la contraseña
+
+    final isLoading = useState(false); // Estado de carga
+
+    final obscureText = useState(
+      true,
+    ); // Estado para mostrar/ocultar contraseña
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -81,10 +92,12 @@ class InformacionScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Formulario con validación
                     Form(
                       key: formKey,
                       child: Column(
                         children: [
+                          /// Campo para nombre completo
                           inputReutilizables(
                             controller: nameController,
                             nameInput: 'Nombre(s) y apellido(s)',
@@ -115,6 +128,7 @@ class InformacionScreen extends HookConsumerWidget {
 
                           const SizedBox(height: 15),
 
+                          /// Campo para contraseña
                           inputReutilizables(
                             controller: passwordController,
                             nameInput: 'Crear contraseña',
@@ -128,9 +142,11 @@ class InformacionScreen extends HookConsumerWidget {
                               }
                               return null;
                             },
+
+                            /// Campo para contraseña con botón para mostrar/ocultar
                             decoration: InputDecoration(
                               hintText: '******',
-                              prefixIcon: const Icon(Icons.lock),
+                              prefixIcon: const Icon(Icons.person_pin_rounded),
                               filled: true,
                               fillColor: const Color(0xFFF0F2F5),
                               contentPadding: const EdgeInsets.symmetric(
@@ -144,11 +160,23 @@ class InformacionScreen extends HookConsumerWidget {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
+                              suffixIcon: IconButton(
+                                onPressed: () =>
+                                    obscureText.value = !obscureText.value,
+                                icon: Icon(
+                                  obscureText.value
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: CupertinoColors.systemGrey,
+                                ),
+                              ),
                             ),
+                            obscuredText: obscureText.value,
                           ),
 
                           const SizedBox(height: 30),
 
+                          /// Botón para guardar la información y continuar
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
@@ -159,22 +187,33 @@ class InformacionScreen extends HookConsumerWidget {
                                         isLoading.value = true;
 
                                         try {
+                                          /// Crea el objeto usuario con datos encriptados
                                           final usuario = Usuarios(
                                             email: email.trim(),
                                             nombre: nameController.text.trim(),
-                                            contrasena: encriptar(passwordController.text
-                                                .trim()),
+                                            contrasena: encriptar(
+                                              passwordController.text.trim(),
+                                            ),
                                             verificado: true,
                                           );
 
-                                          final existe = await ref.read(verificarProvider(email).future);
+                                          /// Verifica si el usuario ya existe
+                                          final existe = await ref.read(
+                                            verificarProvider(email).future,
+                                          );
 
+                                          /// Si existe, actualiza su información
                                           if (existe) {
-                                            await ref.read(actualizarUsuarioProvider(usuario).future);
+                                            await ref.read(
+                                              actualizarUsuarioProvider(
+                                                usuario,
+                                              ).future,
+                                            );
                                           } else {
                                             print("no existe 88888");
                                           }
 
+                                          /// Navega a la pantalla de login
                                           Navigator.pushReplacement(
                                             context,
                                             MaterialPageRoute(
@@ -182,6 +221,7 @@ class InformacionScreen extends HookConsumerWidget {
                                             ),
                                           );
                                         } catch (e) {
+                                          /// Muestra error si algo falla
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(

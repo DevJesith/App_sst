@@ -11,9 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Pantalla de registro inicial donde el usuario ingresa su correo.
+/// Se genera un código de verificación y se envía por correo.
 class RegistroScreen extends HookConsumerWidget {
   const RegistroScreen({super.key});
 
+  /// Genera un código aleatorio de 5 dígitos
   String _generarCodigo() {
     final random = Random();
     return (10000 + random.nextInt(90000)).toString(); // Código de 6 dígitos
@@ -21,9 +24,11 @@ class RegistroScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formKey = GlobalKey<FormState>();
-    final emailController = useTextEditingController();
-    final isLoading = useState(false);
+    final formKey = GlobalKey<FormState>(); // Llave para validar el formulario
+
+    final emailController = useTextEditingController(); // Controlador de email
+
+    final isLoading = useState(false); // Estado de carga
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -60,6 +65,7 @@ class RegistroScreen extends HookConsumerWidget {
                     ),
                     const SizedBox(height: 20),
 
+                    /// Título
                     const Text(
                       'Registro de Usuario',
                       style: TextStyle(
@@ -72,6 +78,7 @@ class RegistroScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 10),
 
+                    /// Subtítulo
                     const Text(
                       'Regístrate con tu correo electrónico',
                       style: TextStyle(fontSize: 16, color: Colors.black87),
@@ -80,6 +87,7 @@ class RegistroScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Formulario para ingresar correo
                     Form(
                       key: formKey,
                       child: inputReutilizables(
@@ -117,6 +125,7 @@ class RegistroScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Botón para enviar código de verificación
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -135,17 +144,18 @@ class RegistroScreen extends HookConsumerWidget {
                                       verificado: false,
                                     );
 
-                                    // Guardar en la BD local
+                                    /// Guarda el usuario en la base de datos local
                                     await ref.read(
                                       registrarUsuarioProvider(usuario).future,
                                     );
 
-                                    // Enviar codigo de verificacion
+                                    /// Envía el código por correo
                                     await SendGridService.enviarCodigo(
                                       emailController.text.trim(),
                                       codigo,
                                     );
 
+                                    /// Navega a la pantalla para ingresar el código
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -157,6 +167,7 @@ class RegistroScreen extends HookConsumerWidget {
                                       ),
                                     );
                                   } catch (e) {
+                                    /// Muestra error si algo falla
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
@@ -201,15 +212,14 @@ class RegistroScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 20),
 
+                    /// Enlace para ir al login si ya tiene cuenta
                     SizedBox(
                       width: double.infinity,
                       child: TextButton(
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => LoginScreen(),
-                            ),
+                            MaterialPageRoute(builder: (_) => LoginScreen()),
                           );
                         },
 

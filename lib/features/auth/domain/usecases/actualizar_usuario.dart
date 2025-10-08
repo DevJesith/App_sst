@@ -1,6 +1,8 @@
 import '../entities/usuarios.dart';
 import '../repositories/usuarios_repository.dart';
 
+/// Caso de uso para actualizar los datos de un usuario.
+/// Llama al método `actualizarUsuario` del repositorio.
 class ActualizarUsuario {
   final UsuariosRepository repository;
   ActualizarUsuario(this.repository);

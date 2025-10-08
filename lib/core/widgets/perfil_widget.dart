@@ -2,6 +2,9 @@ import 'package:app_sst/features/auth/domain/entities/usuarios.dart';
 import 'package:app_sst/features/auth/presentation/screens/introducion_screen.dart';
 import 'package:flutter/material.dart';
 
+
+/// Drawer personalizado que muestra la información del usuario y opciones de navegación.
+/// Ideal para apps con múltiples secciones y lógica de sesión.
 class CustomDrawer extends StatelessWidget {
   final Usuarios usuarios;
   const CustomDrawer({super.key, required this.usuarios});

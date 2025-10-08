@@ -3,11 +3,14 @@ import '../../domain/repositories/usuarios_repository.dart';
 import '../models/usuario_model.dart';
 import '../../../../data/database/app_database.dart';
 
+// Implementación concreta del repositorio de usuarios.
+/// Usa `AppDatabase` como fuente de datos local (SQLite).
 class UsuarioRepositoryImpl implements UsuariosRepository {
   final AppDatabase db;
 
   UsuarioRepositoryImpl(this.db);
 
+  /// Registra un nuevo usuario en la base de datos
   @override
   Future<int> registrarUsuario(Usuarios usuarios) async {
     return await db.insertarUsuario(
@@ -17,23 +20,27 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
     );
   }
 
+  /// Autentica al usuario con email y contraseña
   @override
   Future<Usuarios?> login(String email, String contrasena) async {
     final res = await db.login(email, contrasena);
     return res != null ? UsuarioModel.fromMap(res) : null;
   }
 
+  /// Marca al usuario como verificado
   @override
   Future<bool> verificarUsuario(String email) async {
     return await db.verificarCodigo(email);
   }
+
+  /// Verifica si el usuario ya está marcado como verificado
 
   @override
   Future<bool> estaVerificado(String email) async {
     return await db.estaVerificado(email);
   }
 
-  //Actualizar
+  /// Actualiza los datos del usuario en la base de datos
   Future<void> actualizarUsuario(Usuarios usuario) async {
     final dbInstance = await db.database;
     await dbInstance.update(
@@ -50,7 +57,7 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
     );
   }
 
-  // Obetenr registros
+  /// Obtiene todos los usuarios registrados
   @override
   Future<List<Usuarios>> obtenerTodos() async {
     final dbInstance = await db.database;
@@ -58,6 +65,7 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
     return res.map((e) => UsuarioModel.fromMap(e)).toList();
   }
 
+  /// Valida si el código de recuperación es correcto para el email dado
   @override
   Future<bool> validarCodigoRecuperacion(String email, String codigo) async {
     final dbInstance = await db.database;

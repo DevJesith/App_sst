@@ -92,7 +92,7 @@ class AccidenteForm extends HookConsumerWidget {
                 inputReutilizables(
                   controller: descripcionController,
                   nameInput: "Descripcion",
-                  maxLenght: 100,
+                  maxLenght: 300,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Campo no definido";

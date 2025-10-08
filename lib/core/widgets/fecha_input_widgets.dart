@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+/// Campo de entrada para fechas con selector tipo calendario.
+/// Usa `flutter_hooks` para manejar el controlador de texto reactivo.
+
 class FechaInputWidgets extends HookWidget {
   final DateTime? fecha;
   final String label;
@@ -40,7 +43,7 @@ class FechaInputWidgets extends HookWidget {
           context: context,
           initialDate: fecha ?? DateTime.now(),
           firstDate: DateTime(2000),
-          lastDate: DateTime(2100),
+          lastDate: DateTime.now(),
         );
         if (nuevaFecha != null) {
           onchanged(nuevaFecha);
@@ -59,7 +62,7 @@ class FechaInputWidgets extends HookWidget {
               ),
             ),
 
-            const SizedBox(height: 10,),
+            const SizedBox(height: 10),
 
             TextFormField(
               controller: fechaController,
@@ -68,12 +71,18 @@ class FechaInputWidgets extends HookWidget {
                 border: OutlineInputBorder(),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: CupertinoColors.inactiveGray, width: 2)
+                  borderSide: BorderSide(
+                    color: CupertinoColors.inactiveGray,
+                    width: 2,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5),
-                  borderSide: BorderSide(color: CupertinoColors.activeBlue, width: 2)
-                )
+                  borderSide: BorderSide(
+                    color: CupertinoColors.activeBlue,
+                    width: 2,
+                  ),
+                ),
               ),
               validator: validator,
             ),

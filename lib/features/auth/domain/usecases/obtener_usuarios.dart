@@ -1,6 +1,8 @@
 import '../entities/usuarios.dart';
 import '../repositories/usuarios_repository.dart';
 
+/// Caso de uso para obtener todos los usuarios registrados.
+/// Retorna una lista de objetos `Usuarios`.
 class ObtenerUsuarios {
   final UsuariosRepository repository;
 

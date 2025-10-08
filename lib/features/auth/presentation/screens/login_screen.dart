@@ -1,22 +1,26 @@
 import 'dart:convert';
+import 'package:crypto/crypto.dart'; // Para encriptar la contraseña
 
 import 'package:app_sst/core/widgets/inputs_widgets.dart';
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
 import 'package:app_sst/features/auth/presentation/screens/admin_dashboard.dart';
 import 'package:app_sst/features/auth/presentation/screens/recuperar_contrasena_screen.dart';
 import 'package:app_sst/features/auth/presentation/screens/welcome_screen.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Pantalla de inicio de sesión para acceder a la plataforma.
+/// Valida credenciales y redirige según el tipo de usuario.
 class LoginScreen extends HookConsumerWidget {
-  String adminEmail = 'admin@sst.com';
-  String adminPassword = 'admin123';
+  // Credenciales de administrador
+  final String adminEmail = 'admin@sst.com';
+  final String adminPassword = 'admin123';
 
-  LoginScreen({super.key});
+  const LoginScreen({super.key});
 
+  /// Encripta la contraseña usando SHA256
   String encriptar(String texto) {
     final bytes = utf8.encode(texto);
     final hash = sha256.convert(bytes);
@@ -25,10 +29,16 @@ class LoginScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formKey = GlobalKey<FormState>();
-    final emailController = useTextEditingController();
-    final passwordController = useTextEditingController();
-    final isLoading = useState(false);
+    final formKey = GlobalKey<FormState>(); // Llave para validar el formulario
+
+    final emailController = useTextEditingController(); // Controlador de email
+
+    final passwordController =
+        useTextEditingController(); // Controlador de contraseña
+
+    final isLoading = useState(false); // Estado de carga
+
+    final obscureText = useState(true); // Mostrar/ocultar contraseña
 
     return Scaffold(
       backgroundColor: Color(0xFFF5F7FA),
@@ -58,6 +68,7 @@ class LoginScreen extends HookConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    /// Ícono principal
                     Icon(
                       Icons.vpn_key_sharp,
                       size: 80,
@@ -66,6 +77,7 @@ class LoginScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 20),
 
+                    /// Título
                     const Text(
                       'Iniciar sesión',
                       style: TextStyle(
@@ -78,6 +90,7 @@ class LoginScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 10),
 
+                    /// Subtítulo
                     const Text(
                       'Ingresa tu correo electrónico y contraseña para ingresar a la plataforma',
                       style: TextStyle(fontSize: 16, color: Colors.black),
@@ -86,10 +99,12 @@ class LoginScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
+                    /// Formulario de login
                     Form(
                       key: formKey,
                       child: Column(
                         children: [
+                          /// Campo de correo electrónico
                           inputReutilizables(
                             controller: emailController,
                             nameInput: 'Correo electronico',
@@ -124,6 +139,7 @@ class LoginScreen extends HookConsumerWidget {
 
                           const SizedBox(height: 15),
 
+                          /// Campo de contraseña
                           inputReutilizables(
                             controller: passwordController,
                             nameInput: 'Contraseña',
@@ -134,7 +150,7 @@ class LoginScreen extends HookConsumerWidget {
                               return null;
                             },
                             decoration: InputDecoration(
-                              hintText: 'contraseña123',
+                              hintText: '******',
                               prefixIcon: Icon(Icons.password),
                               filled: true,
                               fillColor: const Color(0xFFF0F2F5),
@@ -149,7 +165,18 @@ class LoginScreen extends HookConsumerWidget {
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
+                              suffixIcon: IconButton(
+                                onPressed: () =>
+                                    obscureText.value = !obscureText.value,
+                                icon: Icon(
+                                  obscureText.value
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: CupertinoColors.systemGrey,
+                                ),
+                              ),
                             ),
+                            obscuredText: obscureText.value,
                           ),
                         ],
                       ),
@@ -157,15 +184,22 @@ class LoginScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 10),
 
+                    /// Enlace para recuperar contraseña
                     TextButton(
                       onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => RecuperarContrasenaScreen()));
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => RecuperarContrasenaScreen(),
+                          ),
+                        );
                       },
                       child: Text('¿Olvidaste contraseña?'),
                     ),
 
                     const SizedBox(height: 30),
 
+                    /// Botón para iniciar sesión
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -184,6 +218,7 @@ class LoginScreen extends HookConsumerWidget {
                                       adminPassword,
                                     );
 
+                                    /// Verifica credenciales del usuario
                                     final usuario = await ref.read(
                                       loginProvider({
                                         'email': email,
@@ -191,6 +226,7 @@ class LoginScreen extends HookConsumerWidget {
                                       }).future,
                                     );
 
+                                    /// Verifica si es el administrador
                                     if (email == adminEmail &&
                                         contrasena == adminPasswordHash) {
                                       Navigator.pushReplacement(
@@ -202,6 +238,8 @@ class LoginScreen extends HookConsumerWidget {
                                       return;
                                     }
 
+                                    /// Si el usuario existe y está verificado
+
                                     if (usuario != null && usuario.verificado) {
                                       Navigator.pushReplacement(
                                         context,
@@ -211,6 +249,7 @@ class LoginScreen extends HookConsumerWidget {
                                         ),
                                       );
                                     } else {
+                                      /// Si no existe o no está verificado
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
@@ -225,6 +264,7 @@ class LoginScreen extends HookConsumerWidget {
                                       );
                                     }
                                   } catch (e) {
+                                    /// Error inesperado
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
