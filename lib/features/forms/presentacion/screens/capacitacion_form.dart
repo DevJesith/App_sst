@@ -6,19 +6,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Pantalla para llenar el formulario de registro de capacitaciones.
+/// Utiliza Riverpod para manejar estado y validación.
 class CapacitacionForm extends HookConsumerWidget {
   const CapacitacionForm({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(capacitacionFormProvider.notifier);
-    final state = ref.watch(capacitacionFormProvider);
+    final controller = ref.read(
+      capacitacionFormProvider.notifier,
+    ); // Controlador del formulario
+
+    final state = ref.watch(
+      capacitacionFormProvider,
+    ); // Estado actual del formulario
+
+    // Controladores de texto para los campos
 
     final noCapacitacionesController = useTextEditingController();
     final noPersonasController = useTextEditingController();
     final responsableController = useTextEditingController();
     final temaController = useTextEditingController();
 
+    // Opciones de dropdown
     final proyectos = ["Proyecto 1", "Proyecto 2", "Proyecto 3"];
     final contratista = ["Contratista 1", "Contratista 2", "Contratista 3"];
 
@@ -32,6 +42,7 @@ class CapacitacionForm extends HookConsumerWidget {
             key: controller.formKey,
             child: Column(
               children: [
+                /// Título del formulario
                 Text(
                   'Registro Capacitaciones',
                   style: TextStyle(
@@ -44,6 +55,7 @@ class CapacitacionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 30),
 
+                /// Campo: Número de capacitaciones
                 inputReutilizables(
                   controller: noCapacitacionesController,
                   nameInput: 'No de capacitaciones',
@@ -57,6 +69,7 @@ class CapacitacionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Dropdown: Proyecto
                 ListaInputWigets(
                   label: 'Selecciona un proyecto',
                   nameInput: 'Proyecto',
@@ -73,6 +86,7 @@ class CapacitacionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Dropdown: Contratista
                 ListaInputWigets(
                   label: 'Contratista',
                   nameInput: 'Contratista',
@@ -89,6 +103,7 @@ class CapacitacionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Campo: Número de personas
                 inputReutilizables(
                   controller: noPersonasController,
                   nameInput: 'No de Personas',
@@ -102,6 +117,7 @@ class CapacitacionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Campo: Responsable
                 inputReutilizables(
                   controller: responsableController,
                   nameInput: 'Responsable',
@@ -115,6 +131,7 @@ class CapacitacionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Campo: Tema
                 inputReutilizables(
                   controller: temaController,
                   nameInput: 'Tema',
@@ -128,6 +145,7 @@ class CapacitacionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Botón para enviar el formulario
                 ElevatedButton(
                   onPressed: () {
                     controller.sendForm(

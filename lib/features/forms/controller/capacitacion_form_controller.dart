@@ -3,6 +3,9 @@ import 'package:app_sst/features/forms/state/capacitacion_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Controlador para el formulario de capacitación.
+/// Maneja estado reactivo y lógica de envío.
+
 class CapacitacionFormController extends StateNotifier<CapacitacionFormState> {
   CapacitacionFormController() : super(CapacitacionFormState());
 
@@ -16,6 +19,7 @@ class CapacitacionFormController extends StateNotifier<CapacitacionFormState> {
     state = state.copyWith(contratista: value);
   }
 
+  /// Envía el formulario si es válido, limpia campos y muestra confirmación.
   void sendForm({
     required BuildContext context,
     required WidgetRef ref,

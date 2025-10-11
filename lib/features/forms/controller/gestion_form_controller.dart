@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+/// Controlador para el formulario de capacitación.
+/// Maneja estado reactivo y lógica de envío.
+
 class GestionFormController extends StateNotifier<GestionFormState> {
   GestionFormController() : super(GestionFormState());
 
@@ -21,6 +24,7 @@ class GestionFormController extends StateNotifier<GestionFormState> {
     state = state.copyWith(imagenes: []);
   }
 
+  /// Envía el formulario si es válido, limpia campos y muestra confirmación.
   void sendForm({
     required BuildContext context,
     required WidgetRef ref,

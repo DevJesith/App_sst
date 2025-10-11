@@ -1,15 +1,20 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+/// Servicio para enviar correos de recuperación de contraseña usando SendGrid.
+/// Utiliza una plantilla distinta a la de registro.
 class SendGridServiceRecuperacion {
-  static const _apiKey =
-      '';
+  static const _apiKey = ''; //  API Key de SendGrid (debe protegerse)
 
   static const _fromEmail = 'creedjesith@gmail.com';
   static const _fromName = 'App SST - Recuperacion de contrasena ';
   static const _templateId = 'd-ae74155038a646e7b4a4f9f1971ffd34';
 
-  static Future<void> enviarCodigoRecuperacion(String emailDestino, String codigo) async {
+  /// Envía el código de recuperación al correo destino.
+  static Future<void> enviarCodigoRecuperacion(
+    String emailDestino,
+    String codigo,
+  ) async {
     final url = Uri.parse('https://api.sendgrid.com/v3/mail/send');
 
     final headers = {

@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:app_sst/core/utils/image_utils.dart';
 import 'dart:io';
 
+/// Pantalla para llenar el formulario de gestión de inspección.
+/// Incluye campos de texto y carga de imágenes como evidencia.
 class GestionForm extends HookConsumerWidget {
   const GestionForm({super.key});
 
@@ -16,6 +18,7 @@ class GestionForm extends HookConsumerWidget {
     final controller = ref.read(gestionFormProvider.notifier);
     final state = ref.watch(gestionFormProvider);
 
+    // Controladores de texto para los campos
     final proyectoController = useTextEditingController();
     final eeController = useTextEditingController();
     final eppController = useTextEditingController();
@@ -24,7 +27,7 @@ class GestionForm extends HookConsumerWidget {
     final rutinariaMaquinaController = useTextEditingController();
     final gestionCumpleController = useTextEditingController();
 
-    final picker = ImagePicker();
+    final picker = ImagePicker(); // Instancia para seleccionar imágenes
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -36,6 +39,7 @@ class GestionForm extends HookConsumerWidget {
             key: controller.formKey,
             child: Column(
               children: [
+                /// Título del formulario
                 Text(
                   'Gestión de Inspección',
                   style: TextStyle(
@@ -47,6 +51,7 @@ class GestionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 30),
 
+                /// Campos de texto
                 inputReutilizables(
                   controller: proyectoController,
                   nameInput: 'Proyecto',
@@ -117,6 +122,7 @@ class GestionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Sección de imágenes
                 Text(
                   'Foto de evidencia',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -154,6 +160,7 @@ class GestionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 10),
 
+                /// Vista previa de imágenes
                 if (state.imagenes.isNotEmpty)
                   SizedBox(
                     height: 200,
@@ -207,6 +214,7 @@ class GestionForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Botón para enviar el formulario
                 ElevatedButton(
                   onPressed: () {
                     if (controller.formKey.currentState!.validate()) {

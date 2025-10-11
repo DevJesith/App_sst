@@ -3,6 +3,9 @@ import 'package:app_sst/features/forms/state/incidente_form_state.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Controlador para el formulario de capacitación.
+/// Maneja estado reactivo y lógica de envío.
+
 class IncidenteFormController extends StateNotifier<IncidenteFormState> {
   IncidenteFormController() : super(IncidenteFormState());
 
@@ -16,10 +19,11 @@ class IncidenteFormController extends StateNotifier<IncidenteFormState> {
     state = state.copyWith(estado: value);
   }
 
-  void setFecha(DateTime? nuevaFecha){
+  void setFecha(DateTime? nuevaFecha) {
     state = state.copyWith(fecha: nuevaFecha);
   }
 
+  /// Envía el formulario si es válido, limpia campos y muestra confirmación.
   void sendForm({
     required BuildContext context,
     required WidgetRef ref,

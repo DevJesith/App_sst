@@ -23,7 +23,7 @@ class AccidenteFormController extends StateNotifier<AccidenteFormState> {
   }
 
   //Metodo para actualizar el valor de la fecha
-  void setFecha(DateTime? nuevaFecha){
+  void setFecha(DateTime? nuevaFecha) {
     state = state.copyWith(fecha: nuevaFecha);
   }
 
@@ -32,6 +32,8 @@ class AccidenteFormController extends StateNotifier<AccidenteFormState> {
   // - Limpia el estado de Riverpod
   // - Limpia los campos de texto
   // - Muestra un diálogo de confirmación
+
+  /// Envía el formulario si es válido, limpia campos y muestra confirmación.
 
   void sendForm({
     required BuildContext context,

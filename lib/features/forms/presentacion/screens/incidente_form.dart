@@ -7,20 +7,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Pantalla para llenar el formulario de reporte de incidente.
+/// Utiliza Riverpod para manejar estado y validación.
 class IncidenteForm extends HookConsumerWidget {
   const IncidenteForm({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(incidenteFormProvider.notifier);
-    final state = ref.watch(incidenteFormProvider);
+    final controller = ref.read(
+      incidenteFormProvider.notifier,
+    ); // Controlador del formulario
 
-    //Controllers
+    final state = ref.watch(
+      incidenteFormProvider,
+    ); // Estado actual del formulario
+
+    // Controladores de texto para los campos
     final eventualidadController = useTextEditingController();
     final descripcionController = useTextEditingController();
     final diasIncapacidadController = useTextEditingController();
     final avancesController = useTextEditingController();
 
+    // Opciones de dropdown
     final proyecto = ["Proyecto 1", "Proyecto 2", "Proyecto 3"];
     final estado = ["Pendiente", "En proceso", "Completado"];
 
@@ -35,6 +43,7 @@ class IncidenteForm extends HookConsumerWidget {
               key: controller.formKey,
               child: Column(
                 children: [
+                  /// Título del formulario
                   Text(
                     "Incidente",
                     style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600),
@@ -43,6 +52,7 @@ class IncidenteForm extends HookConsumerWidget {
 
                   const SizedBox(height: 20),
 
+                  /// Campo: Eventualidad
                   inputReutilizables(
                     controller: eventualidadController,
                     nameInput: "Eventualidad",
@@ -56,6 +66,7 @@ class IncidenteForm extends HookConsumerWidget {
 
                   const SizedBox(height: 20),
 
+                  /// Dropdown: Proyecto
                   ListaInputWigets(
                     label: "Selecciona un proyecto",
                     nameInput: "Proyecto",
@@ -72,6 +83,7 @@ class IncidenteForm extends HookConsumerWidget {
 
                   const SizedBox(height: 20),
 
+                  /// Selector de fecha
                   FechaInputWidgets(
                     nameInput: 'Fecha',
                     fecha: state.fecha,
@@ -87,6 +99,7 @@ class IncidenteForm extends HookConsumerWidget {
 
                   const SizedBox(height: 20),
 
+                  /// Campo: Descripción
                   inputReutilizables(
                     controller: descripcionController,
                     nameInput: 'Descripcion',
@@ -101,6 +114,7 @@ class IncidenteForm extends HookConsumerWidget {
 
                   const SizedBox(height: 10),
 
+                  /// Campo: Días de incapacidad
                   inputReutilizables(
                     controller: diasIncapacidadController,
                     nameInput: 'Dias de capacidad',
@@ -114,6 +128,7 @@ class IncidenteForm extends HookConsumerWidget {
 
                   const SizedBox(height: 20),
 
+                  /// Campo: Avances
                   inputReutilizables(
                     controller: avancesController,
                     nameInput: 'Avances',
@@ -127,6 +142,7 @@ class IncidenteForm extends HookConsumerWidget {
 
                   const SizedBox(height: 20),
 
+                  /// Dropdown: Estado
                   ListaInputWigets(
                     label: 'Seleccionar un estado',
                     nameInput: 'Estado',
@@ -143,6 +159,7 @@ class IncidenteForm extends HookConsumerWidget {
 
                   const SizedBox(height: 30),
 
+                  /// Botón para enviar el formulario
                   ElevatedButton(
                     onPressed: () {
                       controller.sendForm(

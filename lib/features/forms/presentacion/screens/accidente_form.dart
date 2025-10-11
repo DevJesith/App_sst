@@ -7,19 +7,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Pantalla para llenar el formulario de reporte de accidente.
+/// Utiliza Riverpod para manejar estado y validación.
 class AccidenteForm extends HookConsumerWidget {
   const AccidenteForm({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(accidenteFormProvider.notifier);
-    final state = ref.watch(accidenteFormProvider);
+    final controller = ref.read(
+      accidenteFormProvider.notifier,
+    ); // Controlador del formulario
+    final state = ref.watch(
+      accidenteFormProvider,
+    ); // Estado actual del formulario
 
+    // Controladores de texto para los campos
     final evetualidadController = useTextEditingController();
     final descripcionController = useTextEditingController();
     final diasIncapacidadController = useTextEditingController();
     final avancesController = useTextEditingController();
 
+    // Opciones de dropdown
     final proyectos = ["Proyecto 1", "Proyecto 2", "Proyecto 3"];
     final estados = ["Pendiente", "En proceso", "Completado"];
 
@@ -33,6 +41,7 @@ class AccidenteForm extends HookConsumerWidget {
             key: controller.formKey,
             child: Column(
               children: [
+                /// Título del formulario
                 Text(
                   "Accidente",
                   style: TextStyle(
@@ -45,6 +54,7 @@ class AccidenteForm extends HookConsumerWidget {
 
                 const SizedBox(height: 30),
 
+                /// Campo: Eventualidad
                 inputReutilizables(
                   controller: evetualidadController,
                   nameInput: "Eventualidad",
@@ -58,6 +68,7 @@ class AccidenteForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Dropdown: Proyecto
                 ListaInputWigets(
                   nameInput: 'Proyecto',
                   label: 'Selecciona una opcion',
@@ -74,6 +85,7 @@ class AccidenteForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Selector de fecha
                 FechaInputWidgets(
                   fecha: state.fecha,
                   nameInput: 'Fecha',
@@ -89,6 +101,7 @@ class AccidenteForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Campo: Descripción
                 inputReutilizables(
                   controller: descripcionController,
                   nameInput: "Descripcion",
@@ -103,6 +116,7 @@ class AccidenteForm extends HookConsumerWidget {
 
                 const SizedBox(height: 5),
 
+                /// Campo: Días de incapacidad
                 inputReutilizables(
                   controller: diasIncapacidadController,
                   nameInput: "Dias de incapacidad",
@@ -116,6 +130,7 @@ class AccidenteForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Campo: Avances
                 inputReutilizables(
                   controller: avancesController,
                   nameInput: "Avances",
@@ -129,6 +144,7 @@ class AccidenteForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Dropdown: Estado
                 ListaInputWigets(
                   label: 'Selecciona una opcion',
                   nameInput: 'Estado',
@@ -145,6 +161,7 @@ class AccidenteForm extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
+                /// Botón para enviar el formulario
                 ElevatedButton(
                   onPressed: () {
                     controller.sendForm(
