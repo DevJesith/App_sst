@@ -1,7 +1,7 @@
-import 'package:app_sst/core/widgets/boton_navegacion_widgets.dart';
-import 'package:app_sst/core/widgets/perfil_widget.dart';
+import 'package:app_sst/shared/widgets/boton_navegacion_widgets.dart';
+import 'package:app_sst/shared/widgets/perfil_widget.dart';
 import 'package:app_sst/features/auth/domain/entities/usuarios.dart';
-import 'package:app_sst/features/forms/presentacion/screens/gestion_form.dart';
+import 'package:app_sst/features/forms/gestion/presentation/screens/gestion_form.dart';
 import 'package:app_sst/features/home/presentation/home_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -125,7 +125,7 @@ class WelcomeScreen extends HookConsumerWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const GestionForm(),
+                            builder: (_) => const GestionFormScreen(),
                           ),
                         );
                       },

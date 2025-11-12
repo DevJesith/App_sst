@@ -1,201 +1,242 @@
-import 'dart:math';
+// features/auth/presentation/screens/recuperar_contrasena_screen.dart
 
-import 'package:app_sst/core/widgets/inputs_widgets.dart';
-import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
-import 'package:app_sst/features/auth/presentation/screens/verificar_codigo_screen.dart';
-import 'package:app_sst/services/recuperacion_contrasena_services.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:app_sst/data/database/app_database.dart';
+import '../../../../../shared/widgets/inputs_widgets.dart';
+import '../../domain/entities/usuarios.dart';
+import '../providers/auth_provider.dart';
+import 'login_screen.dart';
 
 class RecuperarContrasenaScreen extends HookConsumerWidget {
   const RecuperarContrasenaScreen({super.key});
 
-  String _generarCodigoRecuperacion() {
-    final random = Random();
-    return (10000 + random.nextInt(90000)).toString(); // Código de 6 dígitos
+  String encriptar(String texto) {
+    final bytes = utf8.encode(texto);
+    final hash = sha256.convert(bytes);
+    return hash.toString();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final formKey = useMemoized(() => GlobalKey<FormState>());
     final emailController = useTextEditingController();
-    final formKey = GlobalKey<FormState>();
+    final newPasswordController = useTextEditingController();
+    final confirmPasswordController = useTextEditingController();
     final isLoading = useState(false);
+    final obscureText = useState(true);
+
+    Future<void> recuperar() async {
+      if (!formKey.currentState!.validate()) return;
+
+      if (newPasswordController.text != confirmPasswordController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Las contraseñas no coinciden'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      isLoading.value = true;
+
+      try {
+        // Verificar si el usuario existe
+        final usuario = await ref.read(
+          obtenerUsuarioPorEmailProvider(emailController.text.trim()).future,
+        );
+
+        if (usuario == null) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Correo no registrado'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
+
+        // Actualizar contraseña
+        final usuarioActualizado = Usuarios(
+          id: usuario.id,
+          nombre: usuario.nombre,
+          email: usuario.email,
+          contrasena: encriptar(newPasswordController.text.trim()),
+        );
+
+        await ref.read(actualizarUsuarioProvider(usuarioActualizado).future);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Contraseña actualizada exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        isLoading.value = false;
+      }
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(title: const Text('Recuperar contraseña')),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth > 600;
-
-          return Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-              child: Container(
-                padding: const EdgeInsets.all(15),
-                constraints: BoxConstraints(
-                  maxWidth: isWide ? 500 : double.infinity,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            constraints: const BoxConstraints(maxWidth: 500),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 15,
+                  offset: Offset(0, 8),
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 15,
-                      offset: Offset(0, 8),
+              ],
+            ),
+            child: Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.lock_reset,
+                    size: 80,
+                    color: CupertinoColors.activeBlue,
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  const Text(
+                    'Recuperar Contraseña',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.lock_reset,
-                      size: 80,
-                      color: CupertinoColors.activeBlue,
-                    ),
-                    const SizedBox(height: 20),
+                  ),
+                  const SizedBox(height: 10),
+                  
+                  const Text(
+                    'Ingresa tu correo y una nueva contraseña',
+                    style: TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 30),
 
-                    const Text(
-                      'Recuperar contraseña',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: CupertinoColors.black,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                  // Email
+                  inputReutilizables(
+                    controller: emailController,
+                    nameInput: 'Correo electrónico',
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingresa tu correo';
+                      }
+                      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                      if (!emailRegex.hasMatch(value.trim())) {
+                        return 'Correo inválido';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                    const SizedBox(height: 10),
-
-                    const Text(
-                      'Introduce tu correo electrónico con el que te registraste',
-                      style: TextStyle(fontSize: 16, color: Colors.black87),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    Form(
-                      key: formKey,
-                      child: inputReutilizables(
-                        controller: emailController,
-                        nameInput: 'Correo electrónico',
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Agrega tu correo';
-                          }
-                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                          if (!emailRegex.hasMatch(value.trim())) {
-                            return 'Correo inválido';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'ejemplo@correo.com',
-                          prefixIcon: const Icon(Icons.mail_outline),
-                          filled: true,
-                          fillColor: const Color(0xFFF0F2F5),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 16,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                  // Nueva Contraseña
+                  inputReutilizables(
+                    controller: newPasswordController,
+                    nameInput: 'Nueva contraseña',
+                    obscuredText: obscureText.value,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Ingresa una contraseña';
+                      }
+                      if (value.length < 6) {
+                        return 'Mínimo 6 caracteres';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureText.value
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                         ),
+                        onPressed: () => obscureText.value = !obscureText.value,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
 
-                    const SizedBox(height: 30),
+                  // Confirmar Contraseña
+                  inputReutilizables(
+                    controller: confirmPasswordController,
+                    nameInput: 'Confirmar contraseña',
+                    obscuredText: obscureText.value,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Confirma tu contraseña';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 30),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: isLoading.value
-                            ? null
-                            : () async {
-                                if (formKey.currentState!.validate()) {
-                                  isLoading.value = true;
-
-                                  final email = emailController.text.trim();
-                                  final existe = await ref.read(
-                                    verificarProvider(email).future,
-                                  );
-                                  if (existe) {
-                                    // Aquí puedes generar y guardar el código
-
-                                    final codigo = _generarCodigoRecuperacion();
-
-                                    final db = AppDatabase();
-                                    await db.guardarCodigoRecuperacion(
-                                      email,
-                                      codigo,
-                                    );
-
-                                    await SendGridServiceRecuperacion.enviarCodigoRecuperacion(
-                                      email,
-                                      codigo,
-                                    );
-
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            VerificarCodigoScreen(email: email),
-                                      ),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Correo no registrado'),
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
-                        icon: isLoading.value
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.send),
-                        label: Text(
-                          isLoading.value ? 'Enviando...' : 'Enviar código',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: CupertinoColors.activeBlue,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 5,
-                        ),
+                  // Botón
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading.value ? null : recuperar,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: CupertinoColors.activeBlue,
                       ),
+                      child: isLoading.value
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Recuperar Contraseña',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

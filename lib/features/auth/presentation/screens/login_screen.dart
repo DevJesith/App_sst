@@ -1,22 +1,23 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart'; // Para encriptar la contraseña
+// features/auth/presentation/screens/login_screen.dart
 
-import 'package:app_sst/core/widgets/inputs_widgets.dart';
-import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
-import 'package:app_sst/features/auth/presentation/screens/admin_dashboard.dart';
-import 'package:app_sst/features/auth/presentation/screens/recuperar_contrasena_screen.dart';
-import 'package:app_sst/features/auth/presentation/screens/welcome_screen.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../../../shared/widgets/inputs_widgets.dart';
+import '../providers/auth_provider.dart';
+import 'admin_dashboard.dart';
+import 'recuperar_contrasena_screen.dart';
+import 'welcome_screen.dart';
 
-/// Pantalla de inicio de sesión para acceder a la plataforma.
+/// Pantalla de inicio de sesión simplificada.
 /// Valida credenciales y redirige según el tipo de usuario.
 class LoginScreen extends HookConsumerWidget {
   // Credenciales de administrador
-  final String adminEmail = 'admin@sst.com';
-  final String adminPassword = 'admin123';
+  static const String adminEmail = 'admin@sst.com';
+  static const String adminPassword = 'admin123';
 
   const LoginScreen({super.key});
 
@@ -29,283 +30,291 @@ class LoginScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formKey = GlobalKey<FormState>(); // Llave para validar el formulario
+    final formKey = useMemoized(() => GlobalKey<FormState>());
+    final emailController = useTextEditingController();
+    final passwordController = useTextEditingController();
+    final isLoading = useState(false);
+    final obscureText = useState(true);
 
-    final emailController = useTextEditingController(); // Controlador de email
+    Future<void> login() async {
+      if (!formKey.currentState!.validate()) return;
 
-    final passwordController =
-        useTextEditingController(); // Controlador de contraseña
+      isLoading.value = true;
 
-    final isLoading = useState(false); // Estado de carga
+      try {
+        final email = emailController.text.trim();
+        final contrasena = encriptar(passwordController.text.trim());
+        final adminPasswordHash = encriptar(adminPassword);
 
-    final obscureText = useState(true); // Mostrar/ocultar contraseña
+        // Verificar si es el administrador
+        if (email == adminEmail && contrasena == adminPasswordHash) {
+          if (context.mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminDashboard()),
+            );
+          }
+          return;
+        }
+
+        // Verificar credenciales del usuario normal
+        final usuario = await ref.read(
+          loginProvider({
+            'email': email,
+            'contrasena': contrasena,
+          }).future,
+        );
+
+        if (context.mounted) {
+          if (usuario != null) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => WelcomeScreen(usuario: usuario),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Credenciales incorrectas'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al iniciar sesión: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        isLoading.value = false;
+      }
+    }
 
     return Scaffold(
-      backgroundColor: Color(0xFFF5F7FA),
+      backgroundColor: const Color(0xFFF5F7FA),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final isWide = constraints.maxHeight > 600;
+          final isWide = constraints.maxWidth > 600;
 
           return Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
               child: Container(
-                padding: EdgeInsets.all(15),
+                padding: const EdgeInsets.all(24),
                 constraints: BoxConstraints(
                   maxWidth: isWide ? 500 : double.infinity,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
-                      color: Colors.black38,
+                      color: Colors.black12,
                       blurRadius: 15,
                       offset: Offset(0, 8),
                     ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    /// Ícono principal
-                    Icon(
-                      Icons.vpn_key_sharp,
-                      size: 80,
-                      color: CupertinoColors.activeOrange,
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// Título
-                    const Text(
-                      'Iniciar sesión',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: CupertinoColors.black,
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      /// Ícono principal
+                      const Icon(
+                        Icons.login,
+                        size: 80,
+                        color: CupertinoColors.activeBlue,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
+                      const SizedBox(height: 20),
 
-                    const SizedBox(height: 10),
-
-                    /// Subtítulo
-                    const Text(
-                      'Ingresa tu correo electrónico y contraseña para ingresar a la plataforma',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    /// Formulario de login
-                    Form(
-                      key: formKey,
-                      child: Column(
-                        children: [
-                          /// Campo de correo electrónico
-                          inputReutilizables(
-                            controller: emailController,
-                            nameInput: 'Correo electronico',
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Es importante que agregue su correo';
-                              }
-                              final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                              if (!emailRegex.hasMatch(value)) {
-                                return 'Introduce un correo válido';
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'ejemplo@correo.com',
-                              prefixIcon: Icon(Icons.mail_outline),
-                              filled: true,
-                              fillColor: Color(0XFFF0F2F5),
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: 18,
-                                horizontal: 16,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 15),
-
-                          /// Campo de contraseña
-                          inputReutilizables(
-                            controller: passwordController,
-                            nameInput: 'Contraseña',
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Es imporntante que ingreses la contraseña';
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              hintText: '******',
-                              prefixIcon: Icon(Icons.password),
-                              filled: true,
-                              fillColor: const Color(0xFFF0F2F5),
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: 18,
-                                horizontal: 16,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              suffixIcon: IconButton(
-                                onPressed: () =>
-                                    obscureText.value = !obscureText.value,
-                                icon: Icon(
-                                  obscureText.value
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: CupertinoColors.systemGrey,
-                                ),
-                              ),
-                            ),
-                            obscuredText: obscureText.value,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    /// Enlace para recuperar contraseña
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => RecuperarContrasenaScreen(),
-                          ),
-                        );
-                      },
-                      child: Text('¿Olvidaste contraseña?'),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    /// Botón para iniciar sesión
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: isLoading.value
-                            ? null
-                            : () async {
-                                if (formKey.currentState!.validate()) {
-                                  isLoading.value = true;
-
-                                  try {
-                                    final email = emailController.text.trim();
-                                    final contrasena = encriptar(
-                                      passwordController.text.trim(),
-                                    );
-                                    final adminPasswordHash = encriptar(
-                                      adminPassword,
-                                    );
-
-                                    /// Verifica credenciales del usuario
-                                    final usuario = await ref.read(
-                                      loginProvider({
-                                        'email': email,
-                                        'contrasena': contrasena,
-                                      }).future,
-                                    );
-
-                                    /// Verifica si es el administrador
-                                    if (email == adminEmail &&
-                                        contrasena == adminPasswordHash) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => AdminDashboard(),
-                                        ),
-                                      );
-                                      return;
-                                    }
-
-                                    /// Si el usuario existe y está verificado
-
-                                    if (usuario != null && usuario.verificado) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              WelcomeScreen(usuario: usuario),
-                                        ),
-                                      );
-                                    } else {
-                                      /// Si no existe o no está verificado
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            usuario == null
-                                                ? 'Credenciales incorrectas'
-                                                : 'Tu cuenta aun no esta verificado',
-                                          ),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                  } catch (e) {
-                                    /// Error inesperado
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Error al iniciar sesion: ${e.toString()}',
-                                        ),
-                                      ),
-                                    );
-                                  } finally {
-                                    isLoading.value = false;
-                                  }
-                                }
-                              },
-                        icon: isLoading.value
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.arrow_forward),
-                        label: Text(
-                          'Ingresar',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      /// Título
+                      const Text(
+                        'Iniciar sesión',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: CupertinoColors.activeBlue,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+
+                      /// Subtítulo
+                      const Text(
+                        'Ingresa tu correo y contraseña',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 30),
+
+                      /// Campo de correo electrónico
+                      inputReutilizables(
+                        controller: emailController,
+                        nameInput: 'Correo electrónico',
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Ingresa tu correo';
+                          }
+                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                          if (!emailRegex.hasMatch(value.trim())) {
+                            return 'Correo inválido';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'ejemplo@correo.com',
+                          prefixIcon: const Icon(Icons.mail_outline),
+                          filled: true,
+                          fillColor: const Color(0xFFF0F2F5),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 16,
+                          ),
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
-                          elevation: 5,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+
+                      /// Campo de contraseña
+                      inputReutilizables(
+                        controller: passwordController,
+                        nameInput: 'Contraseña',
+                        obscuredText: obscureText.value,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ingresa tu contraseña';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: '••••••',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          filled: true,
+                          fillColor: const Color(0xFFF0F2F5),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () =>
+                                obscureText.value = !obscureText.value,
+                            icon: Icon(
+                              obscureText.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      /// Enlace para recuperar contraseña
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const RecuperarContrasenaScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            '¿Olvidaste tu contraseña?',
+                            style: TextStyle(
+                              color: CupertinoColors.activeBlue,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      /// Botón para iniciar sesión
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: isLoading.value ? null : login,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: CupertinoColors.activeBlue,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 3,
+                          ),
+                          child: isLoading.value
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Ingresar',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      /// Mensaje informativo del admin
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.blue.shade200,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.blue.shade700,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Admin: admin@sst.com / admin123',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

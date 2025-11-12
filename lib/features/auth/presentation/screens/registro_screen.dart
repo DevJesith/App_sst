@@ -1,247 +1,233 @@
-import 'dart:math';
+// features/auth/presentation/screens/registro_screen.dart
 
-import 'package:app_sst/core/widgets/inputs_widgets.dart';
-import 'package:app_sst/features/auth/domain/entities/usuarios.dart';
-import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
-import 'package:app_sst/features/auth/presentation/screens/ingresar_codigo_screen.dart';
-import 'package:app_sst/features/auth/presentation/screens/login_screen.dart';
-import 'package:app_sst/services/send_email_services.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../../../shared/widgets/inputs_widgets.dart';
+import '../../domain/entities/usuarios.dart';
+import '../providers/auth_provider.dart';
+import 'login_screen.dart';
 
-/// Pantalla de registro inicial donde el usuario ingresa su correo.
-/// Se genera un código de verificación y se envía por correo.
 class RegistroScreen extends HookConsumerWidget {
   const RegistroScreen({super.key});
 
-  /// Genera un código aleatorio de 5 dígitos
-  String _generarCodigo() {
-    final random = Random();
-    return (10000 + random.nextInt(90000)).toString(); // Código de 6 dígitos
+  String encriptar(String texto) {
+    final bytes = utf8.encode(texto);
+    final hash = sha256.convert(bytes);
+    return hash.toString();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formKey = GlobalKey<FormState>(); // Llave para validar el formulario
+    final formKey = useMemoized(() => GlobalKey<FormState>());
+    final nombreController = useTextEditingController();
+    final emailController = useTextEditingController();
+    final passwordController = useTextEditingController();
+    final isLoading = useState(false);
+    final obscureText = useState(true);
 
-    final emailController = useTextEditingController(); // Controlador de email
+    Future<void> registrar() async {
+      if (!formKey.currentState!.validate()) return;
 
-    final isLoading = useState(false); // Estado de carga
+      isLoading.value = true;
+
+      try {
+        // Verificar si el email ya existe
+        final existente = await ref.read(
+          obtenerUsuarioPorEmailProvider(emailController.text.trim()).future,
+        );
+
+        if (existente != null) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Este correo ya está registrado'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          return;
+        }
+
+        // Crear usuario
+        final usuario = Usuarios(
+          nombre: nombreController.text.trim(),
+          email: emailController.text.trim(),
+          contrasena: encriptar(passwordController.text.trim()),
+        );
+
+        await ref.read(registrarUsuarioProvider(usuario).future);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('¡Registro exitoso!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error en el registro: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        isLoading.value = false;
+      }
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth > 600;
-
-          return Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-              child: Container(
-                padding: const EdgeInsets.all(15),
-                constraints: BoxConstraints(
-                  maxWidth: isWide ? 500 : double.infinity,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            constraints: const BoxConstraints(maxWidth: 500),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 15,
+                  offset: Offset(0, 8),
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 15,
-                      offset: Offset(0, 8),
+              ],
+            ),
+            child: Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.person_add,
+                    size: 80,
+                    color: CupertinoColors.activeBlue,
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  const Text(
+                    'Crear Cuenta',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.person_add_alt_1_rounded,
-                      size: 80,
-                      color: CupertinoColors.activeBlue,
-                    ),
-                    const SizedBox(height: 20),
+                  ),
+                  const SizedBox(height: 30),
 
-                    /// Título
-                    const Text(
-                      'Registro de Usuario',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: CupertinoColors.black,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                  // Nombre
+                  inputReutilizables(
+                    controller: nombreController,
+                    nameInput: 'Nombre completo',
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingresa tu nombre';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                    const SizedBox(height: 10),
+                  // Email
+                  inputReutilizables(
+                    controller: emailController,
+                    nameInput: 'Correo electrónico',
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingresa tu correo';
+                      }
+                      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                      if (!emailRegex.hasMatch(value.trim())) {
+                        return 'Correo inválido';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                    /// Subtítulo
-                    const Text(
-                      'Regístrate con tu correo electrónico',
-                      style: TextStyle(fontSize: 16, color: Colors.black87),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    /// Formulario para ingresar correo
-                    Form(
-                      key: formKey,
-                      child: inputReutilizables(
-                        controller: emailController,
-                        nameInput: 'Correo electrónico',
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Agrega tu correo';
-                          }
-                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                          if (!emailRegex.hasMatch(value.trim())) {
-                            return 'Correo inválido';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'ejemplo@correo.com',
-                          prefixIcon: const Icon(Icons.mail_outline),
-                          filled: true,
-                          fillColor: const Color(0xFFF0F2F5),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 16,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                  // Contraseña
+                  inputReutilizables(
+                    controller: passwordController,
+                    nameInput: 'Contraseña',
+                    obscuredText: obscureText.value,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Ingresa una contraseña';
+                      }
+                      if (value.length < 6) {
+                        return 'Mínimo 6 caracteres';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureText.value
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                         ),
+                        onPressed: () => obscureText.value = !obscureText.value,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 30),
 
-                    const SizedBox(height: 30),
-
-                    /// Botón para enviar código de verificación
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: isLoading.value
-                            ? null
-                            : () async {
-                                if (formKey.currentState!.validate()) {
-                                  isLoading.value = true;
-
-                                  try {
-                                    final codigo = _generarCodigo();
-
-                                    final usuario = Usuarios(
-                                      email: emailController.text.trim(),
-
-                                      verificado: false,
-                                    );
-
-                                    /// Guarda el usuario en la base de datos local
-                                    await ref.read(
-                                      registrarUsuarioProvider(usuario).future,
-                                    );
-
-                                    /// Envía el código por correo
-                                    await SendGridService.enviarCodigo(
-                                      emailController.text.trim(),
-                                      codigo,
-                                    );
-
-                                    /// Navega a la pantalla para ingresar el código
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => IngresarCodigoScreen(
-                                          emailRecibido: emailController.text
-                                              .trim(),
-                                          codigoCorrecto: codigo,
-                                        ),
-                                      ),
-                                    );
-                                  } catch (e) {
-                                    /// Muestra error si algo falla
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Error en el registro : ${e.toString()}',
-                                        ),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  } finally {
-                                    isLoading.value = false;
-                                  }
-                                }
-                              },
-                        icon: isLoading.value
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.send),
-                        label: Text(
-                          isLoading.value ? 'Enviando...' : 'Enviar código',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: CupertinoColors.activeBlue,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 5,
-                        ),
+                  // Botón Registrar
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading.value ? null : registrar,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: CupertinoColors.activeBlue,
                       ),
+                      child: isLoading.value
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Registrarse',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
 
-                    const SizedBox(height: 20),
-
-                    /// Enlace para ir al login si ya tiene cuenta
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => LoginScreen()),
-                          );
-                        },
-
-                        style: TextButton.styleFrom(
-                          foregroundColor: CupertinoColors.link,
-                          elevation: 2,
-                        ),
-                        child: const Text(
-                          'Iniciar sesión',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      );
+                    },
+                    child: const Text('¿Ya tienes cuenta? Inicia sesión'),
+                  ),
+                ],
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
