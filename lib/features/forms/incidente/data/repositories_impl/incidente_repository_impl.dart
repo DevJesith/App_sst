@@ -42,7 +42,6 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
       final model = IncidenteModel(
       eventualidad: incidente.eventualidad, 
       proyecto: incidente.proyecto, 
-      contratista: incidente.contratista, 
       mes: incidente.mes, 
       descripcion: incidente.descripcion, 
       diasIncapacidad: incidente.diasIncapacidad, 
@@ -62,7 +61,6 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
       final model = IncidenteModel(
       eventualidad: incidente.eventualidad, 
       proyecto: incidente.proyecto, 
-      contratista: incidente.contratista, 
       mes: incidente.mes, 
       descripcion: incidente.descripcion, 
       diasIncapacidad: incidente.diasIncapacidad, 
@@ -70,7 +68,7 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
       estado: incidente.estado, 
       fechaRegistro: incidente.fechaRegistro, 
       usuarioId: incidente.usuarioId);
-      return await localDatasource.crearIncidente(model);
+      return await localDatasource.actualizarIncidente(model);
     } catch (e) {
       throw Exception('Error al actualizar incidentes: $e');
     }

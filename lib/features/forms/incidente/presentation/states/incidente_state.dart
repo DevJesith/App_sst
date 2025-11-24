@@ -1,8 +1,6 @@
-
 import 'package:app_sst/features/forms/incidente/domain/entities/incidente.dart';
 
 class IncidenteState {
-
   final List<Incidente> incidentes;
   final bool isLoading;
   final String? errorMessage;
@@ -20,7 +18,7 @@ class IncidenteState {
     bool? isLoading,
     String? errorMessage,
     bool? isSubmitting,
-  }){
+  }) {
     return IncidenteState(
       incidentes: incidentes ?? this.incidentes,
       isLoading: isLoading ?? this.isLoading,
@@ -28,7 +26,6 @@ class IncidenteState {
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
   }
-  
 }
 
 class IncidenteFormState {
@@ -36,17 +33,13 @@ class IncidenteFormState {
   final String? estado;
   final DateTime? fecha;
 
-  const IncidenteFormState({
-    this.proyecto,
-    this.estado,
-    this.fecha
-  });
+  const IncidenteFormState({this.proyecto, this.estado, this.fecha});
 
   IncidenteFormState copyWith({
     String? proyecto,
     String? estado,
     DateTime? fecha,
-  }){
+  }) {
     return IncidenteFormState(
       proyecto: proyecto ?? this.proyecto,
       estado: estado ?? this.estado,

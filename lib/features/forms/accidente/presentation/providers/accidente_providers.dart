@@ -1,5 +1,4 @@
 import 'package:app_sst/data/database/app_database.dart';
-import 'package:app_sst/features/auth/domain/usecases/actualizar_usuario.dart';
 import 'package:app_sst/features/forms/accidente/data/datasources/accidente_local_datasource.dart';
 import 'package:app_sst/features/forms/accidente/data/repositories_impl/accidente_repository_impl.dart';
 import 'package:app_sst/features/forms/accidente/domain/repositories/accidente_repository.dart';
@@ -67,9 +66,10 @@ final accidenteNotifierProvider =
     });
 
 //Provider del Notifier del formulario (valores de campos)
-final accidenteFormNotifierProvider = StateNotifierProvider<AccidenteFormNotifier, AccidenteFormState>((ref) {
-  return AccidenteFormNotifier();
-});
+final accidenteFormNotifierProvider =
+    StateNotifierProvider<AccidenteFormNotifier, AccidenteFormState>((ref) {
+      return AccidenteFormNotifier();
+    });
 
 // Providers derivados (para acceso directo a partes del estado)
 final accidentesListProvider = Provider((ref) {
@@ -87,4 +87,3 @@ final accidentesErrorProvider = Provider((ref) {
 final accidentesSubmittingProvider = Provider((ref) {
   return ref.watch(accidenteNotifierProvider).isSubmitting;
 });
-

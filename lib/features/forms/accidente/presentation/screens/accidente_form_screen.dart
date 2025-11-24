@@ -1,81 +1,77 @@
+// features/forms/accidente/presentation/screens/accidente_form_screen.dart
+
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
-import 'package:app_sst/features/forms/enfermedad/domain/entities/enfermedad.dart';
-import 'package:app_sst/features/forms/enfermedad/presentation/providers/enfermedad_providers.dart';
-import 'package:app_sst/shared/widgets/fecha_input_widgets.dart';
-import 'package:app_sst/shared/widgets/inputs_widgets.dart';
-import 'package:app_sst/shared/widgets/lista_input_wigets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../../../shared/widgets/fecha_input_widgets.dart';
+import '../../../../../shared/widgets/inputs_widgets.dart';
+import '../../../../../shared/widgets/lista_input_wigets.dart';
+import '../../domain/entities/accidente.dart';
+import '../providers/accidente_providers.dart';
 
-/// Pantalla para llenar el formulario de enfermedad laboral.
-/// Utiliza Riverpod para manejar estado y validación.
-class EnfermedadFormScreen extends HookConsumerWidget {
-  final Enfermedad? enfermedad;
+/// Pantalla para llenar el formulario de reporte de accidente.
+/// Utiliza Clean Architecture + MVVM + Riverpod.
+class AccidenteFormScreen extends HookConsumerWidget {
+  final Accidente? accidente; // null = crear, con valor = editar
 
-  const EnfermedadFormScreen({Key? key, this.enfermedad}) : super(key: key);
+  const AccidenteFormScreen({Key? key, this.accidente}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    //Form key
+    // Form key
     final formKey = useMemoized(() => GlobalKey<FormState>());
 
-    //Controladores de texto
+    // Controladores de texto
     final eventualidadController = useTextEditingController(
-      text: enfermedad?.eventualidad ?? '',
+      text: accidente?.eventualidad ?? '',
     );
-
     final contratistaController = useTextEditingController(
-      text: enfermedad?.contratista ?? '',
+      text: accidente?.contratista ?? '',
     );
-
-    final mesController = useTextEditingController(text: enfermedad?.mes ?? '');
-
+    final mesController = useTextEditingController(
+      text: accidente?.mes ?? '',
+    );
     final descripcionController = useTextEditingController(
-      text: enfermedad?.descripcion ?? '',
+      text: accidente?.descripcion ?? '',
     );
-
     final diasIncapacidadController = useTextEditingController(
-      text: enfermedad?.diasIncapacidad.toString() ?? '',
+      text: accidente?.diasIncapacidad.toString() ?? '',
     );
-
     final avancesController = useTextEditingController(
-      text: enfermedad?.avances ?? '',
+      text: accidente?.avances ?? '',
     );
 
-    //Estado del formulario (valores de dropdowns y fecha)
-    final formState = ref.watch(enfermedadFormNotifierProvider);
+    // Estado del formulario (valores de dropdowns y fecha)
+    final formState = ref.watch(accidenteFormNotifierProvider);
+    final formNotifier = ref.read(accidenteFormNotifierProvider.notifier);
 
-    final formNotifier = ref.read(enfermedadFormNotifierProvider.notifier);
-
-    //Estado de envio
-    final isSubmitting = ref.watch(enfermedadSubmittingProvider);
+    // Estado de envío
+    final isSubmitting = ref.watch(accidentesSubmittingProvider);
 
     // Opciones de dropdown
     final proyectos = ["Proyecto 1", "Proyecto 2", "Proyecto 3"];
-    final contratista = ["Contratista 1", "Contratista 2", "Contratista 3"];
-    final estado = ["Pendiente", "En proceso", "Completado"];
+    final estados = ["Pendiente", "En proceso", "Completado"];
 
-    //Inicializar valores si es edicion
+    // Inicializar valores si es edición
     useEffect(() {
-      if (enfermedad != null) {
-        formNotifier.setProyecto(enfermedad!.proyecto);
-        formNotifier.setEstado(enfermedad!.estado);
-        formNotifier.setFecha(enfermedad!.fechaRegistro);
+      if (accidente != null) {
+        formNotifier.setProyecto(accidente!.proyecto);
+        formNotifier.setEstado(accidente!.estado);
+        formNotifier.setFecha(accidente!.fechaRegistro);
       }
       return null;
     }, []);
 
-    //Funcion para enviar el formulario
+    /// Función para enviar el formulario
     Future<void> submit() async {
-      //Validar campos del form
+      // Validar campos del form
       if (!formKey.currentState!.validate()) return;
 
-      //Validar que los campos de estado esten completos
+      // Validar que los campos de estado estén completos
       if (formState.proyecto == null ||
           formState.estado == null ||
-          formState.contratista == null ||
           formState.fecha == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Por favor completa todos los campos')),
@@ -83,30 +79,30 @@ class EnfermedadFormScreen extends HookConsumerWidget {
         return;
       }
 
-      //Crear entidad Enfermedad
-      final nuevoEnfermedad = Enfermedad(
-        id: enfermedad?.id,
+      // Crear entidad Accidente
+      final nuevoAccidente = Accidente(
+        id: accidente?.id,
         eventualidad: eventualidadController.text,
         proyecto: formState.proyecto!,
-        contratista: formState.contratista!,
+        contratista: contratistaController.text,
         mes: mesController.text,
         descripcion: descripcionController.text,
         diasIncapacidad: int.tryParse(diasIncapacidadController.text) ?? 0,
         avances: avancesController.text,
         estado: formState.estado!,
         fechaRegistro: formState.fecha!,
-        usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1,
+        usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1, // TODO: Obtener del auth provider
       );
 
-      //Llamar al notifier para crear/actualizar
-      final notifier = ref.read(enfermedadNotifierProvider.notifier);
-      final success = enfermedad == null
-          ? await notifier.crearEnfermedad(nuevoEnfermedad)
-          : await notifier.actualizarEnfermedad(nuevoEnfermedad);
+      // Llamar al notifier para crear/actualizar
+      final notifier = ref.read(accidenteNotifierProvider.notifier);
+      final success = accidente == null
+          ? await notifier.crearAccidente(nuevoAccidente)
+          : await notifier.actualizarAccidente(nuevoAccidente);
 
       if (context.mounted) {
         if (success) {
-          //Limpiar formulario
+          // Limpiar formulario
           formNotifier.reset();
           eventualidadController.clear();
           contratistaController.clear();
@@ -115,17 +111,17 @@ class EnfermedadFormScreen extends HookConsumerWidget {
           diasIncapacidadController.clear();
           avancesController.clear();
 
-          //Mostrar dialogo de exito
+          // Mostrar diálogo de éxito
           showDialog(
             context: context,
             builder: (_) => AlertDialog(
               title: const Text('Formulario enviado'),
-              content: const Text('Completado con exito'),
+              content: const Text('Completado con éxito'),
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
+                    Navigator.pop(context); // Cerrar diálogo
+                    Navigator.pop(context); // Volver a pantalla anterior
                   },
                   child: const Text('OK'),
                 ),
@@ -133,11 +129,11 @@ class EnfermedadFormScreen extends HookConsumerWidget {
             ),
           );
         } else {
-          //Mostrar error
-          final error = ref.read(enfermedadErrorProvider);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(error ?? 'Error desconocido')));
+          // Mostrar error
+          final error = ref.read(accidentesErrorProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error ?? 'Error desconocido')),
+          );
         }
       }
     }
@@ -145,35 +141,32 @@ class EnfermedadFormScreen extends HookConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: Text(
-          enfermedad == null ? "Nueva Enfermedad" : "Editar Enfermedad",
-        ),
+        title: Text(accidente == null ? "Nuevo Accidente" : "Editar Accidente"),
         leadingWidth: 50,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Form(
             key: formKey,
             child: Column(
               children: [
                 /// Título del formulario
                 Text(
-                  'Enfermedad Laboral',
-                  style: TextStyle(
-                    fontSize: 32,
+                  accidente == null ? "Accidente" : "Editar Accidente",
+                  style: const TextStyle(
+                    fontSize: 40,
                     color: Colors.black,
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 30),
 
                 /// Campo: Eventualidad
                 inputReutilizables(
                   controller: eventualidadController,
-                  nameInput: 'Eventualidad',
+                  nameInput: "Eventualidad",
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Este campo es obligatorio';
@@ -181,13 +174,12 @@ class EnfermedadFormScreen extends HookConsumerWidget {
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 20),
 
                 /// Dropdown: Proyecto
                 ListaInputWigets(
-                  label: 'Seleccionar proyecto',
                   nameInput: 'Proyecto',
+                  label: 'Selecciona una opción',
                   items: proyectos,
                   value: formState.proyecto,
                   onChanged: formNotifier.setProyecto,
@@ -198,16 +190,12 @@ class EnfermedadFormScreen extends HookConsumerWidget {
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 20),
 
-                // /// Dropdown: Contratista
-                ListaInputWigets(
-                  label: 'Selecciona un contratista',
-                  nameInput: 'Contratista',
-                  items: contratista,
-                  value: formState.contratista,
-                  onChanged: formNotifier.setContratista,
+                /// Campo: Contratista
+                inputReutilizables(
+                  controller: contratistaController,
+                  nameInput: "Contratista",
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Este campo es obligatorio';
@@ -215,8 +203,20 @@ class EnfermedadFormScreen extends HookConsumerWidget {
                     return null;
                   },
                 ),
+                const SizedBox(height: 20),
 
-                // const SizedBox(height: 20),
+                /// Campo: Mes
+                inputReutilizables(
+                  controller: mesController,
+                  nameInput: "Mes",
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Este campo es obligatorio';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
 
                 /// Selector de fecha
                 FechaInputWidgets(
@@ -225,74 +225,73 @@ class EnfermedadFormScreen extends HookConsumerWidget {
                   label: 'Selecciona la fecha',
                   onchanged: formNotifier.setFecha,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value == null) {
                       return 'Este campo es obligatorio';
                     }
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 20),
 
                 /// Campo: Descripción
                 inputReutilizables(
                   controller: descripcionController,
-                  nameInput: 'Descripcion',
+                  nameInput: "Descripción",
                   maxLenght: 300,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Este campo es obligatorio';
+                      return "Campo no definido";
                     }
                     return null;
                   },
                 ),
-
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
 
                 /// Campo: Días de incapacidad
                 inputReutilizables(
                   controller: diasIncapacidadController,
-                  nameInput: 'Dias de incapacidad',
+                  nameInput: "Días de incapacidad",
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Este campo es obligatorio';
+                      return "Completa el campo";
+                    }
+                    if (int.tryParse(value) == null) {
+                      return "Debe ser un número";
                     }
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 20),
 
                 /// Campo: Avances
                 inputReutilizables(
                   controller: avancesController,
-                  nameInput: 'Avances',
+                  nameInput: "Avances",
+                  maxLenght: 300,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Este campo es obligatorio';
+                      return "Completa el campo";
                     }
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 20),
 
                 /// Dropdown: Estado
                 ListaInputWigets(
-                  label: 'Selecciona un estado',
+                  label: 'Selecciona una opción',
                   nameInput: 'Estado',
-                  items: estado,
+                  items: estados,
                   value: formState.estado,
                   onChanged: formNotifier.setEstado,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Este campo es obligatorio';
+                      return "Este campo es obligatorio";
                     }
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 30),
 
                 /// Botón para enviar el formulario

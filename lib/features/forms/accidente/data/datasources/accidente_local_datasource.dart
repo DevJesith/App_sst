@@ -79,13 +79,7 @@ class AccidenteLocalDataSourceImpl implements AccidenteLocalDatasource {
 
   @override
   Future<int> eliminarAccidente(int id) async {
-    
     final db = await database.database;
-    return await db.delete(
-      'Accidente',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-    
+    return await db.delete('Accidente', where: 'id = ?', whereArgs: [id]);
   }
 }

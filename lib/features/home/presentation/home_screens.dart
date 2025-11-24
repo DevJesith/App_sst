@@ -1,8 +1,8 @@
-import 'package:app_sst/core/widgets/card_form_widgets.dart';
-import 'package:app_sst/features/forms/presentacion/screens/accidente_form.dart';
-import 'package:app_sst/features/forms/presentacion/screens/capacitacion_form.dart';
-import 'package:app_sst/features/forms/presentacion/screens/enfermedad_form.dart';
-import 'package:app_sst/features/forms/presentacion/screens/incidente_form.dart';
+import 'package:app_sst/shared/widgets/card_form_widgets.dart';
+import 'package:app_sst/features/forms/accidente/presentation/screens/accidente_form_screen.dart';
+import 'package:app_sst/features/forms/capacitacion/presentation/screens/capacitacion_form.dart';
+import 'package:app_sst/features/forms/enfermedad/presentation/screens/enfermedad_form.dart';
+import 'package:app_sst/features/forms/incidente/presentation/screens/incidente_form.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -27,13 +27,6 @@ class HomeScreens extends HookConsumerWidget {
         automaticallyImplyLeading: true,
         leadingWidth: 30,
         backgroundColor: const Color.fromARGB(255, 221, 221, 221),
-        actions: const [
-          Icon(
-            Icons.notifications_active,
-            color: CupertinoColors.systemRed,
-            size: 30,
-          ),
-        ],
       ),
 
       /// Layout adaptable según ancho de pantalla
@@ -79,7 +72,7 @@ class HomeScreens extends HookConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const AccidenteForm(),
+                                builder: (_) => AccidenteFormScreen(),
                               ),
                             );
                           },
@@ -97,7 +90,7 @@ class HomeScreens extends HookConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const IncidenteForm(),
+                                builder: (_) => const IncidenteFormScreen(),
                               ),
                             );
                           },
@@ -115,7 +108,7 @@ class HomeScreens extends HookConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const EnfermedadForm(),
+                                builder: (_) => const EnfermedadFormScreen (),
                               ),
                             );
                           },
@@ -133,7 +126,7 @@ class HomeScreens extends HookConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const CapacitacionForm(),
+                                builder: (_) => const CapacitacionFormScreen(),
                               ),
                             );
                           },

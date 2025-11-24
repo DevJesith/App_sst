@@ -1,3 +1,4 @@
+import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
 import 'package:app_sst/features/forms/incidente/domain/entities/incidente.dart';
 import 'package:app_sst/features/forms/incidente/presentation/providers/incidente_providers.dart';
 import 'package:app_sst/shared/widgets/fecha_input_widgets.dart';
@@ -23,10 +24,6 @@ class IncidenteFormScreen extends HookConsumerWidget {
     // Controladores de texto
     final eventualidadController = useTextEditingController(
       text: incidente?.eventualidad ?? '',
-    );
-
-    final contratistaController = useTextEditingController(
-      text: incidente?.contratista ?? '',
     );
 
     final mesController = useTextEditingController(text: incidente?.mes ?? '');
@@ -84,14 +81,13 @@ class IncidenteFormScreen extends HookConsumerWidget {
         id: incidente?.id,
         eventualidad: eventualidadController.text,
         proyecto: formState.proyecto!,
-        contratista: contratistaController.text,
         mes: mesController.text,
         descripcion: descripcionController.text,
         diasIncapacidad: int.tryParse(diasIncapacidadController.text) ?? 0,
         avances: avancesController.text,
         estado: formState.estado!,
         fechaRegistro: formState.fecha!,
-        usuarioId: 1,
+        usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1,
       );
 
       //Llamar al notifier para crear/actualizar
@@ -105,7 +101,6 @@ class IncidenteFormScreen extends HookConsumerWidget {
           //Limpiar formulario
           formNotifier.reset();
           eventualidadController.clear();
-          contratistaController.clear();
           mesController.clear();
           descripcionController.clear();
           diasIncapacidadController.clear();

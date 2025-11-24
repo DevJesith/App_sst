@@ -25,14 +25,11 @@ class AccidenteNotifier extends StateNotifier<AccidenteState> {
 
     try {
       final accidentes = await getAccidentesUsecases();
-      state = state.copyWith(
-        accidentes: accidentes,
-        isLoading: false,
-      );
+      state = state.copyWith(accidentes: accidentes, isLoading: false);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Error al cargar accidentes: $e'
+        errorMessage: 'Error al cargar accidentes: $e',
       );
     }
   }
@@ -80,9 +77,7 @@ class AccidenteNotifier extends StateNotifier<AccidenteState> {
       await loadAccidentes();
       return true;
     } catch (e) {
-      state = state.copyWith(
-        errorMessage: 'Error al eliminar accidente: $e',
-      );
+      state = state.copyWith(errorMessage: 'Error al eliminar accidente: $e');
       return false;
     }
   }
@@ -109,6 +104,6 @@ class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
   }
 
   void reset() {
-    state = const AccidenteFormState(); 
+    state = const AccidenteFormState();
   }
 }

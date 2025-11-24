@@ -13,7 +13,7 @@ class AccidenteRepositoryImpl implements AccidenteRepository {
     try {
       return await localDatasource.getAccidentes();
     } catch (e) {
-      throw Exception('Error al ibetner accidentes: $e');
+      throw Exception('Error al obtener accidentes: $e');
     }
   }
 
@@ -75,7 +75,7 @@ class AccidenteRepositoryImpl implements AccidenteRepository {
     );
     return await localDatasource.actualizarAccidente(model);
     } catch (e) {
-      throw Exception('Error al actualziar accidente: $e');
+      throw Exception('Error al actualizar accidente: $e');
     }
     
   }
@@ -85,7 +85,7 @@ class AccidenteRepositoryImpl implements AccidenteRepository {
     try {
       return await localDatasource.eliminarAccidente(id);
     } catch (e) {
-      throw Exception('Error al eleiminar accidente: $e');
+      throw Exception('Error al eliminar accidente: $e');
     }
     
   }
