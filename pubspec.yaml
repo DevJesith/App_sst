@@ -40,11 +40,15 @@ dependencies:
   flutter_hooks: ^0.21.3+1
   hooks_riverpod: ^2.6.1
   http: ^1.5.0
-  #telephony: ^0.2.0
   connectivity_plus: ^6.1.5
   sqflite: ^2.4.2
   path: ^1.9.1
   crypto: ^3.0.6
+  intl: ^0.20.2
+  path_provider: ^2.1.1  # Para obtener rutas de almacenamiento
+  pdf: ^3.10.4  # Para generar PDFs
+  printing: ^5.11.0  # Para imprimir/compartir PDFs
+  share_plus: ^7.2.1  # Para compartir archivos
 
 dev_dependencies:
   flutter_test:
