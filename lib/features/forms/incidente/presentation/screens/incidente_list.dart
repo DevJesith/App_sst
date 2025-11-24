@@ -1,30 +1,30 @@
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
-import 'package:app_sst/features/forms/accidente/presentation/providers/accidente_providers.dart';
-import 'package:app_sst/features/forms/accidente/presentation/screens/accidente_detalle_screen.dart';
+import 'package:app_sst/features/forms/incidente/presentation/providers/incidente_providers.dart';
+import 'package:app_sst/features/forms/incidente/presentation/screens/incidente_detalles_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-/// Lista de Accidentes
-class AccidentesList extends HookConsumerWidget {
+/// Lista de Incidentes
+class IncidenteList extends HookConsumerWidget {
   final String searchQuery;
 
-  const AccidentesList({required this.searchQuery});
+  const IncidenteList({required this.searchQuery});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final accidenteState = ref.watch(accidenteNotifierProvider);
+    final incidenteState = ref.watch(incidenteNotifierProvider);
     final usuariosAsync = ref.watch(obtenerTodosUsuariosProvider);
 
     return usuariosAsync.when(
       data: (usuarios) {
-        if (accidenteState.isLoading) {
+        if (incidenteState.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final accidentes = accidenteState.accidentes;
+        final incidentes = incidenteState.incidentes;
 
-        if (accidentes.isEmpty) {
+        if (incidentes.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -36,7 +36,7 @@ class AccidentesList extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'No hay reportes de accidentes',
+                  'No hay reportes de incidentes',
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.black,
@@ -48,12 +48,12 @@ class AccidentesList extends HookConsumerWidget {
         }
 
         // Filtrar por búsqueda - CORREGIDO
-        final filteredAccidentes = searchQuery.isEmpty
-            ? accidentes
-            : accidentes.where((accidente) {
+        final filteredIncidentes = searchQuery.isEmpty
+            ? incidentes
+            : incidentes.where((incidente) {
                 try {
                   final usuario = usuarios.firstWhere(
-                    (u) => u.id == accidente.usuarioId,
+                    (u) => u.id == incidente.usuarioId,
                   );
                   final searchLower = searchQuery.toLowerCase();
                   return usuario.nombre.toLowerCase().contains(searchLower) ||
@@ -63,7 +63,7 @@ class AccidentesList extends HookConsumerWidget {
                 }
               }).toList();
 
-        if (filteredAccidentes.isEmpty) {
+        if (filteredIncidentes.isEmpty) {
           return Center(
             child: Text(
               'No se encontraron resultados',
@@ -74,9 +74,9 @@ class AccidentesList extends HookConsumerWidget {
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: filteredAccidentes.length,
+          itemCount: filteredIncidentes.length,
           itemBuilder: (context, index) {
-            final accidente = filteredAccidentes[index];
+            final incidente = filteredIncidentes[index];
             
             // Buscar usuario de forma segura - CORREGIDO
             String nombreUsuario = "Usuario desconocido";
@@ -84,7 +84,7 @@ class AccidentesList extends HookConsumerWidget {
             
             try {
               final usuario = usuarios.firstWhere(
-                (u) => u.id == accidente.usuarioId,
+                (u) => u.id == incidente.usuarioId,
               );
               nombreUsuario = usuario.nombre;
               emailUsuario = usuario.email;
@@ -93,7 +93,7 @@ class AccidentesList extends HookConsumerWidget {
             }
             
             final fechaFormateada = DateFormat('dd/MM/yyyy HH:mm')
-                .format(accidente.fechaRegistro);
+                .format(incidente.fechaRegistro);
 
             return Card(
               color: Colors.white,
@@ -106,8 +106,8 @@ class AccidentesList extends HookConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => AccidenteDetalleScreen(
-                        accidente: accidente,
+                      builder: (_) => IncidenteDetallesScreen(
+                        incidente: incidente,
                       ),
                     ),
                   );
@@ -122,10 +122,10 @@ class AccidentesList extends HookConsumerWidget {
                       Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: Colors.red.shade900,
+                            backgroundColor: Colors.amber.shade900,
                             radius: 20,
                             child: const Icon(
-                              Icons.warning_amber,
+                              Icons.report,
                               color: Colors.white,
                               size: 20,
                             ),
@@ -136,7 +136,7 @@ class AccidentesList extends HookConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  accidente.eventualidad,
+                                  incidente.eventualidad,
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
