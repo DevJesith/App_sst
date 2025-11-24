@@ -67,3 +67,6 @@ final obtenerUsuarioPorEmailProvider = FutureProvider.family<Usuarios?, String>(
   final usecase = ref.read(obtenerUsuarioPorEmailUseCaseProvider);
   return await usecase(email);
 });
+
+//provider para mentener el usuario autenticsado en la sesion
+final usuarioAutenticadoProvider = StateProvider<Usuarios?>((ref) => null);

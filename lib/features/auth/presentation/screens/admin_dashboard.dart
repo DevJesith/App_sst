@@ -2,294 +2,221 @@
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../providers/auth_provider.dart';
-import 'login_screen.dart';
+import '../../../../core/utils/export_utils.dart';
+import '../../../../shared/widgets/perfil_widget.dart';
+import '../../domain/entities/usuarios.dart';
+import 'usuarios_registrados_screen.dart';
+import 'formularios_recibidos_screen.dart';
 
-/// Pantalla que muestra el panel de administración.
-/// Lista todos los usuarios registrados en la base de datos local.
 class AdminDashboard extends HookConsumerWidget {
   const AdminDashboard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Observa el estado del proveedor que obtiene todos los usuarios
-    final usuariosAsync = ref.watch(obtenerTodosUsuariosProvider);
+    // Crear un usuario dummy para el admin
+    final adminUser = Usuarios(
+      id: 0,
+      nombre: 'Administrador',
+      email: 'admin@sst.com',
+    );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: const Color.fromARGB(255, 246, 247, 250),
       appBar: AppBar(
-        title: const Text('Panel de Administración'),
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Recargar usuarios',
-            onPressed: () {
-              ref.invalidate(obtenerTodosUsuariosProvider);
-            },
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+        title: const Text(
+          'Panel de Administración',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Cerrar sesión',
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-            },
-          ),
-        ],
+        ),
       ),
-      body: usuariosAsync.when(
-        data: (usuarios) {
-          if (usuarios.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.people_outline,
-                    size: 80,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No hay usuarios registrados',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
+      drawer: CustomDrawer(
+        usuarios: adminUser,
+        esAdmin: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Mensaje de bienvenida
+            Text(
+              'Bienvenido, Administrador',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
               ),
-            );
-          }
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Gestiona usuarios y formularios desde aquí',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 32),
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header con estadísticas
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade700,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
+            // Sección: Gestión
+            Text(
+              'Gestión',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Card: Usuarios Registrados
+            _DashboardCard(
+              title: 'Usuarios Registrados',
+              subtitle: 'Ver todos los usuarios del sistema',
+              icon: Icons.people,
+              color: Colors.blue.shade700,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const UsuariosRegistradosScreen(),
                   ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Card: Formularios Recibidos
+            _DashboardCard(
+              title: 'Formularios Recibidos',
+              subtitle: 'Ver todos los reportes enviados',
+              icon: Icons.assignment,
+              color: Colors.purple.shade700,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const FormulariosRecibidosScreen(),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 32),
+
+            // Sección: Exportación
+            Text(
+              'Exportación de Datos',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Card: Exportar Base de Datos
+            _DashboardCard(
+              title: 'Exportar Base de Datos',
+              subtitle: 'Descargar archivo .db para respaldo',
+              icon: Icons.download,
+              color: Colors.green.shade700,
+              onTap: () async {
+                await ExportUtils.exportDatabase(context);
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // Card: Generar PDF
+            _DashboardCard(
+              title: 'Generar Reporte PDF',
+              subtitle: 'Crear PDF con información de la BD',
+              icon: Icons.picture_as_pdf,
+              color: Colors.orange.shade700,
+              onTap: () async {
+                await ExportUtils.generateDatabasePDF(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _DashboardCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: const Color.fromARGB(255, 230, 230, 230),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                child: Icon(
+                  icon,
+                  size: 32,
+                  color: color,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Usuarios Registrados',
-                      style: TextStyle(
-                        fontSize: 24,
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.people,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Total: ${usuarios.length} usuario${usuarios.length != 1 ? 's' : ''}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black,
+                      ),
                     ),
                   ],
                 ),
               ),
-
-              // Lista de usuarios
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: usuarios.length,
-                  itemBuilder: (context, index) {
-                    final usuario = usuarios[index];
-                    
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blue.shade100,
-                          child: Text(
-                            usuario.nombre.isNotEmpty
-                                ? usuario.nombre[0].toUpperCase()
-                                : 'U',
-                            style: TextStyle(
-                              color: Colors.blue.shade700,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          usuario.nombre.isNotEmpty
-                              ? usuario.nombre
-                              : 'Sin nombre',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.email_outlined,
-                                    size: 14,
-                                    color: Colors.grey,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      usuario.email,
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.badge_outlined,
-                                    size: 14,
-                                    color: Colors.grey,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'ID: ${usuario.id}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.green.shade200,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.check_circle,
-                                color: Colors.green.shade700,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Activo',
-                                style: TextStyle(
-                                  color: Colors.green.shade700,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
-        },
-
-        /// Mientras carga los datos
-        loading: () => const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text(
-                'Cargando usuarios...',
-                style: TextStyle(fontSize: 16),
-              ),
-            ],
-          ),
-        ),
-
-        /// Si ocurre un error
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
               Icon(
-                Icons.error_outline,
-                size: 80,
-                color: Colors.red.shade300,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Error al cargar usuarios',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red.shade700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                error.toString(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () {
-                  ref.invalidate(obtenerTodosUsuariosProvider);
-                },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Reintentar'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade700,
-                  foregroundColor: Colors.white,
-                ),
+                Icons.arrow_forward_ios,
+                color: Colors.grey.shade600,
+                size: 20,
               ),
             ],
           ),

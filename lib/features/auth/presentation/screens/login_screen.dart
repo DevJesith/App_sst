@@ -67,6 +67,8 @@ class LoginScreen extends HookConsumerWidget {
 
         if (context.mounted) {
           if (usuario != null) {
+
+            ref.read(usuarioAutenticadoProvider.notifier).state = usuario;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(

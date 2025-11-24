@@ -18,7 +18,7 @@ class AppDatabase {
 
   Future<Database> _initDB() async {
     String path = join(await getDatabasesPath(), 'appsst.db');
-    return openDatabase(path, version: 2, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    return openDatabase(path, version: 3, onCreate: _onCreate, onUpgrade: _onUpgrade);
   }
 
   // ✅ Tabla simplificada sin campo verificado
@@ -31,6 +31,80 @@ class AppDatabase {
         contrasena TEXT NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE Accidente (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        eventualidad TEXT NOT NULL,
+        proyecto TEXT NOT NULL,
+        contratista TEXT NOT NULL,
+        mes TEXT NOT NULL,
+        descripcion TEXT NOT NULL,
+        dias_incapacidad INTEGER NOT NULL,
+        avances TEXT NOT NULL,
+        estado TEXT NOT NULL,
+        fecha_registro TEXT NOT NULL,
+        sincronizado INTEGER DEFAULT 0,
+        Usuarios_id INTEGER NOT NULL,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE Enfermedad_Laboral (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        eventualidad TEXT NOT NULL,
+        proyecto TEXT NOT NULL,
+        contratista TEXT NOT NULL,
+        mes TEXT NOT NULL,
+        descripcion TEXT NOT NULL,
+        dias_incapacidad INTEGER NOT NULL,
+        avances TEXT NOT NULL,
+        estado TEXT NOT NULL,
+        fecha_registro TEXT NOT NULL,
+        sincronizado INTEGER DEFAULT 0,
+        Usuarios_id INTEGER NOT NULL,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE Incidente (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        eventualidad TEXT NOT NULL,
+        proyecto TEXT NOT NULL,
+        mes TEXT NOT NULL,
+        descripcion TEXT NOT NULL,
+        dias_incapacidad INTEGER NOT NULL,
+        avances TEXT NOT NULL,
+        estado TEXT NOT NULL,
+        fecha_registro TEXT NOT NULL,
+        sincronizado INTEGER DEFAULT 0,
+        Usuarios_id INTEGER NOT NULL,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE Gestion_inspeccion (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ee TEXT NOT NULL,
+        proyecto TEXT NOT NULL,
+        epp TEXT NOT NULL,
+        extintor_maquina TEXT NOT NULL,
+        locativa TEXT NOT NULL,
+        rutinaria_maquina TEXT NOT NULL,
+        gestion_cumple TEXT NOT NULL,
+        foto1 TEXT NOT NULL,
+        foto2 TEXT NOT NULL,
+        foto3 TEXT NOT NULL,
+        fecha_registro TEXT NOT NULL,
+        sincronizado INTEGER DEFAULT 0,
+        Usuarios_id INTEGER NOT NULL,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+      )
+    ''');
+
   }
 
   // ✅ Migración para usuarios existentes

@@ -11,6 +11,7 @@ import '../../domain/entities/usuarios.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 
+/// Pantalla para recuperar contraseña
 class RecuperarContrasenaScreen extends HookConsumerWidget {
   const RecuperarContrasenaScreen({super.key});
 
@@ -27,12 +28,14 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
     final newPasswordController = useTextEditingController();
     final confirmPasswordController = useTextEditingController();
     final isLoading = useState(false);
-    final obscureText = useState(true);
+    final obscureNewPassword = useState(true);
+    final obscureConfirmPassword = useState(true);
 
     Future<void> recuperar() async {
       if (!formKey.currentState!.validate()) return;
 
-      if (newPasswordController.text != confirmPasswordController.text) {
+      // Validar que las contraseñas coincidan
+      if (newPasswordController.text.trim() != confirmPasswordController.text.trim()) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Las contraseñas no coinciden'),
@@ -45,24 +48,28 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
       isLoading.value = true;
 
       try {
-        // Verificar si el usuario existe
-        final usuario = await ref.read(
-          obtenerUsuarioPorEmailProvider(emailController.text.trim()).future,
-        );
+        final email = emailController.text.trim();
+
+        // Obtener el use case directamente
+        final obtenerUsuarioUseCase = ref.read(obtenerUsuarioPorEmailUseCaseProvider);
+        
+        // Buscar el usuario
+        final usuario = await obtenerUsuarioUseCase(email);
 
         if (usuario == null) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Correo no registrado'),
+                content: Text('Este correo no está registrado'),
                 backgroundColor: Colors.orange,
               ),
             );
           }
+          isLoading.value = false;
           return;
         }
 
-        // Actualizar contraseña
+        // Actualizar la contraseña
         final usuarioActualizado = Usuarios(
           id: usuario.id,
           nombre: usuario.nombre,
@@ -70,16 +77,20 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
           contrasena: encriptar(newPasswordController.text.trim()),
         );
 
-        await ref.read(actualizarUsuarioProvider(usuarioActualizado).future);
+        // Actualizar en la base de datos
+        final actualizarUseCase = ref.read(actualizarUsuarioUseCaseProvider);
+        await actualizarUseCase(usuarioActualizado);
 
         if (context.mounted) {
+          // Mostrar mensaje de éxito
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Contraseña actualizada exitosamente'),
+              content: Text('¡Contraseña actualizada exitosamente!'),
               backgroundColor: Colors.green,
             ),
           );
 
+          // Redirigir al login
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -89,7 +100,7 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: $e'),
+              content: Text('Error: ${e.toString()}'),
               backgroundColor: Colors.red,
             ),
           );
@@ -101,142 +112,248 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      appBar: AppBar(title: const Text('Recuperar contraseña')),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            constraints: const BoxConstraints(maxWidth: 500),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 15,
-                  offset: Offset(0, 8),
+      appBar: AppBar(
+        title: const Text('Recuperar contraseña'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth > 600;
+
+          return Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                constraints: BoxConstraints(
+                  maxWidth: isWide ? 500 : double.infinity,
                 ),
-              ],
-            ),
-            child: Form(
-              key: formKey,
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.lock_reset,
-                    size: 80,
-                    color: CupertinoColors.activeBlue,
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  const Text(
-                    'Recuperar Contraseña',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 15,
+                      offset: Offset(0, 8),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  
-                  const Text(
-                    'Ingresa tu correo y una nueva contraseña',
-                    style: TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 30),
+                  ],
+                ),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      /// Ícono
+                      const Icon(
+                        Icons.lock_reset,
+                        size: 80,
+                        color: CupertinoColors.systemOrange,
+                      ),
+                      const SizedBox(height: 20),
 
-                  // Email
-                  inputReutilizables(
-                    controller: emailController,
-                    nameInput: 'Correo electrónico',
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Ingresa tu correo';
-                      }
-                      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                      if (!emailRegex.hasMatch(value.trim())) {
-                        return 'Correo inválido';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Nueva Contraseña
-                  inputReutilizables(
-                    controller: newPasswordController,
-                    nameInput: 'Nueva contraseña',
-                    obscuredText: obscureText.value,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Ingresa una contraseña';
-                      }
-                      if (value.length < 6) {
-                        return 'Mínimo 6 caracteres';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureText.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+                      /// Título
+                      const Text(
+                        'Recuperar Contraseña',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                        onPressed: () => obscureText.value = !obscureText.value,
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                      const SizedBox(height: 10),
 
-                  // Confirmar Contraseña
-                  inputReutilizables(
-                    controller: confirmPasswordController,
-                    nameInput: 'Confirmar contraseña',
-                    obscuredText: obscureText.value,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Confirma tu contraseña';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Botón
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading.value ? null : recuperar,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: CupertinoColors.activeBlue,
+                      /// Subtítulo
+                      const Text(
+                        'Ingresa tu correo registrado y crea una nueva contraseña',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      child: isLoading.value
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Recuperar Contraseña',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                      const SizedBox(height: 30),
+
+                      /// Campo: Email
+                      inputReutilizables(
+                        controller: emailController,
+                        nameInput: 'Correo electrónico',
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Ingresa tu correo';
+                          }
+                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                          if (!emailRegex.hasMatch(value.trim())) {
+                            return 'Correo inválido';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'ejemplo@correo.com',
+                          prefixIcon: const Icon(Icons.mail_outline),
+                          filled: true,
+                          fillColor: const Color(0xFFF0F2F5),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      /// Campo: Nueva Contraseña
+                      inputReutilizables(
+                        controller: newPasswordController,
+                        nameInput: 'Nueva contraseña',
+                        obscuredText: obscureNewPassword.value,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ingresa una contraseña';
+                          }
+                          if (value.length < 6) {
+                            return 'Mínimo 6 caracteres';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: '••••••',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          filled: true,
+                          fillColor: const Color(0xFFF0F2F5),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () =>
+                                obscureNewPassword.value = !obscureNewPassword.value,
+                            icon: Icon(
+                              obscureNewPassword.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      /// Campo: Confirmar Contraseña
+                      inputReutilizables(
+                        controller: confirmPasswordController,
+                        nameInput: 'Confirmar contraseña',
+                        obscuredText: obscureConfirmPassword.value,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Confirma tu contraseña';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          hintText: '••••••',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          filled: true,
+                          fillColor: const Color(0xFFF0F2F5),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                            horizontal: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          suffixIcon: IconButton(
+                            onPressed: () => obscureConfirmPassword.value =
+                                !obscureConfirmPassword.value,
+                            icon: Icon(
+                              obscureConfirmPassword.value
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      /// Botón
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: isLoading.value ? null : recuperar,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: CupertinoColors.systemOrange,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 3,
+                          ),
+                          child: isLoading.value
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Actualizar Contraseña',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      /// Ayuda
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.orange.shade700,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Solo necesitas tu correo registrado para recuperar tu contraseña',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.orange.shade700,
+                                ),
                               ),
                             ),
-                    ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
