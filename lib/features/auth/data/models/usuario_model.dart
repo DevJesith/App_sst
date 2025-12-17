@@ -6,11 +6,13 @@ class UsuarioModel extends Usuarios {
   UsuarioModel({
     int? id,
     required String nombre,
+    required String apellido,
     required String email,
     required String contrasena,
   }) : super(
           id: id,
           nombre: nombre,
+          apellido: apellido,
           email: email,
           contrasena: contrasena,
         );
@@ -19,6 +21,7 @@ class UsuarioModel extends Usuarios {
     return UsuarioModel(
       id: map['id'] as int?,
       nombre: map['nombre'] as String,
+      apellido: map['apellido'] as String,
       email: map['email'] as String,
       contrasena: map['contrasena'] as String,
     );
@@ -27,6 +30,7 @@ class UsuarioModel extends Usuarios {
   Map<String, dynamic> toMap() {
     final Map<String, dynamic> map = {
       'nombre': nombre,
+      'apellido': apellido,
       'email': email,
       'contrasena': contrasena,
     };

@@ -14,6 +14,7 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
   Future<int> registrarUsuario(Usuarios usuarios) async {
     return await db.insertarUsuario(
       usuarios.nombre,
+      usuarios.apellido,
       usuarios.email,
       usuarios.contrasena,
     );
@@ -33,6 +34,7 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
       UsuarioModel(
         id: usuario.id,
         nombre: usuario.nombre,
+        apellido: usuario.apellido,
         email: usuario.email,
         contrasena: usuario.contrasena,
       ).toMap(),

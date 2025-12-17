@@ -27,6 +27,7 @@ class AppDatabase {
       CREATE TABLE usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL,
+        apellido TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
         contrasena TEXT NOT NULL
       )
@@ -120,10 +121,11 @@ class AppDatabase {
 
   // FUNCIONES CRUD
 
-  Future<int> insertarUsuario(String nombre, String email, String contrasena) async {
+  Future<int> insertarUsuario(String nombre, String apellido, String email, String contrasena) async {
     final db = await database;
     return await db.insert('usuarios', {
       'nombre': nombre,
+      'apellido': apellido,
       'email': email,
       'contrasena': contrasena,
     });

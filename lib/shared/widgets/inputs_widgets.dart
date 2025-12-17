@@ -21,7 +21,7 @@ class inputReutilizables extends StatelessWidget {
     required this.controller,
     //required this.label,
     required this.nameInput,
-    required this.validator,
+    this.validator,
     this.decoration,
     this.maxLines = 1,
     this.maxLenght,
