@@ -1,6 +1,7 @@
 // features/auth/presentation/screens/registro_screen.dart
 
 import 'dart:convert';
+import 'package:app_sst/services/email_service.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import '../../../../../shared/widgets/inputs_widgets.dart';
 import '../../domain/entities/usuarios.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
+import 'verificacion_code_screen.dart';
 
 class RegistroScreen extends HookConsumerWidget {
   const RegistroScreen({super.key});
@@ -24,61 +26,89 @@ class RegistroScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final nombreController = useTextEditingController();
+    final apellidoController = useTextEditingController();
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
+    final confirmController = useTextEditingController();
     final isLoading = useState(false);
     final obscureText = useState(true);
 
-    Future<void> registrar() async {
+    Future<void> iniciarProcesoRegistro() async {
       if (!formKey.currentState!.validate()) return;
 
       isLoading.value = true;
 
-      try {
-        // Verificar si el email ya existe
-        final existente = await ref.read(
-          obtenerUsuarioPorEmailProvider(emailController.text.trim()).future,
+      //Validar contraseña
+      if (passwordController.text.trim() != confirmController.text.trim()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Las contraseñas no coinciden'),
+            backgroundColor: Colors.red,
+          )
         );
+        return;
+      }
+
+      try {
+
+        final email = emailController.text.trim();
+
+        // Verificar si el email ya existe en la BD
+        final existente = await ref.read(obtenerUsuarioPorEmailProvider(email).future);
 
         if (existente != null) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Este correo ya está registrado'),
+                content: Text("Este correo ya esta registrado"),
                 backgroundColor: Colors.orange,
-              ),
+              )
             );
           }
+          isLoading.value = false;
           return;
         }
 
-        // Crear usuario
-        final usuario = Usuarios(
+        // Generar codigo y enviar correo
+        final codigo = EmailService.generarCodigo();
+        final enviado = await EmailService.enviarCodigoVerificacion(email, codigo);
+
+        if (!enviado) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No se pudo enviar el correo. Verifica tu contexion.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          isLoading.value = false;
+          return;
+        }
+
+        // Crear objeto usuario temporal 
+        final usuarioTemporal = Usuarios(
           nombre: nombreController.text.trim(),
-          email: emailController.text.trim(),
-          contrasena: encriptar(passwordController.text.trim()),
+          apellido: apellidoController.text.trim(),
+          email: email,
+          contrasena: encriptar(passwordController.text.trim())
         );
 
-        await ref.read(registrarUsuarioProvider(usuario).future);
-
+        // Navegar a pantalla de verificacion
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('¡Registro exitoso!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            MaterialPageRoute(
+              builder: (_) => VerificacionCodeScreen(usuarioPendiente: usuarioTemporal, codigoGenerado: codigo)
+            )
           );
         }
+        
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error en el registro: $e'),
+              content: Text('Error: $e'),
               backgroundColor: Colors.red,
             ),
           );
@@ -133,11 +163,25 @@ class RegistroScreen extends HookConsumerWidget {
                     nameInput: 'Nombre completo',
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Ingresa tu nombre';
+                        return 'Ingresa tu nombre(s)';
                       }
                       return null;
                     },
                   ),
+                  
+                  const SizedBox(height: 16),
+                  // Nombre
+                  inputReutilizables(
+                    controller: apellidoController,
+                    nameInput: 'Apellido completo',
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingresa tu apellido(s)';
+                      }
+                      return null;
+                    },
+                  ),
+
                   const SizedBox(height: 16),
 
                   // Email
@@ -182,13 +226,42 @@ class RegistroScreen extends HookConsumerWidget {
                       ),
                     ),
                   ),
+                  
+                  const SizedBox(height: 16),
+
+                  // Contraseña
+                  inputReutilizables(
+                    controller: confirmController,
+                    nameInput: 'Confirmar contraseña',
+                    obscuredText: obscureText.value,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Confirma tu contraseña';
+                      }
+                      if (value != passwordController.text) {
+                        return 'Las contraseñas no coinciden';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureText.value
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () => obscureText.value = !obscureText.value,
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 30),
 
                   // Botón Registrar
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: isLoading.value ? null : registrar,
+                      onPressed: isLoading.value ? null : iniciarProcesoRegistro,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: CupertinoColors.activeBlue,
