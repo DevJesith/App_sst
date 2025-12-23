@@ -54,6 +54,15 @@ class AccidenteFormScreen extends HookConsumerWidget {
     final proyectos = ["Proyecto 1", "Proyecto 2", "Proyecto 3"];
     final estados = ["Pendiente", "En proceso", "Completado"];
 
+    // ✅ Convertir las listas de Map a List<String> para el Dropdown
+    final listaProyectosNombres = formState.listaProyectos
+        .map((e) => (e['Nombre'] ?? e['nombre']).toString())
+        .toList();
+
+    final listaContratistasNombres = formState.listaContratistas
+        .map((e) => (e['Nombre'] ?? e['nombre']).toString())
+        .toList();
+
     // Inicializar valores si es edición
     useEffect(() {
       if (accidente != null) {
@@ -84,7 +93,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
         id: accidente?.id,
         eventualidad: eventualidadController.text,
         proyecto: formState.proyecto!,
-        contratista: contratistaController.text,
+        contratista: formState.contratista!,
         mes: mesController.text,
         descripcion: descripcionController.text,
         diasIncapacidad: int.tryParse(diasIncapacidadController.text) ?? 0,
@@ -180,7 +189,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
                 ListaInputWigets(
                   nameInput: 'Proyecto',
                   label: 'Selecciona una opción',
-                  items: proyectos,
+                  items: listaProyectosNombres,
                   value: formState.proyecto,
                   onChanged: formNotifier.setProyecto,
                   validator: (value) {
@@ -193,16 +202,27 @@ class AccidenteFormScreen extends HookConsumerWidget {
                 const SizedBox(height: 20),
 
                 /// Campo: Contratista
-                inputReutilizables(
-                  controller: contratistaController,
-                  nameInput: "Contratista",
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Este campo es obligatorio';
-                    }
-                    return null;
-                  },
+                ListaInputWigets(
+                  nameInput: 'Contratista',
+                  label: listaContratistasNombres.isEmpty 
+                      ? 'Selecciona un proyecto primero' 
+                      : 'Selecciona el contratista',
+                  items: listaContratistasNombres, // Solo muestra los válidos
+                  value: formState.contratista, // Usamos el del estado, no el controller
+                  onChanged: formNotifier.setContratista,
+                  validator: (value) => value == null ? 'Obligatorio' : null,
                 ),
+
+                // inputReutilizables(
+                //   controller: contratistaController,
+                //   nameInput: "Contratista",
+                //   validator: (value) {
+                //     if (value == null || value.isEmpty) {
+                //       return 'Este campo es obligatorio';
+                //     }
+                //     return null;
+                //   },
+                // ),
                 const SizedBox(height: 20),
 
                 /// Campo: Mes

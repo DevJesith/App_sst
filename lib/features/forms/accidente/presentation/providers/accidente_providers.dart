@@ -6,6 +6,7 @@ import 'package:app_sst/features/forms/accidente/domain/usecases/actualizar_acci
 import 'package:app_sst/features/forms/accidente/domain/usecases/crear_accidente_usecases.dart';
 import 'package:app_sst/features/forms/accidente/domain/usecases/eliminar_accidente_usecases.dart';
 import 'package:app_sst/features/forms/accidente/domain/usecases/get_accidentes_usecases.dart';
+import 'package:app_sst/features/forms/accidente/domain/usecases/get_maestros_usecases.dart';
 import 'package:app_sst/features/forms/accidente/presentation/notifiers/accidente_notifier.dart';
 import 'package:app_sst/features/forms/accidente/presentation/states/accidente_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -52,6 +53,16 @@ final eliminarAccidenteUseCaseProvider = Provider<EliminarAccidenteUsecases>((
   return EliminarAccidenteUsecases(repository);
 });
 
+final getProyectosUseCaseProvider = Provider<GetProyectosUseCase>((ref) {
+  final repo = ref.watch(accidenteRepositoryProvider);
+  return GetProyectosUseCase(repo);
+});
+
+final getContratistasUseCaseProvider = Provider<GetContratistasPorProyectoUseCase>((ref) {
+  final repo = ref.watch(accidenteRepositoryProvider);
+  return GetContratistasPorProyectoUseCase(repo);
+});
+
 //Provider del Notifier princiapl (lista y CRUD)
 final accidenteNotifierProvider =
     StateNotifierProvider<AccidenteNotifier, AccidenteState>((ref) {
@@ -68,7 +79,10 @@ final accidenteNotifierProvider =
 //Provider del Notifier del formulario (valores de campos)
 final accidenteFormNotifierProvider =
     StateNotifierProvider<AccidenteFormNotifier, AccidenteFormState>((ref) {
-      return AccidenteFormNotifier();
+      return AccidenteFormNotifier(
+        getProyectosUseCase: ref.watch(getProyectosUseCaseProvider),
+        getContratistasPorProyectoUseCase: ref.watch(getContratistasUseCaseProvider),
+      );
     });
 
 // Providers derivados (para acceso directo a partes del estado)
@@ -87,3 +101,5 @@ final accidentesErrorProvider = Provider((ref) {
 final accidentesSubmittingProvider = Provider((ref) {
   return ref.watch(accidenteNotifierProvider).isSubmitting;
 });
+
+

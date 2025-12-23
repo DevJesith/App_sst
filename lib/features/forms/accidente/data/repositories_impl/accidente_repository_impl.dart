@@ -89,4 +89,14 @@ class AccidenteRepositoryImpl implements AccidenteRepository {
     }
     
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async {
+    return await localDatasource.getProyectos();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId) async {
+    return await localDatasource.getContratistasPorProyectos(proyectoId);
+  }
 }

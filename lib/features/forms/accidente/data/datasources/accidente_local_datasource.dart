@@ -9,6 +9,8 @@ abstract class AccidenteLocalDatasource {
   Future<int> crearAccidente(AccidenteModel accidente);
   Future<int> actualizarAccidente(AccidenteModel accidente);
   Future<int> eliminarAccidente(int id);
+  Future<List<Map<String, dynamic>>> getProyectos();
+  Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectosId);
 }
 
 class AccidenteLocalDataSourceImpl implements AccidenteLocalDatasource {
@@ -81,5 +83,24 @@ class AccidenteLocalDataSourceImpl implements AccidenteLocalDatasource {
   Future<int> eliminarAccidente(int id) async {
     final db = await database.database;
     return await db.delete('Accidente', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async {
+    final db = await database.database;
+    return await db.query('Proyecto');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectosId) async {
+    final db = await database.database;
+
+    //Hacemos el JOIN para traer solo los contratistas de ese proyecto
+    return await db.rawQuery(''' 
+    SELECT c.id, c.Nombre FROM Contratista c
+    INNER JOIN Contratis_Proyecto cp ON c.id = cp.Contratista_id
+    WHERE cp.Proyecto_id = ?
+    ''', [proyectosId]);
+    
   }
 }

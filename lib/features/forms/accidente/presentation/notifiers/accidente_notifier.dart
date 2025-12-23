@@ -3,6 +3,7 @@ import 'package:app_sst/features/forms/accidente/domain/usecases/actualizar_acci
 import 'package:app_sst/features/forms/accidente/domain/usecases/crear_accidente_usecases.dart';
 import 'package:app_sst/features/forms/accidente/domain/usecases/eliminar_accidente_usecases.dart';
 import 'package:app_sst/features/forms/accidente/domain/usecases/get_accidentes_usecases.dart';
+import 'package:app_sst/features/forms/accidente/domain/usecases/get_maestros_usecases.dart';
 import 'package:app_sst/features/forms/accidente/presentation/states/accidente_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -89,10 +90,57 @@ class AccidenteNotifier extends StateNotifier<AccidenteState> {
 }
 
 class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
-  AccidenteFormNotifier() : super(const AccidenteFormState());
+  final GetProyectosUseCase getProyectosUseCase;
+  final GetContratistasPorProyectoUseCase getContratistasPorProyectoUseCase;
 
-  void setProyecto(String? value) {
-    state = state.copyWith(proyecto: value);
+  AccidenteFormNotifier({
+    required this.getProyectosUseCase,
+    required this.getContratistasPorProyectoUseCase,
+  }) : super(const AccidenteFormState()) {
+    _cargarProyectosIniciales();
+  }
+
+  Future<void> _cargarProyectosIniciales() async {
+    final proyectos = await getProyectosUseCase();
+    state = state.copyWith(listaProyectos: proyectos);
+  }
+
+  void setProyecto(String? nombreProyecto) async {
+    if (nombreProyecto == null) return;
+
+    // ⚠️ CAMBIO IMPORTANTE:
+    // No usamos copyWith. Creamos un estado NUEVO para forzar que contratista sea NULL.
+    state = AccidenteFormState(
+      proyecto: nombreProyecto,
+      contratista: null, // ✅ Ahora sí se fuerza el null
+      estado: state.estado,
+      fecha: state.fecha,
+      listaProyectos: state.listaProyectos,
+      listaContratistas: [], // Limpiamos la lista temporalmente
+    );
+
+    try {
+      final proyectoObj = state.listaProyectos.firstWhere(
+        (p) => (p['Nombre'] ?? p['nombre']) == nombreProyecto,
+        orElse: () => {},
+      );
+
+      if (proyectoObj.isNotEmpty) {
+        final proyectoId = proyectoObj['id'] as int;
+
+        final contratistas = await getContratistasPorProyectoUseCase(proyectoId);
+
+        // Aquí sí podemos usar copyWith porque estamos AGREGANDO datos, no borrando
+        state = state.copyWith(listaContratistas: contratistas);
+      }
+      
+    } catch (e) {
+      print("Error cargando contratistas: $e");
+    }
+  }
+
+  void setContratista(String? value) {
+    state = state.copyWith(contratista: value);
   }
 
   void setEstado(String? value) {
@@ -104,6 +152,6 @@ class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
   }
 
   void reset() {
-    state = const AccidenteFormState();
+    state = AccidenteFormState(listaProyectos: state.listaProyectos);
   }
 }
