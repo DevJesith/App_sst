@@ -1,4 +1,148 @@
-// data/database/app_database.dart
+// // data/database/app_database.dart
+
+// import 'package:sqflite/sqflite.dart';
+// import 'package:path/path.dart';
+
+// class AppDatabase {
+//   static final AppDatabase _instancia = AppDatabase._interno();
+//   factory AppDatabase() => _instancia;
+//   AppDatabase._interno();
+
+//   static Database? _db;
+
+//   Future<Database> get database async {
+//     if (_db != null) return _db!;
+//     _db = await _initDB();
+//     return _db!;
+//   }
+
+//   Future<Database> _initDB() async {
+//     String path = join(await getDatabasesPath(), 'appsst.db');
+//     return openDatabase(path, version: 3, onCreate: _onCreate, onUpgrade: _onUpgrade);
+//   }
+
+//   // ✅ Tabla simplificada sin campo verificado
+//   Future _onCreate(Database db, int version) async {
+//     await db.execute('''
+//       CREATE TABLE usuarios (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         nombre TEXT NOT NULL,
+//         apellido TEXT NOT NULL,
+//         email TEXT NOT NULL UNIQUE,
+//         contrasena TEXT NOT NULL
+//       )
+//     ''');
+
+//     await db.execute('''
+//       CREATE TABLE Accidente (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         eventualidad TEXT NOT NULL,
+//         proyecto TEXT NOT NULL,
+//         contratista TEXT NOT NULL,
+//         mes TEXT NOT NULL,
+//         descripcion TEXT NOT NULL,
+//         dias_incapacidad INTEGER NOT NULL,
+//         avances TEXT NOT NULL,
+//         estado TEXT NOT NULL,
+//         fecha_registro TEXT NOT NULL,
+//         sincronizado INTEGER DEFAULT 0,
+//         Usuarios_id INTEGER NOT NULL,
+//         FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+//       )
+//     ''');
+
+//     await db.execute('''
+//       CREATE TABLE Enfermedad_Laboral (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         eventualidad TEXT NOT NULL,
+//         proyecto TEXT NOT NULL,
+//         contratista TEXT NOT NULL,
+//         mes TEXT NOT NULL,
+//         descripcion TEXT NOT NULL,
+//         dias_incapacidad INTEGER NOT NULL,
+//         avances TEXT NOT NULL,
+//         estado TEXT NOT NULL,
+//         fecha_registro TEXT NOT NULL,
+//         sincronizado INTEGER DEFAULT 0,
+//         Usuarios_id INTEGER NOT NULL,
+//         FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+//       )
+//     ''');
+
+//     await db.execute('''
+//       CREATE TABLE Incidente (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         eventualidad TEXT NOT NULL,
+//         proyecto TEXT NOT NULL,
+//         mes TEXT NOT NULL,
+//         descripcion TEXT NOT NULL,
+//         dias_incapacidad INTEGER NOT NULL,
+//         avances TEXT NOT NULL,
+//         estado TEXT NOT NULL,
+//         fecha_registro TEXT NOT NULL,
+//         sincronizado INTEGER DEFAULT 0,
+//         Usuarios_id INTEGER NOT NULL,
+//         FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+//       )
+//     ''');
+
+//     await db.execute('''
+//       CREATE TABLE Gestion_inspeccion (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         ee TEXT NOT NULL,
+//         proyecto TEXT NOT NULL,
+//         epp TEXT NOT NULL,
+//         extintor_maquina TEXT NOT NULL,
+//         locativa TEXT NOT NULL,
+//         rutinaria_maquina TEXT NOT NULL,
+//         gestion_cumple TEXT NOT NULL,
+//         foto1 TEXT NOT NULL,
+//         foto2 TEXT NOT NULL,
+//         foto3 TEXT NOT NULL,
+//         fecha_registro TEXT NOT NULL,
+//         sincronizado INTEGER DEFAULT 0,
+//         Usuarios_id INTEGER NOT NULL,
+//         FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+//       )
+//     ''');
+
+//   }
+
+//   // ✅ Migración para usuarios existentes
+//   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+//     if (oldVersion < 2) {
+//       // Eliminar columna verificado si existe
+//       await db.execute('ALTER TABLE usuarios DROP COLUMN verificado');
+      
+//       // Eliminar tabla de códigos de recuperación
+//       await db.execute('DROP TABLE IF EXISTS codigos_recuperacion');
+//     }
+//   }
+
+//   // FUNCIONES CRUD
+
+//   Future<int> insertarUsuario(String nombre, String apellido, String email, String contrasena) async {
+//     final db = await database;
+//     return await db.insert('usuarios', {
+//       'nombre': nombre,
+//       'apellido': apellido,
+//       'email': email,
+//       'contrasena': contrasena,
+//     });
+//   }
+
+//   Future<Map<String, dynamic>?> login(String email, String contrasena) async {
+//     final db = await database;
+//     final res = await db.query(
+//       'usuarios',
+//       where: 'email = ? AND contrasena = ?',
+//       whereArgs: [email, contrasena],
+//     );
+//     return res.isNotEmpty ? res.first : null;
+//   }
+// }
+
+// lib/core/data/database/app_database.dart
 
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -17,12 +161,14 @@ class AppDatabase {
   }
 
   Future<Database> _initDB() async {
-    String path = join(await getDatabasesPath(), 'appsst.db');
-    return openDatabase(path, version: 3, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    String path = join(await getDatabasesPath(), 'appsst_final_v1.db');
+    return openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
-  // ✅ Tabla simplificada sin campo verificado
   Future _onCreate(Database db, int version) async {
+    // ==============================================================================
+    // 1. TABLAS DEL SISTEMA (Usuarios y Config)
+    // ==============================================================================
     await db.execute('''
       CREATE TABLE usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,92 +180,272 @@ class AppDatabase {
     ''');
 
     await db.execute('''
-      CREATE TABLE Accidente (
+      CREATE TABLE Codigo_recuperacion (
+        id_codigoRecuperacion INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT,
+        codigo TEXT,
+        fecha_expiracion INTEGER
+      )
+    ''');
+
+    // ==============================================================================
+    // 2. TABLAS MAESTRAS (Datos que vienen del servidor/oficina)
+    // ==============================================================================
+    
+    await db.execute('CREATE TABLE Proyecto (id INTEGER PRIMARY KEY, Nombre TEXT, Responsable TEXT, Ubicacion TEXT)');
+    await db.execute('CREATE TABLE Contratista (id INTEGER PRIMARY KEY, Nombre TEXT, Ubicacion TEXT, Numero_trabaj INTEGER, Actividad TEXT)');
+    await db.execute('CREATE TABLE Trabajador (id INTEGER PRIMARY KEY, Nombres TEXT, Fecha_Nac TEXT, Genero TEXT, Direccion TEXT, Telefono TEXT, Correo TEXT)');
+    await db.execute('CREATE TABLE Maquina (id INTEGER PRIMARY KEY, Nombre TEXT, Tipo TEXT, Modelo TEXT, Linea TEXT, Placa TEXT)');
+    await db.execute('CREATE TABLE Tipo_Maquina (id INTEGER PRIMARY KEY, Nombre TEXT)');
+    await db.execute('CREATE TABLE Tipo_Vehiculo (id INTEGER PRIMARY KEY, descripcion TEXT)');
+
+    // ==============================================================================
+    // 3. TABLAS INTERMEDIAS (Relaciones Muchos a Muchos - La lógica del negocio)
+    // ==============================================================================
+
+    // Qué contratistas están en qué proyecto
+    await db.execute('''
+      CREATE TABLE Contratis_Proyecto (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        eventualidad TEXT NOT NULL,
-        proyecto TEXT NOT NULL,
-        contratista TEXT NOT NULL,
-        mes TEXT NOT NULL,
-        descripcion TEXT NOT NULL,
-        dias_incapacidad INTEGER NOT NULL,
-        avances TEXT NOT NULL,
-        estado TEXT NOT NULL,
-        fecha_registro TEXT NOT NULL,
-        sincronizado INTEGER DEFAULT 0,
-        Usuarios_id INTEGER NOT NULL,
-        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+        Proyecto_id INTEGER,
+        Contratista_id INTEGER,
+        Ubicacion TEXT,
+        Direccion TEXT,
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id),
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id)
+      )
+    ''');
+
+    // Qué trabajadores tiene un contratista en un proyecto específico
+    await db.execute('''
+      CREATE TABLE Trabajador_Contratis (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Proyecto_id INTEGER,
+        Contratista_id INTEGER,
+        Trabajador_id INTEGER,
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id),
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id),
+        FOREIGN KEY (Trabajador_id) REFERENCES Trabajador(id)
+      )
+    ''');
+
+    // Qué máquinas tiene un contratista
+    await db.execute('''
+      CREATE TABLE Maquinaria_Contratis (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Contratista_id INTEGER,
+        Maquina_id INTEGER,
+        Proyecto_id INTEGER,
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id),
+        FOREIGN KEY (Maquina_id) REFERENCES Maquina(id),
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id)
+      )
+    ''');
+
+    // Tabla: Maquinaria_Proyecto (LA QUE FALTABA)
+    await db.execute('''
+      CREATE TABLE Maquinaria_Proyecto (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Contratista_id INTEGER,
+        Maquina_id INTEGER,
+        Proyecto_id INTEGER,
+        Fecha TEXT,
+        Departamento TEXT,
+        Municipio TEXT,
+        Tipo_operacion TEXT,
+        Equipo_cargo TEXT,
+        Nombre_operador TEXT,
+        Cargo_preoperac TEXT,
+        Cinturon_seguridad INTEGER,
+        Observaciones TEXT,
+        Equipo_Operativo TEXT,
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id),
+        FOREIGN KEY (Maquina_id) REFERENCES Maquina(id),
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id)
       )
     ''');
 
     await db.execute('''
-      CREATE TABLE Enfermedad_Laboral (
+      CREATE TABLE Vehiculos_Proyecto (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        eventualidad TEXT NOT NULL,
-        proyecto TEXT NOT NULL,
-        contratista TEXT NOT NULL,
-        mes TEXT NOT NULL,
-        descripcion TEXT NOT NULL,
-        dias_incapacidad INTEGER NOT NULL,
-        avances TEXT NOT NULL,
-        estado TEXT NOT NULL,
-        fecha_registro TEXT NOT NULL,
+        Tipo_vehiculo_id INTEGER,
+        Descripcion TEXT,
+        Placa TEXT,
+        Novedad TEXT,
+        Contratista_id INTEGER,
+        Proyecto_id INTEGER,
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id),
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id),
+        FOREIGN KEY (Tipo_vehiculo_id) REFERENCES Tipo_Vehiculo(id)
+      )
+    ''');
+
+    // ==============================================================================
+    // 4. TABLAS DE FORMULARIOS (Lo que llena el usuario en la App)
+    // ==============================================================================
+    // Nota: Usamos IDs (INTEGER) para relacionar, pero si la profesora pide ver TEXTO,
+    // haremos la conversión al exportar el PDF o Excel. Es mejor guardar IDs para integridad.
+
+    // --- ACCIDENTE ---
+    await db.execute('''
+      CREATE TABLE Accidente (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        eventualidad TEXT,
+        proyecto TEXT,      
+        contratista TEXT,   
+        mes TEXT,
+        descripcion TEXT,
+        dias_incapacidad INTEGER,
+        avances TEXT,
+        estado TEXT,
+        fecha_registro TEXT,
         sincronizado INTEGER DEFAULT 0,
-        Usuarios_id INTEGER NOT NULL,
+        Usuarios_id INTEGER,
         FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
       )
     ''');
 
+    // --- INCIDENTE ---
     await db.execute('''
       CREATE TABLE Incidente (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        eventualidad TEXT NOT NULL,
-        proyecto TEXT NOT NULL,
-        mes TEXT NOT NULL,
-        descripcion TEXT NOT NULL,
-        dias_incapacidad INTEGER NOT NULL,
-        avances TEXT NOT NULL,
-        estado TEXT NOT NULL,
-        fecha_registro TEXT NOT NULL,
+        eventualidad TEXT,
+        Proyecto_id INTEGER,
+        mes TEXT,
+        descripcion TEXT,
+        dias_incapacidad INTEGER,
+        avances TEXT,
+        estado TEXT,
+        fecha_registro TEXT,
         sincronizado INTEGER DEFAULT 0,
-        Usuarios_id INTEGER NOT NULL,
-        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+        Usuarios_id INTEGER,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id),
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id)
+      )
+    ''');
+
+    // --- ENFERMEDAD LABORAL ---
+    await db.execute('''
+      CREATE TABLE Enfermedad_Laboral (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        eventualidad TEXT,
+        Proyecto_id INTEGER,
+        Contratista_id INTEGER,
+        Trabajador_id INTEGER,
+        mes TEXT,
+        descripcion TEXT,
+        dias_incapacidad INTEGER,
+        avances TEXT,
+        estado TEXT,
+        fecha_registro TEXT,
+        sincronizado INTEGER DEFAULT 0,
+        Usuarios_id INTEGER,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id),
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id),
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id),
+        FOREIGN KEY (Trabajador_id) REFERENCES Trabajador(id)
       )
     ''');
 
     await db.execute('''
-      CREATE TABLE Gestion_inspeccion (
+      CREATE TABLE Ingreso_Maquinas (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ee TEXT NOT NULL,
-        proyecto TEXT NOT NULL,
-        epp TEXT NOT NULL,
-        extintor_maquina TEXT NOT NULL,
-        locativa TEXT NOT NULL,
-        rutinaria_maquina TEXT NOT NULL,
-        gestion_cumple TEXT NOT NULL,
-        foto1 TEXT NOT NULL,
-        foto2 TEXT NOT NULL,
-        foto3 TEXT NOT NULL,
-        fecha_registro TEXT NOT NULL,
-        sincronizado INTEGER DEFAULT 0,
-        Usuarios_id INTEGER NOT NULL,
-        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+        Contratista_id INTEGER,
+        Maquina_id INTEGER,
+        Proyecto_id INTEGER,
+        Nombre TEXT,
+        Operativo TEXT,
+        Preoperacional_Inicial TEXT,
+        Preoperacional_Manteni TEXT,
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id),
+        FOREIGN KEY (Maquina_id) REFERENCES Maquina(id),
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id)
       )
     ''');
 
+    // --- CAPACITACION (CORREGIDA) ---
+    // ✅ Agregado fecha_registro
+    // ✅ Mantenemos INTEGER para Proyecto y Contratista porque tu Modelo usa int
+    await db.execute('''
+      CREATE TABLE Capacitacion (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Descripcion TEXT,
+        Numero_capacita INTEGER,
+        Numero_personas INTEGER,
+        Responsable TEXT,
+        Proyecto_id INTEGER,      -- ID Relacional
+        Contratista_id INTEGER,   -- ID Relacional
+        fecha_registro TEXT,      -- ✅ FALTABA ESTE CAMPO
+        sincronizado INTEGER DEFAULT 0,
+        Usuarios_id INTEGER,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id),
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id),
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id)
+      )
+    ''');
+    // --- GESTION INSPECCION ---
+    await db.execute('''
+      CREATE TABLE Gestion_inspeccion (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Proyecto_id INTEGER,
+        ee TEXT,
+        epp TEXT,
+        extintor_maquina TEXT,
+        locativa TEXT,
+        rutinaria_maquina TEXT,
+        gestion_cumpl_cont TEXT,
+        foto1 TEXT,
+        foto2 TEXT,
+        foto3 TEXT,
+        fecha_registro TEXT,
+        sincronizado INTEGER DEFAULT 0,
+        Usuarios_id INTEGER,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id),
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id)
+      )
+    ''');
+
+
+    // ✅ INSERTAR DATOS DE PRUEBA (SIMULACIÓN)
+    await _seedData(db);
   }
 
-  // ✅ Migración para usuarios existentes
-  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      // Eliminar columna verificado si existe
-      await db.execute('ALTER TABLE usuarios DROP COLUMN verificado');
-      
-      // Eliminar tabla de códigos de recuperación
-      await db.execute('DROP TABLE IF EXISTS codigos_recuperacion');
-    }
+  // ==============================================================================
+  // SEEDERS: Datos falsos para probar la App sin PostgreSQL
+  // ==============================================================================
+  Future<void> _seedData(Database db) async {
+    print("🌱 Sembrando datos de prueba...");
+
+    // 1. Proyectos
+    int p1 = await db.insert('Proyecto', {'Nombre': 'Residencial Altos del Norte', 'Responsable': 'Arq. Carlos', 'Ubicacion': 'Zona Norte'});
+    int p2 = await db.insert('Proyecto', {'Nombre': 'Puente Centenario', 'Responsable': 'Ing. Sofia', 'Ubicacion': 'Vía Principal'});
+
+    // 2. Contratistas
+    int c1 = await db.insert('Contratista', {'Nombre': 'Constructora ABC', 'Actividad': 'Obra Civil'});
+    int c2 = await db.insert('Contratista', {'Nombre': 'Electricidad Segura SAS', 'Actividad': 'Redes'});
+    int c3 = await db.insert('Contratista', {'Nombre': 'Maquinaria Pesada LTDA', 'Actividad': 'Movimiento Tierra'});
+
+    // 3. Relación Proyecto <-> Contratista (CRUCIAL PARA LOS DROPDOWNS)
+    // En el Proyecto 1 trabajan la Constructora y los Eléctricos
+    await db.insert('Contratis_Proyecto', {'Proyecto_id': p1, 'Contratista_id': c1});
+    await db.insert('Contratis_Proyecto', {'Proyecto_id': p1, 'Contratista_id': c2});
+    
+    // En el Proyecto 2 trabaja Maquinaria Pesada
+    await db.insert('Contratis_Proyecto', {'Proyecto_id': p2, 'Contratista_id': c3});
+
+    // 4. Trabajadores
+    int t1 = await db.insert('Trabajador', {'Nombres': 'Pedro Picapiedra', 'Correo': 'pedro@mail.com'});
+    int t2 = await db.insert('Trabajador', {'Nombres': 'Pablo Marmol', 'Correo': 'pablo@mail.com'});
+
+    // Relacionar Trabajadores
+    await db.insert('Trabajador_Contratis', {'Proyecto_id': p1, 'Contratista_id': c1, 'Trabajador_id': t1});
+
+    print("✅ Datos de prueba insertados. ¡Lista para usar!");
   }
 
-  // FUNCIONES CRUD
+  // ==============================================================================
+  // FUNCIONES DE ACCESO A DATOS (QUERIES)
+  // ==============================================================================
 
   Future<int> insertarUsuario(String nombre, String apellido, String email, String contrasena) async {
     final db = await database;
@@ -139,5 +465,33 @@ class AppDatabase {
       whereArgs: [email, contrasena],
     );
     return res.isNotEmpty ? res.first : null;
+  }
+
+  // --- GETTERS PARA LOS DROPDOWNS ---
+
+  Future<List<Map<String, dynamic>>> obtenerProyectos() async {
+    final db = await database;
+    return await db.query('Proyecto');
+  }
+
+  // Esta es la consulta mágica que filtra contratistas según el proyecto
+  Future<List<Map<String, dynamic>>> obtenerContratistasPorProyecto(int proyectoId) async {
+    final db = await database;
+    return await db.rawQuery('''
+      SELECT c.id, c.Nombre 
+      FROM Contratista c
+      INNER JOIN Contratis_Proyecto cp ON c.id = cp.Contratista_id
+      WHERE cp.Proyecto_id = ?
+    ''', [proyectoId]);
+  }
+  
+  Future<List<Map<String, dynamic>>> obtenerTrabajadoresPorContratista(int proyectoId, int contratistaId) async {
+    final db = await database;
+    return await db.rawQuery('''
+      SELECT t.id, t.Nombres 
+      FROM Trabajador t
+      INNER JOIN Trabajador_Contratis tc ON t.id = tc.Trabajador_id
+      WHERE tc.Proyecto_id = ? AND tc.Contratista_id = ?
+    ''', [proyectoId, contratistaId]);
   }
 }
