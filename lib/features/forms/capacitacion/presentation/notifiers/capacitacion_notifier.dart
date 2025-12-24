@@ -4,6 +4,7 @@ import 'package:app_sst/features/forms/capacitacion/domain/usecases/actualizar_c
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/create_capacitacion_usecases.dart';
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/eliminar_capacitacion_usecases.dart';
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/get_capacitaciones_usecases.dart';
+import 'package:app_sst/features/forms/capacitacion/domain/usecases/get_maestros_capacitacion_usecases.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../domain/entities/capacitacion.dart';
 
@@ -97,10 +98,40 @@ class CapacitacionNotifier extends StateNotifier<CapacitacionState> {
 
 /// Notifier para el formulario (IDs de proyecto y contratista)
 class CapacitacionFormNotifier extends StateNotifier<CapacitacionFormState> {
-  CapacitacionFormNotifier() : super(const CapacitacionFormState());
 
-  void setIdProyecto(int? value) {
-    state = state.copyWith(idProyecto: value);
+  final GetProyectosCapacitacionUseCase getProyectosUseCase;
+  final GetContratistasCapacitacionUseCase getContratistasUseCase;
+
+  CapacitacionFormNotifier({
+    required this.getProyectosUseCase,
+    required this.getContratistasUseCase
+  }) : super(const CapacitacionFormState()){
+    _cargarProyectos();
+  }
+
+  Future<void> _cargarProyectos() async {
+    final proyectos = await getProyectosUseCase();
+    state = state.copyWith(listaProyectos: proyectos);
+  }
+
+  void setIdProyecto(int? proyectoId) async {
+    if (proyectoId == null) return;
+
+    // 1. Reiniciar estado (Contratista NULL) sin usar copyWith para evitar errores
+    state = CapacitacionFormState(
+      idProyecto: proyectoId,
+      idContratista: null, // Forzamos null
+      listaProyectos: state.listaProyectos,
+      listaContratistas: [], // Limpiamos lista
+    );
+
+    // 2. Cargar contratistas de este proyecto
+    try {
+      final contratistas = await getContratistasUseCase(proyectoId);
+      state = state.copyWith(listaContratistas: contratistas);
+    } catch (e) {
+      print("Error cargando contratistas: $e");
+    }
   }
 
   void setIdContratista(int? value) {

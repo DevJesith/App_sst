@@ -9,4 +9,6 @@ abstract class CapacitacionRepository {
   Future<int> createCapacitacion(Capacitacion capacitacion);
   Future<int> updateCapacitacion(Capacitacion capacitacion);
   Future<int> deleteCapacitacion(int id);
+  Future<List<Map<String, dynamic>>> getProyectos();
+  Future<List<Map<String, dynamic>>> getContratistasPorProyecto(int proyectoId);
 }

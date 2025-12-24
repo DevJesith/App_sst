@@ -39,19 +39,31 @@ class CapacitacionFormScreen extends HookConsumerWidget {
 
     final isSubmitting = ref.watch(capacitacionesSubmittingProvider);
 
-    // Opciones de dropdowns (con IDs)
-    // TODO: Estos deberían venir de la base de datos
-    final proyectos = [
-      {'id': 1, 'nombre': 'Proyecto 1'},
-      {'id': 2, 'nombre': 'Proyecto 2'},
-      {'id': 3, 'nombre': 'Proyecto 3'},
-    ];
+    final nombresProyectos = formState.listaProyectos.map((e) => (e['Nombre'] ?? e['nombre']).toString()).toList();
 
-    final contratistas = [
-      {'id': 1, 'nombre': 'Contratista A'},
-      {'id': 2, 'nombre': 'Contratista B'},
-      {'id': 3, 'nombre': 'Contratista C'},
-    ];
+    final nombresContratistas = formState.listaContratistas.map((e) => (e['Nombre'] ?? e['nombre']).toString()).toList();
+
+    String? nombresProyectoSeleccionado;
+    if (formState.idProyecto != null && formState.listaProyectos.isNotEmpty) {
+      try {
+        final proyecto = formState.listaProyectos.firstWhere(
+          (p) => p['id'] == formState.idProyecto,
+        );
+        nombresProyectoSeleccionado = proyecto['Nombre'] ?? proyecto['nombre'];
+      } catch (_) {}
+    }
+
+    String? nombresContratistaSeleccionado;
+    if (formState.idContratista != null && formState.listaContratistas.isNotEmpty) {
+      try {
+        final contratistas = formState.listaContratistas.firstWhere(
+          (c) => c['id'] == formState.idContratista,
+        );
+        nombresContratistaSeleccionado = contratistas['Nombre'] ?? contratistas['nombre'];
+      } catch (_) {}
+    }
+
+
 
     // Inicializar valores si es edición
     useEffect(() {
@@ -148,49 +160,42 @@ class CapacitacionFormScreen extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 30),
 
-                // Dropdown: Proyecto
-                DropdownButtonFormField<int>(
-                  value: formState.idProyecto,
-                  decoration: const InputDecoration(
-                    labelText: 'Proyecto',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: proyectos.map((proyecto) {
-                    return DropdownMenuItem<int>(
-                      value: proyecto['id'] as int,
-                      child: Text(proyecto['nombre'] as String),
+                // ✅ PROYECTO (Estilo Tuyo)
+                ListaInputWigets(
+                  nameInput: 'Proyecto',
+                  label: 'Selecciona un proyecto',
+                  items: nombresProyectos,
+                  value: nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
+                  onChanged: (nombre) {
+                    // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
+                    final proyecto = formState.listaProyectos.firstWhere(
+                      (p) => (p['Nombre'] ?? p['nombre']) == nombre
                     );
-                  }).toList(),
-                  onChanged: formNotifier.setIdProyecto,
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Selecciona un proyecto';
-                    }
-                    return null;
+                    // Mandar el ID al notifier
+                    formNotifier.setIdProyecto(proyecto['id'] as int);
                   },
+                  validator: (value) => value == null ? 'Requerido' : null,
                 ),
+                
                 const SizedBox(height: 20),
 
-                // Dropdown: Contratista
-                DropdownButtonFormField<int>(
-                  value: formState.idContratista,
-                  decoration: const InputDecoration(
-                    labelText: 'Contratista',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: contratistas.map((contratista) {
-                    return DropdownMenuItem<int>(
-                      value: contratista['id'] as int,
-                      child: Text(contratista['nombre'] as String),
+                // ✅ CONTRATISTA (Estilo Tuyo)
+                ListaInputWigets(
+                  nameInput: 'Contratista',
+                  label: nombresContratistas.isEmpty 
+                      ? 'Selecciona un proyecto primero' 
+                      : 'Selecciona un contratista',
+                  items: nombresContratistas,
+                  value: nombresContratistaSeleccionado, // Le pasamos el nombre
+                  onChanged: (nombre) {
+                    // BUSCAR EL ID BASADO EN EL NOMBRE
+                    final contratista = formState.listaContratistas.firstWhere(
+                      (c) => (c['Nombre'] ?? c['nombre']) == nombre
                     );
-                  }).toList(),
-                  onChanged: formNotifier.setIdContratista,
-                  validator: (value) {
-                    if (value == null) {
-                      return 'Selecciona un contratista';
-                    }
-                    return null;
+                    // Mandar el ID al notifier
+                    formNotifier.setIdContratista(contratista['id'] as int);
                   },
+                  validator: (value) => value == null ? 'Requerido' : null,
                 ),
                 const SizedBox(height: 20),
 

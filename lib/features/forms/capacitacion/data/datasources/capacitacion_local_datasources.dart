@@ -11,6 +11,8 @@ abstract class CapacitacionLocalDataSource {
   Future<int> insertCapacitacion(CapacitacionModel capacitacion);
   Future<int> updateCapacitacion(CapacitacionModel capacitacion);
   Future<int> deleteCapacitacion(int id);
+  Future<List<Map<String, dynamic>>> getProyectos();
+  Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId);
 }
 
 class CapacitacionLocalDataSourceImpl implements CapacitacionLocalDataSource {
@@ -88,5 +90,23 @@ class CapacitacionLocalDataSourceImpl implements CapacitacionLocalDataSource {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async {
+    final db = await database.database;
+    return await db.query('Proyecto');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId) async {
+    final db = await database.database;
+    return await db.rawQuery('''
+    SELECT c.id, c.Nombre
+    FROM Contratista c
+    INNER JOIN Contratis_Proyecto cp ON c.id = cp.Contratista_id
+    WHERE cp.Proyecto_id = ?
+    ''', [proyectoId]);
+    
   }
 }

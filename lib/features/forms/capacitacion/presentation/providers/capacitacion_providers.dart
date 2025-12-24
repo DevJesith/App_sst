@@ -7,6 +7,7 @@ import 'package:app_sst/features/forms/capacitacion/domain/usecases/actualizar_c
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/create_capacitacion_usecases.dart';
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/eliminar_capacitacion_usecases.dart';
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/get_capacitaciones_usecases.dart';
+import 'package:app_sst/features/forms/capacitacion/domain/usecases/get_maestros_capacitacion_usecases.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../data/repositories_impl/capacitacion_repository_impl.dart';
 
@@ -51,6 +52,16 @@ final deleteCapacitacionUseCaseProvider = Provider<EliminarCapacitacionUsecases>
   return EliminarCapacitacionUsecases(repository);
 });
 
+final getProyectosCapacitacionUseCaseProvider = Provider<GetProyectosCapacitacionUseCase>((ref) {
+  final repo = ref.watch(capacitacionRepositoryProvider);
+  return GetProyectosCapacitacionUseCase(repo);
+});
+
+final getContratistasCapacitacionUseCaseProvider = Provider<GetContratistasCapacitacionUseCase>((ref) {
+  final repo = ref.watch(capacitacionRepositoryProvider);
+  return GetContratistasCapacitacionUseCase(repo);
+});
+
 // Provider del Notifier principal
 final capacitacionNotifierProvider = StateNotifierProvider<CapacitacionNotifier, CapacitacionState>((ref) {
   return CapacitacionNotifier(
@@ -63,7 +74,10 @@ final capacitacionNotifierProvider = StateNotifierProvider<CapacitacionNotifier,
 
 // Provider del Notifier del formulario
 final capacitacionFormNotifierProvider = StateNotifierProvider<CapacitacionFormNotifier, CapacitacionFormState>((ref) {
-  return CapacitacionFormNotifier();
+  return CapacitacionFormNotifier(
+    getProyectosUseCase: ref.watch(getProyectosCapacitacionUseCaseProvider),
+    getContratistasUseCase: ref.watch(getContratistasCapacitacionUseCaseProvider),
+  );
 });
 
 // Providers derivados

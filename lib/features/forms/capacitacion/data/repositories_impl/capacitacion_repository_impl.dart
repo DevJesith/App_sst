@@ -88,4 +88,14 @@ class CapacitacionRepositoryImpl implements CapacitacionRepository {
       throw Exception('Error al eliminar capacitación: $e');
     }
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async {
+    return await localDataSource.getProyectos();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getContratistasPorProyecto(int proyectoId) async {
+    return await localDataSource.getContratistasPorProyectos(proyectoId);
+  }
 }

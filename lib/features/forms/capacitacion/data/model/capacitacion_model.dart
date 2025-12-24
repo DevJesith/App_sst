@@ -30,8 +30,8 @@ class CapacitacionModel extends Capacitacion {
   factory CapacitacionModel.fromMap(Map<String, dynamic> map) {
     return CapacitacionModel(
       id: map['id'] as int?,
-      idProyecto: map['id_Proyecto'] as int,
-      idContratista: map['id_Contratista'] as int,
+      idProyecto: map['Proyecto_id'] as int,
+      idContratista: map['Contratista_id'] as int,
       descripcion: map['Descripcion'] as String,
       numeroCapacita: map['Numero_capacita'] as int,
       numeroPersonas: map['Numero_personas'] as int,
@@ -45,8 +45,8 @@ class CapacitacionModel extends Capacitacion {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'id_Proyecto': idProyecto,
-      'id_Contratista': idContratista,
+      'Proyecto_id': idProyecto,
+      'Contratista_id': idContratista,
       'Descripcion': descripcion,
       'Numero_capacita': numeroCapacita,
       'Numero_personas': numeroPersonas,
