@@ -1,7 +1,7 @@
 class Incidente {
   final int? id;
   final String eventualidad;
-  final String proyecto;
+  final int proyectoId;
   //final String contratista;
   final String mes;
   final String descripcion;
@@ -15,7 +15,7 @@ class Incidente {
   const Incidente({
     this.id,
     required this.eventualidad,
-    required this.proyecto,
+    required this.proyectoId,
     //required this.contratista,
     required this.mes,
     required this.descripcion,

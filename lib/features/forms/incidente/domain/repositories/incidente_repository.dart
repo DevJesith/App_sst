@@ -9,4 +9,5 @@ abstract class IncidenteRepository {
   Future<int> crearIncidente(Incidente incidente);
   Future<int> actualizarIncidente(Incidente incidente);
   Future<int> eliminarIncidente(int id);
+  Future<List<Map<String, dynamic>>> getProyectos();
 }

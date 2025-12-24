@@ -9,6 +9,7 @@ abstract class IncidenteLocalDatasource {
   Future<int> crearIncidente(IncidenteModel incidente);
   Future<int> actualizarIncidente(IncidenteModel incidente);
   Future<int> eliminarIncidente(int id);
+  Future<List<Map<String, dynamic>>> getProyectos();
 }
 
 class IncidenteLocalDatasourceImpl implements IncidenteLocalDatasource {
@@ -81,5 +82,12 @@ class IncidenteLocalDatasourceImpl implements IncidenteLocalDatasource {
   Future<int> eliminarIncidente(int id) async {
     final db = await database.database;
     return await db.delete('Incidente', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async{
+    final db = await database.database;
+    return await db.query('Proyecto');
+    
   }
 }

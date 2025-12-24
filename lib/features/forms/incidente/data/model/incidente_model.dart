@@ -4,7 +4,7 @@ class IncidenteModel extends Incidente {
   const IncidenteModel({
     int? id,
     required String eventualidad,
-    required String proyecto,
+    required int proyectoId,
     required String mes,
     required String descripcion,
     required int diasIncapacidad,
@@ -16,7 +16,7 @@ class IncidenteModel extends Incidente {
   }) : super(
          id: id,
          eventualidad: eventualidad,
-         proyecto: proyecto,
+         proyectoId: proyectoId,
          mes: mes,
          descripcion: descripcion,
          diasIncapacidad: diasIncapacidad,
@@ -31,7 +31,7 @@ class IncidenteModel extends Incidente {
     return IncidenteModel(
       id: map['id'] as int?,
       eventualidad: map['eventualidad'] as String,
-      proyecto: map['proyecto'] as String,
+      proyectoId: map['Proyecto_id'] as int,
       mes: map['mes'] as String,
       descripcion: map['descripcion'] as String,
       diasIncapacidad: map['dias_incapacidad'] as int,
@@ -47,7 +47,7 @@ class IncidenteModel extends Incidente {
     return {
       'id': id,
       'eventualidad': eventualidad,
-      'proyecto': proyecto,
+      'Proyecto_id': proyectoId,
       'mes': mes,
       'descripcion': descripcion,
       'dias_incapacidad': diasIncapacidad,
@@ -62,7 +62,7 @@ class IncidenteModel extends Incidente {
   IncidenteModel copyWith({
     int? id,
     String? eventualidad,
-    String? proyecto,
+    int? proyectoId,
     String? mes,
     String? descripcion,
     int? diasIncapacidad,
@@ -75,7 +75,7 @@ class IncidenteModel extends Incidente {
     return IncidenteModel(
       id: id ?? this.id,
       eventualidad: eventualidad ?? this.eventualidad,
-      proyecto: proyecto ?? this.proyecto,
+      proyectoId: proyectoId ?? this.proyectoId,
       mes: mes ?? this.mes,
       descripcion: descripcion ?? this.descripcion,
       diasIncapacidad: diasIncapacidad ?? this.diasIncapacidad,

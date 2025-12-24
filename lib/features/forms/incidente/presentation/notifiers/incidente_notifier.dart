@@ -3,6 +3,7 @@ import 'package:app_sst/features/forms/incidente/domain/usecases/actualizar_inci
 import 'package:app_sst/features/forms/incidente/domain/usecases/crear_incidente_usecases.dart';
 import 'package:app_sst/features/forms/incidente/domain/usecases/eliminar_incidente_usecases.dart';
 import 'package:app_sst/features/forms/incidente/domain/usecases/get_incidente_usecases.dart';
+import 'package:app_sst/features/forms/incidente/domain/usecases/get_maestros_incidente_usecases.dart';
 import 'package:app_sst/features/forms/incidente/presentation/states/incidente_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -89,10 +90,39 @@ class IncidenteNotifier extends StateNotifier<IncidenteState> {
 }
 
 class IncidenteFormNotifier extends StateNotifier<IncidenteFormState> {
-  IncidenteFormNotifier() : super(const IncidenteFormState());
 
-  void setProyecto(String? value) {
-    state = state.copyWith(proyecto: value);
+  final GetProyectosIncidenteUseCase getProyectosUseCase;
+
+  IncidenteFormNotifier({
+    required this.getProyectosUseCase
+  }) : super(const IncidenteFormState()){
+    _cargarProyectos();
+  }
+
+  Future<void> _cargarProyectos() async {
+    try {
+      print("🔄 INCIDENTE: Iniciando carga de proyectos...");
+      final proyectos = await getProyectosUseCase();
+      
+      print("✅ INCIDENTE: Proyectos encontrados: ${proyectos.length}");
+      
+      if (proyectos.isEmpty) {
+        print("⚠️ INCIDENTE: La lista de proyectos llegó vacía de la BD.");
+      }
+
+      state = state.copyWith(listaProyectos: proyectos);
+    } catch (e) {
+      print("❌ INCIDENTE ERROR: No se pudieron cargar los proyectos: $e");
+    }
+  }
+
+  // Método público para recargar manualmente si falla
+  Future<void> recargarProyectos() async {
+    await _cargarProyectos();
+  }
+
+  void setProyectoId(int? value) {
+    state = state.copyWith(proyectoId: value);
   }
 
   void setEstado(String? value) {
@@ -104,6 +134,6 @@ class IncidenteFormNotifier extends StateNotifier<IncidenteFormState> {
   }
 
   void reset() {
-    state = const IncidenteFormState();
+    state = IncidenteFormState(listaProyectos: state.listaProyectos);
   }
 }

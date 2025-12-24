@@ -29,21 +29,24 @@ class IncidenteState {
 }
 
 class IncidenteFormState {
-  final String? proyecto;
+  final int? proyectoId;
   final String? estado;
   final DateTime? fecha;
+  final List<Map<String, dynamic>> listaProyectos;
 
-  const IncidenteFormState({this.proyecto, this.estado, this.fecha});
+  const IncidenteFormState({this.proyectoId, this.estado, this.fecha, this.listaProyectos = const []});
 
   IncidenteFormState copyWith({
-    String? proyecto,
+    int? proyectoId,
     String? estado,
     DateTime? fecha,
+    List<Map<String, dynamic>>? listaProyectos,
   }) {
     return IncidenteFormState(
-      proyecto: proyecto ?? this.proyecto,
+      proyectoId: proyectoId ?? this.proyectoId,
       estado: estado ?? this.estado,
       fecha: fecha ?? this.fecha,
+      listaProyectos: listaProyectos ?? this.listaProyectos
     );
   }
 }

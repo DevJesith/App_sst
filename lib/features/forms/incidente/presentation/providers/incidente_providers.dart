@@ -6,6 +6,7 @@ import 'package:app_sst/features/forms/incidente/domain/usecases/actualizar_inci
 import 'package:app_sst/features/forms/incidente/domain/usecases/crear_incidente_usecases.dart';
 import 'package:app_sst/features/forms/incidente/domain/usecases/eliminar_incidente_usecases.dart';
 import 'package:app_sst/features/forms/incidente/domain/usecases/get_incidente_usecases.dart';
+import 'package:app_sst/features/forms/incidente/domain/usecases/get_maestros_incidente_usecases.dart';
 import 'package:app_sst/features/forms/incidente/presentation/notifiers/incidente_notifier.dart';
 import 'package:app_sst/features/forms/incidente/presentation/states/incidente_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -52,6 +53,11 @@ final eliminarIncidenteUseCaseProvider = Provider<EliminarIncidenteUsecases>((
   return EliminarIncidenteUsecases(repository);
 });
 
+final getProyectosIncidenteUseCaseProvider = Provider<GetProyectosIncidenteUseCase>((ref) {
+  final repo = ref.watch(incidenteRepositoryProvider);
+  return GetProyectosIncidenteUseCase(repo);
+});
+
 //Provider del Notifier principal (lista y CRUD)
 final incidenteNotifierProvider =
     StateNotifierProvider<IncidenteNotifier, IncidenteState>((ref) {
@@ -67,8 +73,10 @@ final incidenteNotifierProvider =
 
 //Provider del Notifier del formulario (valores de campos)
 final incidenteFormNotifierProvider =
-    StateNotifierProvider<IncidenteFormNotifier, IncidenteFormState>((ref) {
-      return IncidenteFormNotifier();
+    StateNotifierProvider.autoDispose<IncidenteFormNotifier, IncidenteFormState>((ref) {
+      return IncidenteFormNotifier(
+        getProyectosUseCase: ref.watch(getProyectosIncidenteUseCaseProvider),
+      );
     });
 
 //Providers derivados (para acceso directo a partes del estado)

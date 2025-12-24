@@ -48,13 +48,35 @@ class IncidenteFormScreen extends HookConsumerWidget {
     final isSubmitting = ref.watch(incidentesSubmittingProvider);
 
     // Opciones de dropdown
-    final proyecto = ["Proyecto 1", "Proyecto 2", "Proyecto 3"];
     final estado = ["Pendiente", "En proceso", "Completado"];
+
+    int? valorProyectoSeguro = formState.proyectoId;
+
+    final nombresProyectos = formState.listaProyectos.map((e) => (e['Nombre'] ?? e['nombre']).toString()).toList();
+
+    String? nombresProyectoSeleccionado;
+    if (formState.proyectoId != null && formState.listaProyectos.isNotEmpty) {
+      try {
+        final proyecto = formState.listaProyectos.firstWhere(
+          (p) => p['id'] == formState.proyectoId,
+        );
+        nombresProyectoSeleccionado = proyecto['Nombre'] ?? proyecto['nombre'];
+      } catch (_) {}
+    }
+
+    if (formState.listaProyectos.isNotEmpty && valorProyectoSeguro != null) {
+      final existe = formState.listaProyectos.any((p) => p['id'] == valorProyectoSeguro);
+      if (!existe) {
+        valorProyectoSeguro = null; 
+        // Opcional: Actualizar el estado para que sepa que es null
+        // Future.microtask(() => formNotifier.setProyectoId(null));
+      }
+    }
 
     //Inincializar valores si es edicion
     useEffect(() {
       if (incidente != null) {
-        formNotifier.setProyecto(incidente!.proyecto);
+        formNotifier.setProyectoId(incidente!.proyectoId);
         formNotifier.setEstado(incidente!.estado);
         formNotifier.setFecha(incidente!.fechaRegistro);
       }
@@ -67,7 +89,7 @@ class IncidenteFormScreen extends HookConsumerWidget {
       if (!formKey.currentState!.validate()) return;
 
       //Validar que los campos de estado esten completos
-      if (formState.proyecto == null ||
+      if (formState.proyectoId == null ||
           formState.estado == null ||
           formState.fecha == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -80,7 +102,7 @@ class IncidenteFormScreen extends HookConsumerWidget {
       final nuevoIncidente = Incidente(
         id: incidente?.id,
         eventualidad: eventualidadController.text,
-        proyecto: formState.proyecto!,
+        proyectoId: formState.proyectoId!,
         mes: mesController.text,
         descripcion: descripcionController.text,
         diasIncapacidad: int.tryParse(diasIncapacidadController.text) ?? 0,
@@ -170,20 +192,22 @@ class IncidenteFormScreen extends HookConsumerWidget {
 
                   const SizedBox(height: 20),
 
-                  /// Dropdown: Proyecto
-                  ListaInputWigets(
-                    label: "Selecciona un proyecto",
-                    nameInput: "Proyecto",
-                    items: proyecto,
-                    value: formState.proyecto,
-                    onChanged: formNotifier.setProyecto,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Debes seleccionar un proyecto';
-                      }
-                      return null;
-                    },
-                  ),
+                  // ✅ PROYECTO (Estilo Tuyo)
+                ListaInputWigets(
+                  nameInput: 'Proyecto',
+                  label: 'Selecciona un proyecto',
+                  items: nombresProyectos,
+                  value: nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
+                  onChanged: (nombre) {
+                    // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
+                    final proyecto = formState.listaProyectos.firstWhere(
+                      (p) => (p['Nombre'] ?? p['nombre']) == nombre
+                    );
+                    // Mandar el ID al notifier
+                    formNotifier.setProyectoId(proyecto['id'] as int);
+                  },
+                  validator: (value) => value == null ? 'Requerido' : null,
+                ),
 
                   const SizedBox(height: 20),
 

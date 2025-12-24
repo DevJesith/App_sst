@@ -1,18 +1,47 @@
+import 'package:app_sst/features/forms/incidente/presentation/providers/incidente_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/incidente.dart';
 
 /// Pantalla que muestra todos los detalles de un incidente reportado
-class IncidenteDetallesScreen extends StatelessWidget {
+class IncidenteDetallesScreen extends HookConsumerWidget {
   final Incidente incidente;
 
   const IncidenteDetallesScreen({super.key, required this.incidente});
 
   @override
-  Widget build(BuildContext context) {
-    final fechaFormateada = DateFormat(
-      'dd/MM/yyyy HH:mm',
-    ).format(incidente.fechaRegistro);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fechaFormateada = DateFormat('dd/MM/yyyy HH:mm').format(incidente.fechaRegistro);
+
+    // 1. Obtener el caso de uso para traer los proyectos
+    final getProyectos = ref.read(getProyectosIncidenteUseCaseProvider);
+
+    // 2. Crear un estado local para guardar el nombre del proyecto
+    final nombreProyecto = useState<String>('Cargando...');
+
+    // 3. Efecto para buscar el nombre del proyecto basado en el ID
+    useEffect(() {
+      Future.microtask(() async {
+        try {
+          // Traemos la lista de proyectos de la BD
+          final lista = await getProyectos();
+          
+          // Buscamos el que coincida con el ID del incidente
+          final proyectoEncontrado = lista.firstWhere(
+            (p) => p['id'] == incidente.proyectoId,
+            orElse: () => {'Nombre': 'Desconocido (ID: ${incidente.proyectoId})'},
+          );
+
+          // Actualizamos el estado con el nombre
+          nombreProyecto.value = proyectoEncontrado['Nombre'] ?? proyectoEncontrado['nombre'] ?? 'Sin nombre';
+        } catch (e) {
+          nombreProyecto.value = 'Error al cargar';
+        }
+      });
+      return null;
+    }, []);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -80,7 +109,8 @@ class IncidenteDetallesScreen extends StatelessWidget {
                     title: 'Información General',
                     icon: Icons.info_outline,
                     children: [
-                      _buildInfoRow('Proyecto', incidente.proyecto),
+                      // ✅ AQUI USAMOS EL NOMBRE TRADUCIDO
+                      _buildInfoRow('Proyecto', nombreProyecto.value),
                       _buildInfoRow('Mes', incidente.mes),
                       _buildInfoRow('Fecha de Registro', fechaFormateada),
                     ],

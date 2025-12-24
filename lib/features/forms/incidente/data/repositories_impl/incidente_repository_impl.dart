@@ -41,7 +41,7 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
     try {
       final model = IncidenteModel(
       eventualidad: incidente.eventualidad, 
-      proyecto: incidente.proyecto, 
+      proyectoId: incidente.proyectoId, 
       mes: incidente.mes, 
       descripcion: incidente.descripcion, 
       diasIncapacidad: incidente.diasIncapacidad, 
@@ -60,7 +60,7 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
     try {
       final model = IncidenteModel(
       eventualidad: incidente.eventualidad, 
-      proyecto: incidente.proyecto, 
+      proyectoId: incidente.proyectoId, 
       mes: incidente.mes, 
       descripcion: incidente.descripcion, 
       diasIncapacidad: incidente.diasIncapacidad, 
@@ -81,5 +81,11 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
     } catch (e) {
       throw Exception('Error al eliminar incidentes: $e');
     }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async {
+    return await localDatasource.getProyectos();
+    
   }
 }
