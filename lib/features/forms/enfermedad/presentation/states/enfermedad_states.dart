@@ -29,24 +29,45 @@ class EnfermedadStates {
 }
 
 class EnfermedadFormState {
-  final String? proyecto;
+  final int? proyectoId;
+  final int? contratistaId;
+  final int? trabajadorId;
   final String? estado;
-  final String? contratista;
   final DateTime? fecha;
+  final List<Map<String, dynamic>> listaProyectos;
+  final List<Map<String, dynamic>> listaContratista;
+  final List<Map<String, dynamic>> listaTrabajadores;
 
-  const EnfermedadFormState({this.proyecto, this.estado, this.contratista, this.fecha});
+  const EnfermedadFormState({
+    this.proyectoId,
+    this.contratistaId,
+    this.trabajadorId,
+    this.estado,
+    this.fecha,
+    this.listaProyectos = const [],
+    this.listaContratista = const [],
+    this.listaTrabajadores = const [],
+  });
 
   EnfermedadFormState copyWith({
-    String? proyecto,
+    int? proyectoId,
+    int? contratistaId,
+    int? trabajadorId,
     String? estado,
-    String? contratista,
     DateTime? fecha,
+    List<Map<String, dynamic>>? listaProyectos,
+    List<Map<String, dynamic>>? listaContratista,
+    List<Map<String, dynamic>>? listaTrabajadores,
   }) {
     return EnfermedadFormState(
-      proyecto: proyecto ?? this.proyecto,
+      proyectoId: proyectoId ?? this.proyectoId,
+      contratistaId: contratistaId ?? this.contratistaId,
+      trabajadorId: trabajadorId ?? this.trabajadorId,
       estado: estado ?? this.estado,
-      contratista: contratista ?? this.contratista,
       fecha: fecha ?? this.fecha,
+      listaProyectos: listaProyectos ?? this.listaProyectos,
+      listaContratista: listaContratista ?? this.listaContratista,
+      listaTrabajadores: listaTrabajadores ?? this.listaTrabajadores
     );
   }
 }

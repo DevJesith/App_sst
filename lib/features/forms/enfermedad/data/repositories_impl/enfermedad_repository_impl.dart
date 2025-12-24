@@ -42,8 +42,9 @@ class EnfermedadRepositoryImpl implements EnfermedadRepository {
     try {
       final model = EnfermedadModel(
       eventualidad: enfermedad.eventualidad, 
-      proyecto: enfermedad.proyecto, 
-      contratista: enfermedad.contratista, 
+      proyectoId: enfermedad.proyectoId, 
+      contratistaId: enfermedad.contratistaId, 
+      trabajadorId: enfermedad.trabajadorId,
       mes: enfermedad.mes, 
       descripcion: enfermedad.descripcion, 
       diasIncapacidad: enfermedad.diasIncapacidad, 
@@ -64,8 +65,9 @@ class EnfermedadRepositoryImpl implements EnfermedadRepository {
       final model = EnfermedadModel(
       id: enfermedad.id,
       eventualidad: enfermedad.eventualidad, 
-      proyecto: enfermedad.proyecto, 
-      contratista: enfermedad.contratista, 
+      proyectoId: enfermedad.proyectoId, 
+      contratistaId: enfermedad.contratistaId, 
+      trabajadorId: enfermedad.trabajadorId,
       mes: enfermedad.mes, 
       descripcion: enfermedad.descripcion, 
       diasIncapacidad: enfermedad.diasIncapacidad, 
@@ -87,5 +89,20 @@ class EnfermedadRepositoryImpl implements EnfermedadRepository {
     } catch (e) {
       throw Exception('Error al eliminar enfermedad: $e');
     }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async {
+    return await localDatasource.getProyectos();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId) async{
+    return await localDatasource.getContratistasPorProyectos(proyectoId);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getTrabajadoresPorContratista(int proyectoId, int contratistaId) async{
+    return await localDatasource.getTrabajadoresPorContratista(proyectoId, contratistaId);
   }
 }

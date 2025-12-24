@@ -3,6 +3,7 @@ import 'package:app_sst/features/forms/enfermedad/domain/usecases/actualizar_enf
 import 'package:app_sst/features/forms/enfermedad/domain/usecases/crear_enfermedad_usecases.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/usecases/eliminar_enfermedad_usecases.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/usecases/get_enfermedad_usecases.dart';
+import 'package:app_sst/features/forms/enfermedad/domain/usecases/get_maestros_enfermedad_usecases.dart';
 import 'package:app_sst/features/forms/enfermedad/presentation/states/enfermedad_states.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -89,18 +90,74 @@ class EnfermedadNotifier extends StateNotifier<EnfermedadStates> {
 }
 
 class EnfermedadFormNotifier extends StateNotifier<EnfermedadFormState> {
-  EnfermedadFormNotifier() : super(const EnfermedadFormState());
 
-  void setProyecto(String? value) {
-    state = state.copyWith(proyecto: value);
+  final GetProyectosEnfermedadUseCase getProyectosUseCase;
+  final GetContratistasEnfermedadesUseCase getContratistasUseCase;
+  final GetTrabajadoresEnfermedadUseCase getTrabajadoresUseCase;
+
+  EnfermedadFormNotifier({
+    required this.getProyectosUseCase,
+    required this.getContratistasUseCase,
+    required this.getTrabajadoresUseCase
+  }) : super(const EnfermedadFormState()){
+    _cargarProyectos();
+  }
+
+  Future<void> _cargarProyectos() async {
+    try {
+      final proyectos = await getProyectosUseCase();
+      state = state.copyWith(listaProyectos: proyectos);
+    } catch (e) {
+      print("Error cargando proyectos: $e");
+    }
+  }
+
+  void setProyectoId(int? id) async {
+    if (id == null) return;
+
+    state = EnfermedadFormState(
+      proyectoId: id,
+      contratistaId: null,
+      trabajadorId: null,
+      estado: state.estado,
+      fecha: state.fecha,
+      listaProyectos: state.listaProyectos,
+      listaContratista: [],
+      listaTrabajadores: [],
+    );
+
+    try {
+      final contratistas = await getContratistasUseCase(id);
+      state = state.copyWith(listaContratista: contratistas);
+    } catch (e) {
+      print("Error cargando contratistas: $e");
+    }
+  }
+
+  void setContratistaId(int? id) async {
+    if (id == null || state.proyectoId == null) return;
+
+    // Reiniciar trabajador
+    state = state.copyWith(
+      contratistaId: id,
+      trabajadorId: null, // Forzar null
+      listaTrabajadores: [], // Limpiar
+    );
+
+    try {
+      final trabajadores = await getTrabajadoresUseCase(state.proyectoId!, id);
+      state = state.copyWith(listaTrabajadores: trabajadores);
+    } catch (e) {
+      print("Error cargando trabajadores: $e");
+    }
+  }
+
+  void setTrabajadorId(int? id) {
+    state = state.copyWith(trabajadorId: id);
   }
 
   void setEstado(String? value) {
     state = state.copyWith(estado: value);
-  }
-
-  void setContratista(String? value) {
-    state = state.copyWith(contratista: value);
   }
 
   void setFecha(DateTime? value) {
@@ -108,6 +165,6 @@ class EnfermedadFormNotifier extends StateNotifier<EnfermedadFormState> {
   }
 
   void reset() {
-    state = const EnfermedadFormState();
+    state = EnfermedadFormState(listaProyectos: state.listaProyectos);
   }
 }

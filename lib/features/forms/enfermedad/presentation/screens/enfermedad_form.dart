@@ -26,10 +26,6 @@ class EnfermedadFormScreen extends HookConsumerWidget {
       text: enfermedad?.eventualidad ?? '',
     );
 
-    final contratistaController = useTextEditingController(
-      text: enfermedad?.contratista ?? '',
-    );
-
     final mesController = useTextEditingController(text: enfermedad?.mes ?? '');
 
     final descripcionController = useTextEditingController(
@@ -53,14 +49,58 @@ class EnfermedadFormScreen extends HookConsumerWidget {
     final isSubmitting = ref.watch(enfermedadSubmittingProvider);
 
     // Opciones de dropdown
-    final proyectos = ["Proyecto 1", "Proyecto 2", "Proyecto 3"];
-    final contratista = ["Contratista 1", "Contratista 2", "Contratista 3"];
     final estado = ["Pendiente", "En proceso", "Completado"];
+
+    final nombresProyectos = formState.listaProyectos
+        .map((e) => (e['Nombre'] ?? e['nombre']).toString())
+        .toList();
+
+    final nombresContratistas = formState.listaContratista
+        .map((e) => (e['Nombre'] ?? e['nombre']).toString())
+        .toList();
+
+    final nombresTrabajadores = formState.listaTrabajadores
+        .map((e) => (e['Nombres'] ?? e['nombres'] ?? e['Nombre'] ?? e['nombre']).toString())
+        .toList();
+
+    String? nombresProyectoSeleccionado;
+    if (formState.proyectoId != null && formState.listaProyectos.isNotEmpty) {
+      try {
+        final proyecto = formState.listaProyectos.firstWhere(
+          (p) => p['id'] == formState.proyectoId,
+        );
+        nombresProyectoSeleccionado = proyecto['Nombre'] ?? proyecto['nombre'];
+      } catch (_) {}
+    }
+
+    String? nombresContratistaSeleccionado;
+    if (formState.contratistaId != null &&
+        formState.listaContratista.isNotEmpty) {
+      try {
+        final contratistas = formState.listaContratista.firstWhere(
+          (c) => c['id'] == formState.contratistaId,
+        );
+        nombresContratistaSeleccionado =
+            contratistas['Nombre'] ?? contratistas['nombre'];
+      } catch (_) {}
+    }
+
+    String? nombresTrabajadoresSeleccionado;
+    if (formState.trabajadorId != null &&
+        formState.listaTrabajadores.isNotEmpty) {
+      try {
+        final trabajadores = formState.listaTrabajadores.firstWhere(
+          (t) => t['id'] == formState.trabajadorId,
+        );
+        nombresTrabajadoresSeleccionado =
+            trabajadores['Nombres'] ?? trabajadores['nombres'] ?? trabajadores['Nombre'];
+      } catch (_) {}
+    }
 
     //Inicializar valores si es edicion
     useEffect(() {
       if (enfermedad != null) {
-        formNotifier.setProyecto(enfermedad!.proyecto);
+        formNotifier.setProyectoId(enfermedad!.proyectoId);
         formNotifier.setEstado(enfermedad!.estado);
         formNotifier.setFecha(enfermedad!.fechaRegistro);
       }
@@ -73,9 +113,10 @@ class EnfermedadFormScreen extends HookConsumerWidget {
       if (!formKey.currentState!.validate()) return;
 
       //Validar que los campos de estado esten completos
-      if (formState.proyecto == null ||
+      if (formState.proyectoId == null ||
           formState.estado == null ||
-          formState.contratista == null ||
+          formState.trabajadorId == null ||
+          formState.contratistaId == null ||
           formState.fecha == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Por favor completa todos los campos')),
@@ -87,8 +128,9 @@ class EnfermedadFormScreen extends HookConsumerWidget {
       final nuevoEnfermedad = Enfermedad(
         id: enfermedad?.id,
         eventualidad: eventualidadController.text,
-        proyecto: formState.proyecto!,
-        contratista: formState.contratista!,
+        proyectoId: formState.proyectoId!,
+        contratistaId: formState.contratistaId!,
+        trabajadorId: formState.trabajadorId!,
         mes: mesController.text,
         descripcion: descripcionController.text,
         diasIncapacidad: int.tryParse(diasIncapacidadController.text) ?? 0,
@@ -109,7 +151,7 @@ class EnfermedadFormScreen extends HookConsumerWidget {
           //Limpiar formulario
           formNotifier.reset();
           eventualidadController.clear();
-          contratistaController.clear();
+          // contratistaController.clear();
           mesController.clear();
           descripcionController.clear();
           diasIncapacidadController.clear();
@@ -184,39 +226,66 @@ class EnfermedadFormScreen extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
-                /// Dropdown: Proyecto
+                // ✅ PROYECTO (Estilo Tuyo)
                 ListaInputWigets(
-                  label: 'Seleccionar proyecto',
                   nameInput: 'Proyecto',
-                  items: proyectos,
-                  value: formState.proyecto,
-                  onChanged: formNotifier.setProyecto,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Este campo es obligatorio';
-                    }
-                    return null;
+                  label: 'Selecciona un proyecto',
+                  items: nombresProyectos,
+                  value:
+                      nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
+                  onChanged: (nombre) {
+                    // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
+                    final proyecto = formState.listaProyectos.firstWhere(
+                      (p) => (p['Nombre'] ?? p['nombre']) == nombre,
+                    );
+                    // Mandar el ID al notifier
+                    formNotifier.setProyectoId(proyecto['id'] as int);
                   },
+                  validator: (value) => value == null ? 'Requerido' : null,
                 ),
 
                 const SizedBox(height: 20),
 
-                // /// Dropdown: Contratista
+                // ✅ CONTRATISTA (Estilo Tuyo)
                 ListaInputWigets(
-                  label: 'Selecciona un contratista',
                   nameInput: 'Contratista',
-                  items: contratista,
-                  value: formState.contratista,
-                  onChanged: formNotifier.setContratista,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Este campo es obligatorio';
-                    }
-                    return null;
+                  label: nombresContratistas.isEmpty
+                      ? 'Selecciona un proyecto primero'
+                      : 'Selecciona un contratista',
+                  items: nombresContratistas,
+                  value: nombresContratistaSeleccionado, // Le pasamos el nombre
+                  onChanged: (nombre) {
+                    // BUSCAR EL ID BASADO EN EL NOMBRE
+                    final contratista = formState.listaContratista.firstWhere(
+                      (c) => (c['Nombre'] ?? c['nombre']) == nombre,
+                    );
+                    // Mandar el ID al notifier
+                    formNotifier.setContratistaId(contratista['id'] as int);
                   },
+                  validator: (value) => value == null ? 'Requerido' : null,
                 ),
 
-                // const SizedBox(height: 20),
+                const SizedBox(height: 20),
+
+                // ✅ TRABAJADOR (Estilo Tuyo)
+                ListaInputWigets(
+                  nameInput: 'Trabajador',
+                  label: nombresTrabajadores.isEmpty
+                      ? 'Selecciona un proyecto primero'
+                      : 'Selecciona un contratista',
+                  items: nombresTrabajadores,
+                  value: nombresTrabajadoresSeleccionado, // Le pasamos el nombre
+                  onChanged: (nombre) {
+                    // BUSCAR EL ID BASADO EN EL NOMBRE
+                    final trabajador = formState.listaTrabajadores.firstWhere(
+                      (t) => (t['Nombres'] ?? t['nombres'] ?? t['Nombre']) == nombre,
+                    );
+                    // Mandar el ID al notifier
+                    formNotifier.setTrabajadorId(trabajador['id'] as int);
+                  },
+                  validator: (value) => value == null ? 'Requerido' : null,
+                ),
+                const SizedBox(height: 20),
 
                 /// Selector de fecha
                 FechaInputWidgets(

@@ -9,6 +9,9 @@ abstract class EnfermedadLocalDatasource {
   Future<int> crearEnfermedad(EnfermedadModel enfermedad);
   Future<int> actualizarEnfermedad(EnfermedadModel enfermedad);
   Future<int> eliminarEnfermedad(int id);
+  Future<List<Map<String, dynamic>>> getProyectos();
+  Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId);
+  Future<List<Map<String, dynamic>>> getTrabajadoresPorContratista(int proyectoId, int contratistaId);
 }
 
 class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
@@ -20,8 +23,8 @@ class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
   Future<List<EnfermedadModel>> getEnfermedad() async {
     final db = await database.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'Enfermedad_laboral',
-      orderBy: 'Fecha_registro DESC',
+      'Enfermedad_Laboral',
+      orderBy: 'fecha_registro DESC',
     );
     return List.generate(maps.length, (i) {
       return EnfermedadModel.fromMap(maps[i]);
@@ -32,7 +35,7 @@ class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
   Future<EnfermedadModel?> getEnfermedadById(int id) async {
     final db = await database.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'Enfermedad_laboral',
+      'Enfermedad_Laboral',
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -45,7 +48,7 @@ class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
   Future<List<EnfermedadModel>> getEnfermedadByUsuario(int usuarioId) async {
     final db = await database.database;
     final List<Map<String, dynamic>> maps = await db.query(
-      'Enfermedad_laboral',
+      'Enfermedad_Laboral',
       where: 'Usuarios_id = ?',
       whereArgs: [usuarioId],
       orderBy: 'fecha_registro DESC',
@@ -60,7 +63,7 @@ class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
   Future<int> crearEnfermedad(EnfermedadModel enfermedad) async {
     final db = await database.database;
     return await db.insert(
-      'Enfermedad_laboral',
+      'Enfermedad_Laboral',
       enfermedad.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -70,7 +73,7 @@ class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
   Future<int> actualizarEnfermedad(EnfermedadModel enfermedad) async {
     final db = await database.database;
     return await db.update(
-      'Enfermedad_laboral',
+      'Enfermedad_Laboral',
       enfermedad.toMap(),
       where: 'id = ?',
       whereArgs: [enfermedad.id],
@@ -80,6 +83,36 @@ class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
   @override
   Future<int> eliminarEnfermedad(int id) async {
     final db = await database.database;
-    return await db.delete('Enfermedad_laboral', where: 'id = ?', whereArgs: [id]);
+    return await db.delete('Enfermedad_Laboral', where: 'id = ?', whereArgs: [id]);
   }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async {
+    final db = await database.database;
+    return await db.query('Proyecto');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId) async {
+    final db = await database.database;
+    return await db.rawQuery('''
+    SELECT c.id, c.Nombre
+    FROM Contratista c
+    INNER JOIN Contratis_Proyecto cp ON c.id = cp.Contratista_id
+    WHERE cp.Proyecto_id = ?
+    ''', [proyectoId]);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getTrabajadoresPorContratista(int proyectoId, int contratistaId) async {
+    final db = await database.database;
+    return await db.rawQuery('''
+    SELECT t.id, t.Nombres
+    FROM Trabajador t
+    INNER JOIN Trabajador_Contratis tc ON t.id = tc.Trabajador_id
+    WHERE tc.Proyecto_id = ? AND tc.Contratista_id = ?
+    ''', [proyectoId, contratistaId]);
+    
+  }
+  
 }

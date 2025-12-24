@@ -8,6 +8,7 @@ import 'package:app_sst/features/forms/enfermedad/domain/usecases/actualizar_enf
 import 'package:app_sst/features/forms/enfermedad/domain/usecases/crear_enfermedad_usecases.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/usecases/eliminar_enfermedad_usecases.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/usecases/get_enfermedad_usecases.dart';
+import 'package:app_sst/features/forms/enfermedad/domain/usecases/get_maestros_enfermedad_usecases.dart';
 import 'package:app_sst/features/forms/enfermedad/presentation/notifiers/enfermedad_notifier.dart';
 import 'package:app_sst/features/forms/enfermedad/presentation/states/enfermedad_states.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -51,6 +52,12 @@ final eliminarEnfermedadUseCaseProvider = Provider<EliminarEnfermedadUsecases>((
   return EliminarEnfermedadUsecases(repository);
 });
 
+final getProyectosEnfermedadUseCaseProvider = Provider((ref) => GetProyectosEnfermedadUseCase(ref.watch(enfermedadRepositoryProvider)));
+
+final getContratistasEnfermedadesUseCaseProvider = Provider((ref) => GetContratistasEnfermedadesUseCase(ref.watch(enfermedadRepositoryProvider)));
+
+final getTrabajadoresEnfermedadUseCaseProvider = Provider((ref) => GetTrabajadoresEnfermedadUseCase(ref.watch(enfermedadRepositoryProvider)));
+
 //Provider del Notifier principal (lista y CRUD)
 
 final enfermedadNotifierProvider = StateNotifierProvider<EnfermedadNotifier, EnfermedadStates>((ref) {
@@ -64,7 +71,12 @@ final enfermedadNotifierProvider = StateNotifierProvider<EnfermedadNotifier, Enf
 
 //Provider del Notifier del formulario(valores de campos)
 final enfermedadFormNotifierProvider = StateNotifierProvider<EnfermedadFormNotifier, EnfermedadFormState>((ref) {
-  return EnfermedadFormNotifier();
+  return EnfermedadFormNotifier(
+    getProyectosUseCase: ref.watch(getProyectosEnfermedadUseCaseProvider),
+    getContratistasUseCase: ref.watch(getContratistasEnfermedadesUseCaseProvider),
+    getTrabajadoresUseCase: ref.watch(getTrabajadoresEnfermedadUseCaseProvider),
+
+  );
 });
 
 //Providers derivados (para acceso directo a partes del estado)

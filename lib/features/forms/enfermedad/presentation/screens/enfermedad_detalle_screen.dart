@@ -80,8 +80,8 @@ class EnfermedadDetalleScreen extends StatelessWidget {
                     title: 'Información General',
                     icon: Icons.info_outline,
                     children: [
-                      _buildInfoRow('Proyecto', enfermedad.proyecto),
-                      _buildInfoRow('Contratista', enfermedad.contratista),
+                      // _buildInfoRow('Proyecto', enfermedad.proyecto),
+                      // _buildInfoRow('Contratista', enfermedad.contratista),
                       _buildInfoRow('Mes', enfermedad.mes),
                       _buildInfoRow('Fecha de Registro', fechaFormateada),
                     ],

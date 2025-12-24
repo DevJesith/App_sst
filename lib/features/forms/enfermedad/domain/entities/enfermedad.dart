@@ -1,8 +1,9 @@
 class Enfermedad {
   final int? id;
   final String eventualidad;
-  final String proyecto;
-  final String contratista;
+  final int proyectoId;
+  final int contratistaId;
+  final int trabajadorId;
   final String mes;
   final String descripcion;
   final int diasIncapacidad;
@@ -15,8 +16,9 @@ class Enfermedad {
   const Enfermedad({
     this.id,
     required this.eventualidad,
-    required this.proyecto,
-    required this.contratista,
+    required this.proyectoId,
+    required this.contratistaId,
+    required this.trabajadorId,
     required this.mes,
     required this.descripcion,
     required this.diasIncapacidad,
