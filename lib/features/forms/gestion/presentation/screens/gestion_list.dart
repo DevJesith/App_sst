@@ -2,6 +2,7 @@ import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart'
 import 'package:app_sst/features/forms/gestion/presentation/providers/gestion_providers.dart';
 import 'package:app_sst/features/forms/gestion/presentation/screens/gestion_detalle_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -9,12 +10,31 @@ import 'package:intl/intl.dart';
 class GestionesList extends HookConsumerWidget {
   final String searchQuery;
 
-  const GestionesList({required this.searchQuery});
+  const GestionesList({super.key, required this.searchQuery});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gestionState = ref.watch(gestionNotifierProvider);
     final usuariosAsync = ref.watch(obtenerTodosUsuariosProvider);
+    
+    // 1. Obtener el caso de uso para traer los proyectos
+    final getProyectos = ref.read(getProyectosGestionUseCaseProvider);
+    
+    // 2. Estado local para guardar la lista de proyectos (Cache simple)
+    final listaProyectos = useState<List<Map<String, dynamic>>>([]);
+
+    // 3. Cargar proyectos al iniciar la pantalla
+    useEffect(() {
+      Future.microtask(() async {
+        try {
+          final proyectos = await getProyectos();
+          listaProyectos.value = proyectos;
+        } catch (e) {
+          print("Error cargando proyectos en lista: $e");
+        }
+      });
+      return null;
+    }, []);
 
     return usuariosAsync.when(
       data: (usuarios) {
@@ -28,13 +48,13 @@ class GestionesList extends HookConsumerWidget {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+              children: const [
                 Icon(
                   Icons.assignment_outlined,
                   size: 80,
                   color: Colors.black,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Text(
                   'No hay reportes de gestiones',
                   style: TextStyle(
@@ -47,7 +67,7 @@ class GestionesList extends HookConsumerWidget {
           );
         }
 
-        // Filtrar por búsqueda - CORREGIDO
+        // Filtrar por búsqueda
         final filteredGestiones = searchQuery.isEmpty
             ? gestiones
             : gestiones.where((gestion) {
@@ -78,7 +98,7 @@ class GestionesList extends HookConsumerWidget {
           itemBuilder: (context, index) {
             final gestion = filteredGestiones[index];
             
-            // Buscar usuario de forma segura - CORREGIDO
+            // Buscar usuario de forma segura
             String nombreUsuario = "Usuario desconocido";
             String emailUsuario = "Sin correo";
             
@@ -90,6 +110,20 @@ class GestionesList extends HookConsumerWidget {
               emailUsuario = usuario.email;
             } catch (e) {
               // Si no encuentra el usuario, usa los valores por defecto
+            }
+
+            // 4. Buscar el nombre del proyecto basado en el ID
+            String nombreProyecto = "Cargando...";
+            if (listaProyectos.value.isNotEmpty) {
+              try {
+                final proyectoObj = listaProyectos.value.firstWhere(
+                  (p) => p['id'] == gestion.proyectoId,
+                  orElse: () => {'Nombre': 'Desconocido'},
+                );
+                nombreProyecto = proyectoObj['Nombre'] ?? proyectoObj['nombre'] ?? 'Sin nombre';
+              } catch (_) {
+                nombreProyecto = "ID: ${gestion.proyectoId}";
+              }
             }
             
             final fechaFormateada = DateFormat('dd/MM/yyyy HH:mm')
@@ -118,7 +152,7 @@ class GestionesList extends HookConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Encabezado con usuario
+                      // Encabezado con Proyecto
                       Row(
                         children: [
                           CircleAvatar(
@@ -136,7 +170,8 @@ class GestionesList extends HookConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  gestion.proyecto,
+                                  // ✅ AQUI MOSTRAMOS EL NOMBRE REAL
+                                  nombreProyecto,
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -163,7 +198,7 @@ class GestionesList extends HookConsumerWidget {
 
                       const SizedBox(height: 8),
 
-                      // Información del usuario - CORREGIDO
+                      // Información del usuario
                       Row(
                         children: [
                           const Icon(

@@ -42,7 +42,7 @@ class GestionRepositoryImpl implements GestionRepository {
     try {
       final model = GestionModel(
       ee: gestion.ee, 
-      proyecto: gestion.proyecto, 
+      proyectoId: gestion.proyectoId, 
       epp: gestion.epp, 
       locativa: gestion.locativa, 
       extintorMaquina: gestion.extintorMaquina, 
@@ -67,7 +67,7 @@ class GestionRepositoryImpl implements GestionRepository {
       final model = GestionModel(
       id: gestion.id,
       ee: gestion.ee, 
-      proyecto: gestion.proyecto, 
+      proyectoId: gestion.proyectoId, 
       epp: gestion.epp, 
       locativa: gestion.locativa, 
       extintorMaquina: gestion.extintorMaquina, 
@@ -93,5 +93,11 @@ class GestionRepositoryImpl implements GestionRepository {
     } catch (e) {
       throw Exception('Error al eliminar gestion: $e');
     }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async {
+    return await localDatasources.getProyectos();
+    
   }
 }

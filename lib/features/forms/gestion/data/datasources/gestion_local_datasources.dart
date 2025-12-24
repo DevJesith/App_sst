@@ -9,6 +9,7 @@ abstract class GestionLocalDatasources {
   Future<int> crearGestion(GestionModel gestion);
   Future<int> actualizarGestion(GestionModel gestion);
   Future<int> eliminarGestion(int id);
+  Future<List<Map<String, dynamic>>> getProyectos();
 }
 
 class GestionLocalDataSourceImpl implements GestionLocalDatasources {
@@ -86,5 +87,11 @@ class GestionLocalDataSourceImpl implements GestionLocalDatasources {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getProyectos() async {
+    final db = await database.database;
+    return await db.query('Proyecto');
   }
 }

@@ -32,16 +32,24 @@ class GestionState {
 
 class GestionFormState {
   final List<XFile> imagenes;
+  final int? proyectoId;
+  final List<Map<String, dynamic>> listaProyectos;
 
   const GestionFormState({
-    this.imagenes = const []
+    this.imagenes = const [],
+    this.proyectoId,
+    this.listaProyectos = const []
   });
 
   GestionFormState copyWith ({
-    List<XFile>? imagenes
+    List<XFile>? imagenes,
+    int? proyectoId,
+    List<Map<String, dynamic>>? listaProyectos,
   }){
     return GestionFormState(
-      imagenes: imagenes ?? this.imagenes
+      imagenes: imagenes ?? this.imagenes,
+      proyectoId: proyectoId ?? this.proyectoId,
+      listaProyectos: listaProyectos ?? this.listaProyectos
     );
   }
 }

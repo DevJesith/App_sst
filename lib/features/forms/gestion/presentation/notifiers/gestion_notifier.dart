@@ -4,6 +4,7 @@ import 'package:app_sst/features/forms/gestion/domain/usecases/actualizar_gestio
 import 'package:app_sst/features/forms/gestion/domain/usecases/crear_gestion_usecases.dart';
 import 'package:app_sst/features/forms/gestion/domain/usecases/eliminar_gestion_usecases.dart';
 import 'package:app_sst/features/forms/gestion/domain/usecases/get_gestion_usecases.dart';
+import 'package:app_sst/features/forms/gestion/domain/usecases/get_maestros_gestion_usecases.dart';
 import 'package:app_sst/features/forms/gestion/presentation/states/gestion_state.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -96,7 +97,23 @@ class GestionNotifier extends StateNotifier<GestionState> {
 }
 
 class GestionFormNotifier extends StateNotifier<GestionFormState> {
-  GestionFormNotifier() : super(const GestionFormState());
+
+  final GetProyectosGestionUseCase getProyectosUseCase;
+
+  GestionFormNotifier({
+    required this.getProyectosUseCase
+  }) : super(const GestionFormState()){
+    _cargarProyectos();
+  }
+
+  Future<void> _cargarProyectos() async {
+    final proyectos = await getProyectosUseCase();
+    state = state.copyWith(listaProyectos: proyectos);
+  }
+
+  void setProyectos(int? id) {
+    state = state.copyWith(proyectoId: id);
+  }
   
   void setImagenes(List<XFile> nuevas) {
     state = state.copyWith(imagenes: nuevas);
@@ -119,6 +136,6 @@ class GestionFormNotifier extends StateNotifier<GestionFormState> {
   }
 
   void reset() {
-    state = const GestionFormState();
+    state = GestionFormState(listaProyectos: state.listaProyectos);
   }
 }

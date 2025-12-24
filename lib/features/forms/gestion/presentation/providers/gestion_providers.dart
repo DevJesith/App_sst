@@ -7,6 +7,7 @@ import 'package:app_sst/features/forms/gestion/domain/usecases/actualizar_gestio
 import 'package:app_sst/features/forms/gestion/domain/usecases/crear_gestion_usecases.dart';
 import 'package:app_sst/features/forms/gestion/domain/usecases/eliminar_gestion_usecases.dart';
 import 'package:app_sst/features/forms/gestion/domain/usecases/get_gestion_usecases.dart';
+import 'package:app_sst/features/forms/gestion/domain/usecases/get_maestros_gestion_usecases.dart';
 import 'package:app_sst/features/forms/gestion/presentation/notifiers/gestion_notifier.dart';
 import 'package:app_sst/features/forms/gestion/presentation/states/gestion_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -46,6 +47,11 @@ final eliminarGestionUseCaseProvider = Provider<EliminarGestionUsecases>((ref) {
   return EliminarGestionUsecases(repository);
 });
 
+final getProyectosGestionUseCaseProvider = Provider<GetProyectosGestionUseCase>((ref) {
+  final repo = ref.watch(gestionRepositoryProvider);
+  return GetProyectosGestionUseCase(repo);
+});
+
 //Provider del Notifier principal
 final gestionNotifierProvider = StateNotifierProvider<GestionNotifier, GestionState>((ref) {
   return GestionNotifier(
@@ -59,7 +65,9 @@ final gestionNotifierProvider = StateNotifierProvider<GestionNotifier, GestionSt
 //Provider del Notifier principal del formulario
 
 final gestionFormNotifierProvider = StateNotifierProvider<GestionFormNotifier, GestionFormState>((ref) {
-  return GestionFormNotifier();
+  return GestionFormNotifier(
+    getProyectosUseCase: ref.watch(getProyectosGestionUseCaseProvider),
+  );
 });
 
 //Providers derivados

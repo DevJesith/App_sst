@@ -3,7 +3,7 @@
 class Gestion {
   final int? id;
   final String ee;
-  final String proyecto;
+  final int proyectoId;
   final String epp;
   final String locativa;
   final String extintorMaquina;
@@ -19,7 +19,7 @@ class Gestion {
   const Gestion({
     this.id,
     required this.ee,
-    required this.proyecto,
+    required this.proyectoId,
     required this.epp,
     required this.locativa,
     required this.extintorMaquina,

@@ -2,6 +2,7 @@ import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart'
 import 'package:app_sst/features/forms/gestion/domain/entities/gestion.dart';
 import 'package:app_sst/features/forms/gestion/presentation/providers/gestion_providers.dart';
 import 'package:app_sst/shared/widgets/inputs_widgets.dart';
+import 'package:app_sst/shared/widgets/lista_input_wigets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -22,7 +23,7 @@ class GestionFormScreen extends HookConsumerWidget {
 
     //Controllers
     final eeController = useTextEditingController(text: gestion?.ee ?? '');
-    final proyectoController = useTextEditingController(text: gestion?.proyecto ?? '');
+
     final eppController = useTextEditingController(text: gestion?.epp ?? '');
     final locativaController = useTextEditingController(
       text: gestion?.locativa ?? '',
@@ -43,6 +44,18 @@ class GestionFormScreen extends HookConsumerWidget {
     final isSubmitting = ref.watch(gestionesSubmittingProvider);
 
     final imagePicker = useMemoized(() => ImagePicker());
+
+    final nombresProyectos = formState.listaProyectos.map((e) => (e['Nombre'] ?? e['nombre']).toString()).toList();
+
+    String? nombresProyectoSeleccionado;
+    if (formState.proyectoId != null && formState.listaProyectos.isNotEmpty) {
+      try {
+        final proyecto = formState.listaProyectos.firstWhere(
+          (p) => p['id'] == formState.proyectoId,
+        );
+        nombresProyectoSeleccionado = proyecto['Nombre'] ?? proyecto['nombre'];
+      } catch (_) {}
+    }
 
     //Funcion para seleccionar foto
     Future<void> pickImage(ImageSource source) async {
@@ -95,6 +108,13 @@ class GestionFormScreen extends HookConsumerWidget {
     Future<void> submit() async {
       if (!formKey.currentState!.validate()) return;
 
+      if (formState.proyectoId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Selecciona un proyecto')),
+        );
+        return;
+      }
+
       if (formState.imagenes.length < 3) {
         ScaffoldMessenger.of(
           context,
@@ -109,7 +129,7 @@ class GestionFormScreen extends HookConsumerWidget {
       final nuevaGestion = Gestion(
         id: gestion?.id,
         ee: eeController.text,
-        proyecto: proyectoController.text,
+        proyectoId: formState.proyectoId!,
         epp: eppController.text,
         locativa: locativaController.text,
         extintorMaquina: extintorMaquinaController.text,
@@ -162,6 +182,13 @@ class GestionFormScreen extends HookConsumerWidget {
       }
     }
 
+    useEffect(() {
+      if (gestion != null) {
+        formNotifier.setProyectos(gestion!.proyectoId);
+      }
+      return null;
+    }, []);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
@@ -187,14 +214,23 @@ class GestionFormScreen extends HookConsumerWidget {
 
                 const SizedBox(height: 30),
 
-                // /// Campos de texto
-                inputReutilizables(
-                  controller: proyectoController,
+                // ✅ PROYECTO (Estilo Tuyo)
+                ListaInputWigets(
                   nameInput: 'Proyecto',
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Este campo es obligatorio'
-                      : null,
+                  label: 'Selecciona un proyecto',
+                  items: nombresProyectos,
+                  value: nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
+                  onChanged: (nombre) {
+                    // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
+                    final proyecto = formState.listaProyectos.firstWhere(
+                      (p) => (p['Nombre'] ?? p['nombre']) == nombre
+                    );
+                    // Mandar el ID al notifier
+                    formNotifier.setProyectos(proyecto['id'] as int);
+                  },
+                  validator: (value) => value == null ? 'Requerido' : null,
                 ),
+
                 const SizedBox(height: 20),
 
                 inputReutilizables(

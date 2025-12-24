@@ -9,4 +9,5 @@ abstract class GestionRepository {
   Future<int> crearGestion(Gestion gestion);
   Future<int> actualizarGestion(Gestion gestion);
   Future<int> eliminarGestion(int id);
+  Future<List<Map<String, dynamic>>> getProyectos();
 }
