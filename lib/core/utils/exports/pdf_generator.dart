@@ -1,67 +1,28 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-class ExportUtils {
-  /// Exporta la base de datos SQLite (Archivo .db)
-  static Future<void> exportDatabase(BuildContext context) async {
-    try {
-      // Solicitar permisos (Android 11+ y anteriores)
-      if (Platform.isAndroid) {
-        if (await Permission.manageExternalStorage.isDenied) {
-          // ... (Lógica de permisos igual que antes) ...
-           final status = await Permission.manageExternalStorage.request();
-           if (!status.isGranted) return;
-        }
-      }
-
-      final dbPath = await getDatabasesPath();
-      // Asegúrate de usar el nombre correcto de tu BD actual
-      final dbFile = File(join(dbPath, 'appsst_final_v1.db')); 
-
-      if (!await dbFile.exists()) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Base de datos no encontrada')),
-          );
-        }
-        return;
-      }
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = await getExternalStorageDirectory();
-        if (directory == null) {
-          directory = Directory('/storage/emulated/0/Download');
-        }
-      } else {
-        directory = await getApplicationDocumentsDirectory();
-      }
-
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final exportPath = '${directory.path}/appsst_backup_$timestamp.db';
-
-      await Directory(directory.path).create(recursive: true);
-      await dbFile.copy(exportPath);
-
-      if (context.mounted) {
-        Share.shareXFiles([XFile(exportPath)], text: 'Respaldo BD AppSST');
-      }
-    } catch (e) {
-      debugPrint('Error exportando: $e');
-    }
-  }
-
-  /// Genera un PDF con información detallada y NOMBRES REALES (JOINs)
+/// Clase encargada de la generacion y diseño del reporte
+///
+/// Uiliza los paquetes 'pdf' para crear el documento y 'printing' para compartirlo o imprimirlo
+///
+/// Realiza consultas SQL avanzadas (JOINs) para transformar los IDs numericos
+/// almacenados en la BD en nombres legibles para el usuario final.
+class PdfGenerator {
+  /// Genera un PDF consolidado con la informacion de todos los modulos de la App.
+  ///
+  /// Flujo del proceso:
+  /// 1. Muestra un indicador de carga
+  /// 2. Abre la base de datos loca.
+  /// 3. Ejecuta las consultas para extrar los datos de las tablas
+  /// 4. Construye el docuemnto PDF pagina por pagina.
+  /// 5. Guarda el archvio temporalmente y abre el menu de compartir
   static Future<void> generateDatabasePDF(BuildContext context) async {
     try {
+      // 1. Mostrar indicador de carga
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -69,31 +30,37 @@ class ExportUtils {
       );
 
       final pdf = pw.Document();
-      final dbPath = await getDatabasesPath();
-      // ⚠️ Asegúrate que este nombre coincida con el de tu app_database.dart
-      final db = await openDatabase(join(dbPath, 'appsst_final_v1.db')); 
 
-      // 1. USUARIOS
+      // 2. Abrir la base de datos
+      final dbPath = await getDatabasesPath();
+      final db = await openDatabase(join(dbPath, 'appsst_final_v1.db'));
+
+      // -------------------------------------------------
+      // 3. EXTRACCION DE DATOS
+      // -------------------------------------------------
+
+      // Usuarios: Consulta simple
       final usuarios = await db.query('usuarios');
 
-      // 2. ACCIDENTES (Este quedó con texto plano según tu última indicación)
+      // Accidentes: Consulta simple
       final accidentes = await db.query('Accidente');
 
-      // 3. INCIDENTES (Relacional: Traemos el nombre del Proyecto)
+      // Incidentes: Usamos LEFT JOIN para obtener el nombre del Proyecto
+      // en lugar de mosrtar solo el ID numero (Proyecto_id).
       final incidentes = await db.rawQuery('''
         SELECT i.*, p.Nombre as nombre_proyecto
         FROM Incidente i
         LEFT JOIN Proyecto p ON i.Proyecto_id = p.id
       ''');
 
-      // 4. GESTIÓN (Relacional: Traemos el nombre del Proyecto)
+      // Gestion: JOIN con Proyecto
       final gestiones = await db.rawQuery('''
         SELECT g.*, p.Nombre as nombre_proyecto
         FROM Gestion_inspeccion g
         LEFT JOIN Proyecto p ON g.Proyecto_id = p.id
       ''');
 
-      // 5. CAPACITACIÓN (Relacional: Proyecto y Contratista)
+      // Capacitacion: JOIN doble (Proyecto y Contratista)
       final capacitaciones = await db.rawQuery('''
         SELECT c.*, p.Nombre as nombre_proyecto, ct.Nombre as nombre_contratista
         FROM Capacitacion c
@@ -101,7 +68,7 @@ class ExportUtils {
         LEFT JOIN Contratista ct ON c.Contratista_id = ct.id
       ''');
 
-      // 6. ENFERMEDAD LABORAL (Relacional Completo: Proyecto, Contratista, Trabajador)
+      // Enfermedad laboral: JOIN triple (Proyecto, Contratista, Trabajador)
       final enfermedades = await db.rawQuery('''
         SELECT e.*, 
                p.Nombre as nombre_proyecto, 
@@ -115,7 +82,10 @@ class ExportUtils {
 
       await db.close();
 
-      // Construcción del PDF
+      // -------------------------------------------------
+      // 4. CONSTRUCCION VISUAL DEL PDF
+      // -------------------------------------------------
+
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
@@ -124,7 +94,8 @@ class ExportUtils {
             return [
               _buildHeader(),
               pw.SizedBox(height: 20),
-              
+
+              // Tabla de resumen
               _buildSectionTitle('Resumen General'),
               _buildSummaryTable([
                 ['Usuarios', usuarios.length.toString()],
@@ -136,6 +107,7 @@ class ExportUtils {
               ]),
               pw.SizedBox(height: 20),
 
+              // Secciones detallatadas
               if (accidentes.isNotEmpty) ...[
                 _buildSectionTitle('Reportes de Accidentes'),
                 _buildAccidentesTable(accidentes),
@@ -169,14 +141,17 @@ class ExportUtils {
         ),
       );
 
-      if (context.mounted) Navigator.pop(context); // Cerrar loading
+      // Cerrar indicador de carga
+      if (context.mounted) Navigator.pop(context);
 
+      // 5. Guardar y Compartir
       await Printing.layoutPdf(
         onLayout: (PdfPageFormat format) async => await pdf.save(),
       );
-
     } catch (e) {
+      // Manejo de errores
       if (context.mounted) {
+        // Asegurar que se cierre el loading
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error PDF: $e'), backgroundColor: Colors.red),
@@ -185,48 +160,78 @@ class ExportUtils {
     }
   }
 
-  // --- WIDGETS DEL PDF ---
+  // -------------------------------------------------
+  // WIDGETS AUXILIARES (COMPONENTES VISUALES DEL PDF)
+  // -------------------------------------------------
 
+  // Construye el encabezado del reporte con titulo y fecha
   static pw.Widget _buildHeader() {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text('Reporte Consolidado SST', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-        pw.Text('Generado el: ${DateTime.now().toString().split('.')[0]}', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey)),
+        pw.Text(
+          'Reporte Consolidado SST',
+          style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.Text(
+          'Generado el: ${DateTime.now().toString().split('.')[0]}',
+          style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey),
+        ),
         pw.Divider(),
       ],
     );
   }
 
+  /// Construye un titulo de seccion con estilo azul.
   static pw.Widget _buildSectionTitle(String title) {
     return pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 10),
-      child: pw.Text(title, style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.blue800)),
+      child: pw.Text(
+        title,
+        style: pw.TextStyle(
+          fontSize: 16,
+          fontWeight: pw.FontWeight.bold,
+          color: PdfColors.blue800,
+        ),
+      ),
     );
   }
 
+  /// Construye la tabla de resumen numerico
   static pw.Widget _buildSummaryTable(List<List<String>> data) {
     return pw.Table.fromTextArray(
       headers: ['Módulo', 'Cantidad'],
       data: data,
-      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      headerStyle: pw.TextStyle(
+        fontWeight: pw.FontWeight.bold,
+        color: PdfColors.white,
+      ),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.blue700),
       cellAlignment: pw.Alignment.centerLeft,
     );
   }
 
-  // 1. Tabla Accidentes (Texto plano)
+  // TABLAS ESPECIFICAS POR MODULO
+
   static pw.Widget _buildAccidentesTable(List<Map<String, dynamic>> data) {
     return pw.Table.fromTextArray(
       headers: ['ID', 'Eventualidad', 'Proyecto', 'Contratista', 'Estado'],
-      data: data.map((e) => [
-        e['id'].toString(),
-        e['eventualidad'] ?? '',
-        e['proyecto'] ?? '',
-        e['contratista'] ?? '',
-        e['estado'] ?? '',
-      ]).toList(),
-      headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      data: data
+          .map(
+            (e) => [
+              e['id'].toString(),
+              e['eventualidad'] ?? '',
+              e['proyecto'] ?? '',
+              e['contratista'] ?? '',
+              e['estado'] ?? '',
+            ],
+          )
+          .toList(),
+      headerStyle: pw.TextStyle(
+        fontSize: 10,
+        fontWeight: pw.FontWeight.bold,
+        color: PdfColors.white,
+      ),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey700),
       cellStyle: const pw.TextStyle(fontSize: 9),
     );
@@ -236,29 +241,46 @@ class ExportUtils {
   static pw.Widget _buildIncidentesTable(List<Map<String, dynamic>> data) {
     return pw.Table.fromTextArray(
       headers: ['ID', 'Eventualidad', 'Proyecto', 'Estado'],
-      data: data.map((e) => [
-        e['id'].toString(),
-        e['eventualidad'] ?? '',
-        e['nombre_proyecto'] ?? 'ID: ${e['Proyecto_id']}', // Muestra nombre real
-        e['estado'] ?? '',
-      ]).toList(),
-      headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      data: data
+          .map(
+            (e) => [
+              e['id'].toString(),
+              e['eventualidad'] ?? '',
+              e['nombre_proyecto'] ??
+                  'ID: ${e['Proyecto_id']}', // Muestra nombre real
+              e['estado'] ?? '',
+            ],
+          )
+          .toList(),
+      headerStyle: pw.TextStyle(
+        fontSize: 10,
+        fontWeight: pw.FontWeight.bold,
+        color: PdfColors.white,
+      ),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey700),
       cellStyle: const pw.TextStyle(fontSize: 9),
     );
   }
 
-  // 3. Tabla Gestión (Con JOIN)
+  // 3. Tabla Gestion (Con JOIN)
   static pw.Widget _buildGestionesTable(List<Map<String, dynamic>> data) {
     return pw.Table.fromTextArray(
       headers: ['ID', 'Proyecto', 'Cumple', 'Fecha'],
-      data: data.map((e) => [
-        e['id'].toString(),
-        e['nombre_proyecto'] ?? 'ID: ${e['Proyecto_id']}',
-        e['gestion_cumpl_cont'] ?? '',
-        e['fecha_registro']?.toString().split(' ')[0] ?? '',
-      ]).toList(),
-      headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      data: data
+          .map(
+            (e) => [
+              e['id'].toString(),
+              e['nombre_proyecto'] ?? 'ID: ${e['Proyecto_id']}',
+              e['gestion_cumpl_cont'] ?? '',
+              e['fecha_registro']?.toString().split(' ')[0] ?? '',
+            ],
+          )
+          .toList(),
+      headerStyle: pw.TextStyle(
+        fontSize: 10,
+        fontWeight: pw.FontWeight.bold,
+        color: PdfColors.white,
+      ),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey700),
       cellStyle: const pw.TextStyle(fontSize: 9),
     );
@@ -268,14 +290,22 @@ class ExportUtils {
   static pw.Widget _buildCapacitacionesTable(List<Map<String, dynamic>> data) {
     return pw.Table.fromTextArray(
       headers: ['ID', 'Tema', 'Proyecto', 'Contratista', 'Asistentes'],
-      data: data.map((e) => [
-        e['id'].toString(),
-        e['Descripcion'] ?? '', // A veces es descripcion o tema
-        e['nombre_proyecto'] ?? '',
-        e['nombre_contratista'] ?? '',
-        e['Numero_personas']?.toString() ?? '0',
-      ]).toList(),
-      headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      data: data
+          .map(
+            (e) => [
+              e['id'].toString(),
+              e['Descripcion'] ?? '',
+              e['nombre_proyecto'] ?? '',
+              e['nombre_contratista'] ?? '',
+              e['Numero_personas']?.toString() ?? '0',
+            ],
+          )
+          .toList(),
+      headerStyle: pw.TextStyle(
+        fontSize: 10,
+        fontWeight: pw.FontWeight.bold,
+        color: PdfColors.white,
+      ),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey700),
       cellStyle: const pw.TextStyle(fontSize: 9),
     );
@@ -285,14 +315,22 @@ class ExportUtils {
   static pw.Widget _buildEnfermedadesTable(List<Map<String, dynamic>> data) {
     return pw.Table.fromTextArray(
       headers: ['ID', 'Eventualidad', 'Proyecto', 'Contratista', 'Trabajador'],
-      data: data.map((e) => [
-        e['id'].toString(),
-        e['eventualidad'] ?? '',
-        e['nombre_proyecto'] ?? '',
-        e['nombre_contratista'] ?? '',
-        e['nombre_trabajador'] ?? '',
-      ]).toList(),
-      headerStyle: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      data: data
+          .map(
+            (e) => [
+              e['id'].toString(),
+              e['eventualidad'] ?? '',
+              e['nombre_proyecto'] ?? '',
+              e['nombre_contratista'] ?? '',
+              e['nombre_trabajador'] ?? '',
+            ],
+          )
+          .toList(),
+      headerStyle: pw.TextStyle(
+        fontSize: 10,
+        fontWeight: pw.FontWeight.bold,
+        color: PdfColors.white,
+      ),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey700),
       cellStyle: const pw.TextStyle(fontSize: 9),
     );
