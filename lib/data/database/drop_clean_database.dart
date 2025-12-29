@@ -1,13 +1,34 @@
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-/// Elimina la base de datos local `appsst.db`.
-/// Útil para pruebas, reinicios o limpieza de datos.
-Future<void> eliminarBD() async{
-  final dbPath = await getDatabasesPath();
-  final path = join(dbPath, 'appsst_final_v1.db');
+/// Utilidad para el mantenimiento y limpieza de la base de datos
+class DatabaseResetter {
 
-  await deleteDatabase(path);
+  /// Elimina fisicamente el archuvo de la base de datos local.
+  /// 
+  /// ⚠️ **ADVERTENCIA:** Esta acción es irreversible. 
+  /// se perderan todos los datos guardados localmente
+  /// 
+  /// Util para: 
+  /// * Reiniciar la aplicacion a estado de fabrica durante el desarrollo
+  /// * Limpiar datos corruptos o esquemas desactualizados.
+  /// * Simular una instancia limpia.
+  
+  static Future<void> eliminarBD() async {
+    try {
+      
+      final dbPath = await getDatabasesPath();
 
-  print("✅ Base de datos eliminada");
+      // Nombre de la bd
+      final path = join(dbPath, 'appsst_final_v1.db');
+
+      await deleteDatabase(path);
+
+      debugPrint("✅ Base de datos eliminada correctamente: $path");
+    } catch (e) {
+      debugPrint("❌ Error al eliminar la base de datos: $e");
+    }
+  }
+
 }

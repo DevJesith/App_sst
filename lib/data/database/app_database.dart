@@ -1,8 +1,9 @@
-// lib/core/data/database/app_database.dart
-
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+/// Clase Singleton que gestiona la conexion y estructura de la base de datos SQLite local.
+///
+/// Contiene el esquema compelo de 19 tablas y datos de prueba (Seeders).
 class AppDatabase {
   static final AppDatabase _instancia = AppDatabase._interno();
   factory AppDatabase() => _instancia;
@@ -10,6 +11,7 @@ class AppDatabase {
 
   static Database? _db;
 
+  /// Obtiene la instancia de la base de datos. Si no existe, la inicializa
   Future<Database> get database async {
     if (_db != null) return _db!;
     _db = await _initDB();
@@ -17,14 +19,15 @@ class AppDatabase {
   }
 
   Future<Database> _initDB() async {
+    // Nombre de la base de datos
     String path = join(await getDatabasesPath(), 'appsst_final_v1.db');
     return openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
   Future _onCreate(Database db, int version) async {
-    // ==============================================================================
-    // 1. TABLAS DEL SISTEMA (Usuarios y Config)
-    // ==============================================================================
+    // ------------------------------------------------------------------------------
+    // 1. TABLAS DEL SISTEMA (Usuarios y recuperar contraseña)
+    // ------------------------------------------------------------------------------
     await db.execute('''
       CREATE TABLE usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,22 +47,34 @@ class AppDatabase {
       )
     ''');
 
-    // ==============================================================================
-    // 2. TABLAS MAESTRAS (Datos que vienen del servidor/oficina)
-    // ==============================================================================
-    
-    await db.execute('CREATE TABLE Proyecto (id INTEGER PRIMARY KEY, Nombre TEXT, Responsable TEXT, Ubicacion TEXT)');
-    await db.execute('CREATE TABLE Contratista (id INTEGER PRIMARY KEY, Nombre TEXT, Ubicacion TEXT, Numero_trabaj INTEGER, Actividad TEXT)');
-    await db.execute('CREATE TABLE Trabajador (id INTEGER PRIMARY KEY, Nombres TEXT, Fecha_Nac TEXT, Genero TEXT, Direccion TEXT, Telefono TEXT, Correo TEXT)');
-    await db.execute('CREATE TABLE Maquina (id INTEGER PRIMARY KEY, Nombre TEXT, Tipo TEXT, Modelo TEXT, Linea TEXT, Placa TEXT)');
-    await db.execute('CREATE TABLE Tipo_Maquina (id INTEGER PRIMARY KEY, Nombre TEXT)');
-    await db.execute('CREATE TABLE Tipo_Vehiculo (id INTEGER PRIMARY KEY, descripcion TEXT)');
+    // ------------------------------------------------------------------------------
+    // 2. TABLAS MAESTRAS (Datos que vienen del servidor)
+    // ------------------------------------------------------------------------------
 
-    // ==============================================================================
+    await db.execute(
+      'CREATE TABLE Proyecto (id INTEGER PRIMARY KEY, Nombre TEXT, Responsable TEXT, Ubicacion TEXT)',
+    );
+    await db.execute(
+      'CREATE TABLE Contratista (id INTEGER PRIMARY KEY, Nombre TEXT, Ubicacion TEXT, Numero_trabaj INTEGER, Actividad TEXT)',
+    );
+    await db.execute(
+      'CREATE TABLE Trabajador (id INTEGER PRIMARY KEY, Nombres TEXT, Fecha_Nac TEXT, Genero TEXT, Direccion TEXT, Telefono TEXT, Correo TEXT)',
+    );
+    await db.execute(
+      'CREATE TABLE Maquina (id INTEGER PRIMARY KEY, Nombre TEXT, Tipo TEXT, Modelo TEXT, Linea TEXT, Placa TEXT)',
+    );
+    await db.execute(
+      'CREATE TABLE Tipo_Maquina (id INTEGER PRIMARY KEY, Nombre TEXT)',
+    );
+    await db.execute(
+      'CREATE TABLE Tipo_Vehiculo (id INTEGER PRIMARY KEY, descripcion TEXT)',
+    );
+
+    // ------------------------------------------------------------------------------
     // 3. TABLAS INTERMEDIAS (Relaciones Muchos a Muchos - La lógica del negocio)
-    // ==============================================================================
+    // ------------------------------------------------------------------------------
 
-    // Qué contratistas están en qué proyecto
+    // Relacion: Proyecto <-> Contratista
     await db.execute('''
       CREATE TABLE Contratis_Proyecto (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,7 +87,7 @@ class AppDatabase {
       )
     ''');
 
-    // Qué trabajadores tiene un contratista en un proyecto específico
+    // Relacion: Contratista <-> Trabajador
     await db.execute('''
       CREATE TABLE Trabajador_Contratis (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +100,7 @@ class AppDatabase {
       )
     ''');
 
-    // Qué máquinas tiene un contratista
+    // Relacion: Contratista <-> Maquina
     await db.execute('''
       CREATE TABLE Maquinaria_Contratis (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,7 +113,7 @@ class AppDatabase {
       )
     ''');
 
-    // Tabla: Maquinaria_Proyecto (LA QUE FALTABA)
+    // Relacion: Proyecto <-> Maquina
     await db.execute('''
       CREATE TABLE Maquinaria_Proyecto (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,6 +136,7 @@ class AppDatabase {
       )
     ''');
 
+    // Relacion: Proyecto <-> Vehiculos
     await db.execute('''
       CREATE TABLE Vehiculos_Proyecto (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -136,11 +152,26 @@ class AppDatabase {
       )
     ''');
 
-    // ==============================================================================
-    // 4. TABLAS DE FORMULARIOS (Lo que llena el usuario en la App)
-    // ==============================================================================
-    // Nota: Usamos IDs (INTEGER) para relacionar, pero si la profesora pide ver TEXTO,
-    // haremos la conversión al exportar el PDF o Excel. Es mejor guardar IDs para integridad.
+    // Tabla: Ingreso de Maquinas
+    await db.execute('''
+      CREATE TABLE Ingreso_Maquinas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Contratista_id INTEGER,
+        Maquina_id INTEGER,
+        Proyecto_id INTEGER,
+        Nombre TEXT,
+        Operativo TEXT,
+        Preoperacional_Inicial TEXT,
+        Preoperacional_Manteni TEXT,
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id),
+        FOREIGN KEY (Maquina_id) REFERENCES Maquina(id),
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id)
+      )
+    ''');
+
+    // ------------------------------------------------------------------------------
+    // 4. TABLAS TRANSACCIONALES (Formularios de recoleccion de datos)
+    // ------------------------------------------------------------------------------
 
     // --- ACCIDENTE ---
     await db.execute('''
@@ -203,25 +234,7 @@ class AppDatabase {
       )
     ''');
 
-    await db.execute('''
-      CREATE TABLE Ingreso_Maquinas (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        Contratista_id INTEGER,
-        Maquina_id INTEGER,
-        Proyecto_id INTEGER,
-        Nombre TEXT,
-        Operativo TEXT,
-        Preoperacional_Inicial TEXT,
-        Preoperacional_Manteni TEXT,
-        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id),
-        FOREIGN KEY (Maquina_id) REFERENCES Maquina(id),
-        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id)
-      )
-    ''');
-
-    // --- CAPACITACION (CORREGIDA) ---
-    // ✅ Agregado fecha_registro
-    // ✅ Mantenemos INTEGER para Proyecto y Contratista porque tu Modelo usa int
+    // --- CAPACITACION ---
     await db.execute('''
       CREATE TABLE Capacitacion (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -239,6 +252,7 @@ class AppDatabase {
         FOREIGN KEY (Contratista_id) REFERENCES Contratista(id)
       )
     ''');
+
     // --- GESTION INSPECCION ---
     await db.execute('''
       CREATE TABLE Gestion_inspeccion (
@@ -261,49 +275,90 @@ class AppDatabase {
       )
     ''');
 
-
     // ✅ INSERTAR DATOS DE PRUEBA (SIMULACIÓN)
     await _seedData(db);
   }
 
-  // ==============================================================================
-  // SEEDERS: Datos falsos para probar la App sin PostgreSQL
-  // ==============================================================================
+  // ------------------------------------------------------------------------------
+  // SEEDERS: Datos iniciales para pruebas Offline
+  // ------------------------------------------------------------------------------
+
   Future<void> _seedData(Database db) async {
     print("🌱 Sembrando datos de prueba...");
 
     // 1. Proyectos
-    int p1 = await db.insert('Proyecto', {'Nombre': 'Residencial Altos del Norte', 'Responsable': 'Arq. Carlos', 'Ubicacion': 'Zona Norte'});
-    int p2 = await db.insert('Proyecto', {'Nombre': 'Puente Centenario', 'Responsable': 'Ing. Sofia', 'Ubicacion': 'Vía Principal'});
+    int p1 = await db.insert('Proyecto', {
+      'Nombre': 'Residencial Altos del Norte',
+      'Responsable': 'Arq. Carlos',
+      'Ubicacion': 'Zona Norte',
+    });
+    int p2 = await db.insert('Proyecto', {
+      'Nombre': 'Puente Centenario',
+      'Responsable': 'Ing. Sofia',
+      'Ubicacion': 'Vía Principal',
+    });
 
     // 2. Contratistas
-    int c1 = await db.insert('Contratista', {'Nombre': 'Constructora ABC', 'Actividad': 'Obra Civil'});
-    int c2 = await db.insert('Contratista', {'Nombre': 'Electricidad Segura SAS', 'Actividad': 'Redes'});
-    int c3 = await db.insert('Contratista', {'Nombre': 'Maquinaria Pesada LTDA', 'Actividad': 'Movimiento Tierra'});
+    int c1 = await db.insert('Contratista', {
+      'Nombre': 'Constructora ABC',
+      'Actividad': 'Obra Civil',
+    });
+    int c2 = await db.insert('Contratista', {
+      'Nombre': 'Electricidad Segura SAS',
+      'Actividad': 'Redes',
+    });
+    int c3 = await db.insert('Contratista', {
+      'Nombre': 'Maquinaria Pesada LTDA',
+      'Actividad': 'Movimiento Tierra',
+    });
 
-    // 3. Relación Proyecto <-> Contratista (CRUCIAL PARA LOS DROPDOWNS)
-    // En el Proyecto 1 trabajan la Constructora y los Eléctricos
-    await db.insert('Contratis_Proyecto', {'Proyecto_id': p1, 'Contratista_id': c1});
-    await db.insert('Contratis_Proyecto', {'Proyecto_id': p1, 'Contratista_id': c2});
-    
+    // 3. Relacion Proyecto <-> Contratista
+    await db.insert('Contratis_Proyecto', {
+      'Proyecto_id': p1,
+      'Contratista_id': c1,
+    });
+    await db.insert('Contratis_Proyecto', {
+      'Proyecto_id': p1,
+      'Contratista_id': c2,
+    });
+
     // En el Proyecto 2 trabaja Maquinaria Pesada
-    await db.insert('Contratis_Proyecto', {'Proyecto_id': p2, 'Contratista_id': c3});
+    await db.insert('Contratis_Proyecto', {
+      'Proyecto_id': p2,
+      'Contratista_id': c3,
+    });
 
     // 4. Trabajadores
-    int t1 = await db.insert('Trabajador', {'Nombres': 'Pedro Picapiedra', 'Correo': 'pedro@mail.com'});
-    int t2 = await db.insert('Trabajador', {'Nombres': 'Pablo Marmol', 'Correo': 'pablo@mail.com'});
+    int t1 = await db.insert('Trabajador', {
+      'Nombres': 'Pedro Picapiedra',
+      'Correo': 'pedro@mail.com',
+    });
+    int t2 = await db.insert('Trabajador', {
+      'Nombres': 'Pablo Marmol',
+      'Correo': 'pablo@mail.com',
+    });
 
-    // Relacionar Trabajadores
-    await db.insert('Trabajador_Contratis', {'Proyecto_id': p1, 'Contratista_id': c1, 'Trabajador_id': t1});
+    // 5. Relacionar Trabajadores
+    await db.insert('Trabajador_Contratis', {
+      'Proyecto_id': p1,
+      'Contratista_id': c1,
+      'Trabajador_id': t1,
+    });
 
-    print("✅ Datos de prueba insertados. ¡Lista para usar!");
+    print("✅ Datos de prueba insertados correctamente.");
   }
 
-  // ==============================================================================
+  // ------------------------------------------------------------------------------
   // FUNCIONES DE ACCESO A DATOS (QUERIES)
-  // ==============================================================================
+  // ------------------------------------------------------------------------------
 
-  Future<int> insertarUsuario(String nombre, String apellido, String email, String contrasena) async {
+  /// Inserta un nuevo usuario en la base de datos local.
+  Future<int> insertarUsuario(
+    String nombre,
+    String apellido,
+    String email,
+    String contrasena,
+  ) async {
     final db = await database;
     return await db.insert('usuarios', {
       'nombre': nombre,
@@ -313,6 +368,8 @@ class AppDatabase {
     });
   }
 
+  /// Verifica ñas credenciales del usuario para el inicio de sesion.
+  /// Retorna el mapa del usuario si existe, o null si no.
   Future<Map<String, dynamic>?> login(String email, String contrasena) async {
     final db = await database;
     final res = await db.query(
@@ -325,29 +382,44 @@ class AppDatabase {
 
   // --- GETTERS PARA LOS DROPDOWNS ---
 
+  /// Obtiene la lista completa de proyectos disponibles.
   Future<List<Map<String, dynamic>>> obtenerProyectos() async {
     final db = await database;
     return await db.query('Proyecto');
   }
 
-  // Esta es la consulta mágica que filtra contratistas según el proyecto
-  Future<List<Map<String, dynamic>>> obtenerContratistasPorProyecto(int proyectoId) async {
+  /// Obtiene los contratistas asociados a un proyecto especifico.
+  /// Realiza un JOIN con la tabla intermedia 'Contratis_Proyecto'.
+  Future<List<Map<String, dynamic>>> obtenerContratistasPorProyecto(
+    int proyectoId,
+  ) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT c.id, c.Nombre 
       FROM Contratista c
       INNER JOIN Contratis_Proyecto cp ON c.id = cp.Contratista_id
       WHERE cp.Proyecto_id = ?
-    ''', [proyectoId]);
+    ''',
+      [proyectoId],
+    );
   }
-  
-  Future<List<Map<String, dynamic>>> obtenerTrabajadoresPorContratista(int proyectoId, int contratistaId) async {
+
+  /// Obtiene los trabajadores asociados a un contratista en un proyecto especifico
+  /// Realiza un JOIN con la tabla intermedia 'Trabajador_Contratis'.
+  Future<List<Map<String, dynamic>>> obtenerTrabajadoresPorContratista(
+    int proyectoId,
+    int contratistaId,
+  ) async {
     final db = await database;
-    return await db.rawQuery('''
+    return await db.rawQuery(
+      '''
       SELECT t.id, t.Nombres 
       FROM Trabajador t
       INNER JOIN Trabajador_Contratis tc ON t.id = tc.Trabajador_id
       WHERE tc.Proyecto_id = ? AND tc.Contratista_id = ?
-    ''', [proyectoId, contratistaId]);
+    ''',
+      [proyectoId, contratistaId],
+    );
   }
 }
