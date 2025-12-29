@@ -1,5 +1,3 @@
-// features/forms/capacitacion/presentation/providers/capacitacion_providers.dart
-
 import 'package:app_sst/data/database/app_database.dart';
 import 'package:app_sst/features/forms/capacitacion/data/datasources/capacitacion_local_datasources.dart';
 import 'package:app_sst/features/forms/capacitacion/domain/repositories/capacitacion_repository.dart';
@@ -10,28 +8,35 @@ import 'package:app_sst/features/forms/capacitacion/domain/usecases/get_capacita
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/get_maestros_capacitacion_usecases.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../data/repositories_impl/capacitacion_repository_impl.dart';
-
 import '../notifiers/capacitacion_notifier.dart';
 import '../states/capacitacion_state.dart';
 
-// Provider de Database
+// ----------------------------------------------------------------------------------------
+// 1. CAPA DE DATOS
+// ----------------------------------------------------------------------------------------
+
+/// Provider de la BD local.
 final databaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
 });
 
-// Provider de DataSource
+/// Provider del DataSource local.
 final capacitacionLocalDataSourceProvider = Provider<CapacitacionLocalDataSource>((ref) {
   final database = ref.watch(databaseProvider);
   return CapacitacionLocalDataSourceImpl(database: database);
 });
 
-// Provider de Repository
+// Provider del repositorio.
 final capacitacionRepositoryProvider = Provider<CapacitacionRepository>((ref) {
   final localDataSource = ref.watch(capacitacionLocalDataSourceProvider);
   return CapacitacionRepositoryImpl(localDataSource: localDataSource);
 });
 
-// Providers de Use Cases
+// ----------------------------------------------------------------------------------------
+// 2. CAPA DE DOMINIO
+// ----------------------------------------------------------------------------------------
+
+// --- CRUD ---
 final getCapacitacionesUseCaseProvider = Provider<GetCapacitacionesUsecases>((ref) {
   final repository = ref.watch(capacitacionRepositoryProvider);
   return GetCapacitacionesUsecases(repository);
@@ -62,6 +67,10 @@ final getContratistasCapacitacionUseCaseProvider = Provider<GetContratistasCapac
   return GetContratistasCapacitacionUseCase(repo);
 });
 
+// ----------------------------------------------------------------------------------------
+// 3. CAPA DE PRESENTACION
+// ----------------------------------------------------------------------------------------
+
 // Provider del Notifier principal
 final capacitacionNotifierProvider = StateNotifierProvider<CapacitacionNotifier, CapacitacionState>((ref) {
   return CapacitacionNotifier(
@@ -73,14 +82,17 @@ final capacitacionNotifierProvider = StateNotifierProvider<CapacitacionNotifier,
 });
 
 // Provider del Notifier del formulario
-final capacitacionFormNotifierProvider = StateNotifierProvider<CapacitacionFormNotifier, CapacitacionFormState>((ref) {
+final capacitacionFormNotifierProvider = StateNotifierProvider.autoDispose<CapacitacionFormNotifier, CapacitacionFormState>((ref) {
   return CapacitacionFormNotifier(
     getProyectosUseCase: ref.watch(getProyectosCapacitacionUseCaseProvider),
     getContratistasUseCase: ref.watch(getContratistasCapacitacionUseCaseProvider),
   );
 });
 
-// Providers derivados
+// ----------------------------------------------------------------------------------------
+// 4. SELECTORS
+// ----------------------------------------------------------------------------------------
+
 final capacitacionesListProvider = Provider((ref) {
   return ref.watch(capacitacionNotifierProvider).capacitaciones;
 });

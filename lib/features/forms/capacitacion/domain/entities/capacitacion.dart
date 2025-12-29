@@ -1,5 +1,8 @@
- // features/forms/capacitacion/domain/entities/capacitacion.dart
 
+/// Entidad de dominio que representa un registro
+/// 
+/// Contiene la informacion sobre las sesiones de formacion compartidas,
+/// vinculando el Proyecto y el Contratista mediantes sus IDs
 class Capacitacion {
   final int? id;
   final int idProyecto;

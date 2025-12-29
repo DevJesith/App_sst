@@ -1,5 +1,3 @@
-// features/forms/capacitacion/presentation/screens/capacitacion_form_screen.dart
-
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +8,9 @@ import '../../../../../shared/widgets/lista_input_wigets.dart';
 import '../../domain/entities/capacitacion.dart';
 import '../providers/capacitacion_providers.dart';
 
+/// Pantalla para registrar o editar una Capacitacion
+///
+/// Maneja la relacion Proyecto -> Contratista mediante listas desplegables.
 class CapacitacionFormScreen extends HookConsumerWidget {
   final Capacitacion? capacitacion;
 
@@ -19,7 +20,7 @@ class CapacitacionFormScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
 
-    // Controllers
+    // --- CONTROLADORES DE TEXTO ---
     final descripcionController = useTextEditingController(
       text: capacitacion?.descripcion ?? '',
     );
@@ -33,15 +34,19 @@ class CapacitacionFormScreen extends HookConsumerWidget {
       text: capacitacion?.responsable ?? '',
     );
 
-    // Estado del formulario
+    // --- ESTADO DEL FORMULARIO ---
     final formState = ref.watch(capacitacionFormNotifierProvider);
     final formNotifier = ref.read(capacitacionFormNotifierProvider.notifier);
-
     final isSubmitting = ref.watch(capacitacionesSubmittingProvider);
 
-    final nombresProyectos = formState.listaProyectos.map((e) => (e['Nombre'] ?? e['nombre']).toString()).toList();
+    // --- PREPARACION DE LISTAS (Map -> String) ---
+    final nombresProyectos = formState.listaProyectos
+        .map((e) => (e['Nombre'] ?? e['nombre']).toString())
+        .toList();
 
-    final nombresContratistas = formState.listaContratistas.map((e) => (e['Nombre'] ?? e['nombre']).toString()).toList();
+    final nombresContratistas = formState.listaContratistas
+        .map((e) => (e['Nombre'] ?? e['nombre']).toString())
+        .toList();
 
     String? nombresProyectoSeleccionado;
     if (formState.idProyecto != null && formState.listaProyectos.isNotEmpty) {
@@ -53,23 +58,27 @@ class CapacitacionFormScreen extends HookConsumerWidget {
       } catch (_) {}
     }
 
+    // --- ENCONTRAR NOMBRES SELECCIONADOS
     String? nombresContratistaSeleccionado;
-    if (formState.idContratista != null && formState.listaContratistas.isNotEmpty) {
+    if (formState.idContratista != null &&
+        formState.listaContratistas.isNotEmpty) {
       try {
         final contratistas = formState.listaContratistas.firstWhere(
           (c) => c['id'] == formState.idContratista,
         );
-        nombresContratistaSeleccionado = contratistas['Nombre'] ?? contratistas['nombre'];
+        nombresContratistaSeleccionado =
+            contratistas['Nombre'] ?? contratistas['nombre'];
       } catch (_) {}
     }
 
-
-
-    // Inicializar valores si es edición
+    // --- INICIALIZACION (EDICION)  ---
     useEffect(() {
       if (capacitacion != null) {
-        formNotifier.setIdProyecto(capacitacion!.idProyecto);
-        formNotifier.setIdContratista(capacitacion!.idContratista);
+        Future.microtask(() {
+          // Carga IDs existentes
+          formNotifier.setIdProyecto(capacitacion!.idProyecto);
+          formNotifier.setIdContratista(capacitacion!.idContratista);
+        });
       }
       return null;
     }, []);
@@ -93,7 +102,9 @@ class CapacitacionFormScreen extends HookConsumerWidget {
         numeroPersonas: int.tryParse(numeroPersonasController.text) ?? 0,
         responsable: responsableController.text,
         fechaRegistro: DateTime.now(),
-        usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1, // TODO: Obtener del auth provider
+        usuarioId:
+            ref.read(usuarioAutenticadoProvider)?.id ??
+            1, 
       );
 
       final notifier = ref.read(capacitacionNotifierProvider.notifier);
@@ -160,37 +171,38 @@ class CapacitacionFormScreen extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 30),
 
-                // ✅ PROYECTO (Estilo Tuyo)
+                // Proyecto
                 ListaInputWigets(
                   nameInput: 'Proyecto',
                   label: 'Selecciona un proyecto',
                   items: nombresProyectos,
-                  value: nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
+                  value:
+                      nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
                   onChanged: (nombre) {
                     // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
                     final proyecto = formState.listaProyectos.firstWhere(
-                      (p) => (p['Nombre'] ?? p['nombre']) == nombre
+                      (p) => (p['Nombre'] ?? p['nombre']) == nombre,
                     );
                     // Mandar el ID al notifier
                     formNotifier.setIdProyecto(proyecto['id'] as int);
                   },
                   validator: (value) => value == null ? 'Requerido' : null,
                 ),
-                
+
                 const SizedBox(height: 20),
 
-                // ✅ CONTRATISTA (Estilo Tuyo)
+                // Contratista
                 ListaInputWigets(
                   nameInput: 'Contratista',
-                  label: nombresContratistas.isEmpty 
-                      ? 'Selecciona un proyecto primero' 
+                  label: nombresContratistas.isEmpty
+                      ? 'Selecciona un proyecto primero'
                       : 'Selecciona un contratista',
                   items: nombresContratistas,
                   value: nombresContratistaSeleccionado, // Le pasamos el nombre
                   onChanged: (nombre) {
                     // BUSCAR EL ID BASADO EN EL NOMBRE
                     final contratista = formState.listaContratistas.firstWhere(
-                      (c) => (c['Nombre'] ?? c['nombre']) == nombre
+                      (c) => (c['Nombre'] ?? c['nombre']) == nombre,
                     );
                     // Mandar el ID al notifier
                     formNotifier.setIdContratista(contratista['id'] as int);

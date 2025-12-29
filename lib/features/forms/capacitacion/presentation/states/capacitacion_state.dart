@@ -2,7 +2,13 @@
 
 import '../../domain/entities/capacitacion.dart';
 
-/// Estado del módulo de capacitaciones
+/// Estado global del modulo
+/// 
+/// Gestiona la informacion de la vista de lista (CRUD):
+/// * [capacitaciones]: ls lista de registros cargados.
+/// * [isLoading]: Si se esta consultando BD.
+/// * [errorMessage]: Si se ocurrio un error.
+/// * [isSubmitting]: Si se esta guardando/eliminando un registro
 class CapacitacionState {
   final List<Capacitacion> capacitaciones;
   final bool isLoading;
@@ -31,7 +37,9 @@ class CapacitacionState {
   }
 }
 
-/// Estado del formulario de capacitación
+/// Estado especifico del formulario
+/// 
+/// Gestiona los valores seleccionados y las listas para los Dropdowns.
 class CapacitacionFormState {
   final int? idProyecto;
   final int? idContratista;

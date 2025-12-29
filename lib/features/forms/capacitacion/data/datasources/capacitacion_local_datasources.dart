@@ -1,9 +1,9 @@
-// features/forms/capacitacion/data/datasources/capacitacion_local_datasource.dart
-
 import 'package:app_sst/data/database/app_database.dart';
 import 'package:app_sst/features/forms/capacitacion/data/model/capacitacion_model.dart';
 import 'package:sqflite/sqflite.dart';
 
+/// Interfaz para el acceso a datos locales de Capacitaciones.
+/// Define las operaciones CRUD y las consultas a tablas maestras.
 abstract class CapacitacionLocalDataSource {
   Future<List<CapacitacionModel>> getCapacitaciones();
   Future<CapacitacionModel?> getCapacitacionById(int id);
@@ -11,10 +11,13 @@ abstract class CapacitacionLocalDataSource {
   Future<int> insertCapacitacion(CapacitacionModel capacitacion);
   Future<int> updateCapacitacion(CapacitacionModel capacitacion);
   Future<int> deleteCapacitacion(int id);
+
+  // Metodos para listas desplegables
   Future<List<Map<String, dynamic>>> getProyectos();
   Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId);
 }
 
+/// Implementacion concreta del Datasource local usando SQLite.
 class CapacitacionLocalDataSourceImpl implements CapacitacionLocalDataSource {
   final AppDatabase database;
 

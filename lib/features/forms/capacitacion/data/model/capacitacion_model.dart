@@ -1,7 +1,7 @@
-// features/forms/capacitacion/data/models/capacitacion_model.dart
-
 import '../../domain/entities/capacitacion.dart';
 
+/// Modelo de datos para la tabla 
+/// Extiende la entidad de dominio y agrega metodos de serializacion.
 class CapacitacionModel extends Capacitacion {
   const CapacitacionModel({
     int? id,
@@ -27,21 +27,26 @@ class CapacitacionModel extends Capacitacion {
           usuarioId: usuarioId,
         );
 
+  /// Crea una instancia desde un Mapa BD.
   factory CapacitacionModel.fromMap(Map<String, dynamic> map) {
     return CapacitacionModel(
+      // Mapeo de nombres de columnas de la BD a propiedades del modelo
       id: map['id'] as int?,
-      idProyecto: map['Proyecto_id'] as int,
-      idContratista: map['Contratista_id'] as int,
-      descripcion: map['Descripcion'] as String,
-      numeroCapacita: map['Numero_capacita'] as int,
-      numeroPersonas: map['Numero_personas'] as int,
-      responsable: map['Responsable'] as String,
-      fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
+      idProyecto: map['Proyecto_id'] as int? ?? 0,
+      idContratista: map['Contratista_id'] as int? ?? 0,
+      descripcion: map['Descripcion'] as String? ?? '',
+      numeroCapacita: map['Numero_capacita'] as int? ?? 0,
+      numeroPersonas: map['Numero_personas'] as int? ?? 0,
+      responsable: map['Responsable'] as String? ?? '',
+      fechaRegistro: map['fecha_registro'] != null 
+          ? DateTime.parse(map['fecha_registro'] as String) 
+          : DateTime.now(),
       sincronizado: map['sincronizado'] as int? ?? 0,
-      usuarioId: map['usuarios_id'] as int,
+      usuarioId: map['Usuarios_id'] as int? ?? 0,
     );
   }
 
+  /// Convierte la instancia a un Mapa para insertar en la BD.
   Map<String, dynamic> toMap() {
     return {
       'id': id,

@@ -1,5 +1,3 @@
-// features/forms/capacitacion/presentation/notifiers/capacitacion_notifier.dart
-
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/actualizar_capacitacion_usecases.dart';
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/create_capacitacion_usecases.dart';
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/eliminar_capacitacion_usecases.dart';
@@ -10,6 +8,7 @@ import '../../domain/entities/capacitacion.dart';
 
 import '../states/capacitacion_state.dart';
 
+/// Notifier encargando de la gestion de la lista de capacitaciones (CRUD)
 class CapacitacionNotifier extends StateNotifier<CapacitacionState> {
   final GetCapacitacionesUsecases getCapacitacionesUseCase;
   final CreateCapacitacionUsecases createCapacitacionUseCase;
@@ -23,7 +22,7 @@ class CapacitacionNotifier extends StateNotifier<CapacitacionState> {
     required this.eliminarCapacitacionUseCase,
   }) : super(const CapacitacionState());
 
-  /// Cargar todas las capacitaciones
+  /// Carga todas las capacitaciones desde la BD local.
   Future<void> loadCapacitaciones() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
@@ -41,7 +40,7 @@ class CapacitacionNotifier extends StateNotifier<CapacitacionState> {
     }
   }
 
-  /// Crear nueva capacitación
+  /// Crea una nueva capacitacion y recarga la lista.
   Future<bool> createCapacitacion(Capacitacion capacitacion) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
 
@@ -59,7 +58,7 @@ class CapacitacionNotifier extends StateNotifier<CapacitacionState> {
     }
   }
 
-  /// Actualizar capacitación
+  /// Actualiza una capacitacion existente
   Future<bool> updateCapacitacion(Capacitacion capacitacion) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
 
@@ -77,7 +76,7 @@ class CapacitacionNotifier extends StateNotifier<CapacitacionState> {
     }
   }
 
-  /// Eliminar capacitación
+  /// Elimina una capacitacion por ID.
   Future<bool> deleteCapacitacion(int id) async {
     try {
       await eliminarCapacitacionUseCase(id);
@@ -96,7 +95,8 @@ class CapacitacionNotifier extends StateNotifier<CapacitacionState> {
   }
 }
 
-/// Notifier para el formulario (IDs de proyecto y contratista)
+/// Notifier para el estado del formulario
+/// Maneja la seleccion de Proyecto y la carga en cascada de Contratistas.
 class CapacitacionFormNotifier extends StateNotifier<CapacitacionFormState> {
 
   final GetProyectosCapacitacionUseCase getProyectosUseCase;
@@ -109,20 +109,23 @@ class CapacitacionFormNotifier extends StateNotifier<CapacitacionFormState> {
     _cargarProyectos();
   }
 
+  /// Carga la lista inicial de proyectos
   Future<void> _cargarProyectos() async {
     final proyectos = await getProyectosUseCase();
     state = state.copyWith(listaProyectos: proyectos);
   }
 
+  /// Selecciona un proyecto y carga sus contratistas asociados.
   void setIdProyecto(int? proyectoId) async {
     if (proyectoId == null) return;
 
     // 1. Reiniciar estado (Contratista NULL) sin usar copyWith para evitar errores
+    // Mantenemos la lista de proyectos cargada.
     state = CapacitacionFormState(
       idProyecto: proyectoId,
       idContratista: null, // Forzamos null
       listaProyectos: state.listaProyectos,
-      listaContratistas: [], // Limpiamos lista
+      listaContratistas: [], // Limpiamos lista de contratistas
     );
 
     // 2. Cargar contratistas de este proyecto
@@ -138,7 +141,8 @@ class CapacitacionFormNotifier extends StateNotifier<CapacitacionFormState> {
     state = state.copyWith(idContratista: value);
   }
 
+  /// Reinicia el formulario pero mantiene los proyectos cargados.
   void reset() {
-    state = const CapacitacionFormState();
+    state = CapacitacionFormState(listaProyectos: state.listaProyectos);
   }
 }

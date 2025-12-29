@@ -1,12 +1,11 @@
-// features/forms/capacitacion/data/repositories_impl/capacitacion_repository_impl.dart
-
 import 'package:app_sst/features/forms/capacitacion/data/datasources/capacitacion_local_datasources.dart';
 import 'package:app_sst/features/forms/capacitacion/data/model/capacitacion_model.dart';
-
 import '../../domain/entities/capacitacion.dart';
 import '../../domain/repositories/capacitacion_repository.dart';
 
-
+/// Implementacion del repositorio
+/// 
+/// Actua como intermediario entre la capa de Dominio (Casos de uso) y la capa de datos (DataSource).
 class CapacitacionRepositoryImpl implements CapacitacionRepository {
   final CapacitacionLocalDataSource localDataSource;
 
@@ -95,7 +94,9 @@ class CapacitacionRepositoryImpl implements CapacitacionRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getContratistasPorProyecto(int proyectoId) async {
+  Future<List<Map<String, dynamic>>> getContratistasPorProyecto(
+    int proyectoId,
+  ) async {
     return await localDataSource.getContratistasPorProyectos(proyectoId);
   }
 }
