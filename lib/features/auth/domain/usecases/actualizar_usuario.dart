@@ -8,6 +8,10 @@ class ActualizarUsuario {
   final UsuariosRepository repository;
   ActualizarUsuario(this.repository);
 
+  /// Ejecuta la accion de actualizacion.
+  /// 
+  /// [usuario]: La entidad con los datos modificados que se desean persistir.
+  /// Se asume que el usuario ya existe para hacer las modificaciones correspondiente.
   Future<void> call(Usuarios usuario) async{
     await repository.actualizarUsuario(usuario);
   }

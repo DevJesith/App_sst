@@ -6,10 +6,18 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
-/// Pantalla de verificación de código
-/// Usa pin_code_fields y LayoutBuilder para ser responsive
+/// Pantalla de verificacion de codigo de seguridad
+/// 
+/// Se muestra inmediatamente despues del registro. El usuario debe ingresar
+/// el codigo de 6 digitos enviado a su correo electronico para confirmar su identidad
+/// antes de que el usuario sea guardado en la BD
 class VerificacionCodeScreen extends HookConsumerWidget {
+
+  /// El objeto usuario con los datos capturados en el registro.
+  /// Aun no existe en la BD
   final Usuarios usuarioPendiente;
+
+  /// El codigo generado y enviados por email que se debe validar.
   final String codigoGenerado;
 
   const VerificacionCodeScreen({
@@ -20,10 +28,14 @@ class VerificacionCodeScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    // Controlador para el input del PIN
     final codigoController = useTextEditingController();
     final isLoading = useState(false);
 
+    /// Valida el codigo y finaliza el registro.
     Future<void> verificarYRegistrar() async {
+      // 1. Validacion local del codigo
       if (codigoController.text.trim() != codigoGenerado) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -37,9 +49,12 @@ class VerificacionCodeScreen extends HookConsumerWidget {
       isLoading.value = true;
 
       try {
+        // 2. Guardar el usuario en la BD
+        // Llamamos el provider que ejecuta el caso de uso 'RegistrarUsuario'
         await ref.read(registrarUsuarioProvider(usuarioPendiente).future);
 
         if (context.mounted) {
+          // 3. Feedback visual
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('¡Cuenta verificada y creada con éxito!'),
@@ -47,6 +62,7 @@ class VerificacionCodeScreen extends HookConsumerWidget {
             ),
           );
 
+          // 4. Navegacion al login
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -93,6 +109,7 @@ class VerificacionCodeScreen extends HookConsumerWidget {
                     ),
                     const SizedBox(height: 20),
 
+                    // Instrucciones
                     Text(
                       'Hemos enviado un código a:',
                       style: TextStyle(color: Colors.grey[600]),
@@ -110,13 +127,14 @@ class VerificacionCodeScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
-                    /// Campo de verificación con pin_code_fields
+                    /// Campo de PIN (6 digtos)
                     PinCodeTextField(
                       appContext: context,
                       length: 6,
                       controller: codigoController,
                       keyboardType: TextInputType.number,
                       animationType: AnimationType.fade,
+                      // Diseño de las cajitas del PIN
                       pinTheme: PinTheme(
                         shape: PinCodeFieldShape.box,
                         borderRadius: BorderRadius.circular(8),
@@ -132,11 +150,15 @@ class VerificacionCodeScreen extends HookConsumerWidget {
                       cursorColor: Colors.black,
                       animationDuration: const Duration(milliseconds: 300),
                       enableActiveFill: true,
+                      onCompleted: (v) {
+                        verificarYRegistrar();
+                      },
                       onChanged: (_) {},
                     ),
 
                     const SizedBox(height: 40),
 
+                    // Boton de verificar
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

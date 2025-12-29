@@ -5,15 +5,24 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/auth_provider.dart';
 
-/// Pantalla de usuarios registrados con búsqueda
+/// Pantalla que lista todos los usuarios registrados en el sistema
+///
+/// Permite al administrador:
+/// 1. Ver la lista completa de usuarios.
+/// 2. Buscar usuarios por nombre o correo electronico
+/// 3. Recargar la lista manualmente
 class UsuariosRegistradosScreen extends HookConsumerWidget {
   const UsuariosRegistradosScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Controlador para el campo de busqueda
     final searchController = useTextEditingController();
+
+    // Estado local para el termino de busqueda
     final searchQuery = useState('');
 
+    // Observamos el provider que trae la lista de usuarios
     final usuariosAsync = ref.watch(obtenerTodosUsuariosProvider);
 
     return Scaffold(
@@ -27,9 +36,11 @@ class UsuariosRegistradosScreen extends HookConsumerWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+          //Botn de recarga manual
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
+              // Invalidamos el provider para forzar una nueva consulta a la BD
               ref.invalidate(obtenerTodosUsuariosProvider);
             },
           ),
@@ -37,7 +48,7 @@ class UsuariosRegistradosScreen extends HookConsumerWidget {
       ),
       body: Column(
         children: [
-          // Barra de búsqueda
+          // --- BARRA DE BUSQUEDA ---
           Container(
             color: Colors.white,
             padding: const EdgeInsets.all(16),
@@ -64,14 +75,59 @@ class UsuariosRegistradosScreen extends HookConsumerWidget {
                 ),
               ),
               onChanged: (value) {
+                // Actualizamos el estado para filtrar la lista en tiempo real
                 searchQuery.value = value;
               },
             ),
           ),
 
-          // Lista de usuarios
+          // --- LISTA DE USUARIOS ---
           Expanded(
             child: usuariosAsync.when(
+              //Estado: Cargando
+              loading: () => const Center(child: CircularProgressIndicator()),
+
+              // Estado: Error
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 80,
+                      color: Colors.red.shade300,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error al cargar usuarios',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.red.shade300,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        ref.invalidate(obtenerTodosUsuariosProvider);
+                      },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Reintentar'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade700,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Estado: Datos cargados exitosamente
               data: (usuarios) {
                 if (usuarios.isEmpty) {
                   return Center(
@@ -93,7 +149,7 @@ class UsuariosRegistradosScreen extends HookConsumerWidget {
                   );
                 }
 
-                // Filtrar usuarios por búsqueda
+                // Logica de filtrado
                 final filteredUsuarios = searchQuery.value.isEmpty
                     ? usuarios
                     : usuarios.where((usuario) {
@@ -130,7 +186,7 @@ class UsuariosRegistradosScreen extends HookConsumerWidget {
                         padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
-                            // Avatar
+                            // Avatar con inicial
                             CircleAvatar(
                               backgroundColor: Colors.blue.shade700,
                               radius: 28,
@@ -147,7 +203,7 @@ class UsuariosRegistradosScreen extends HookConsumerWidget {
                             ),
                             const SizedBox(width: 16),
 
-                            // Información del usuario
+                            // Informacion del usuario
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +261,7 @@ class UsuariosRegistradosScreen extends HookConsumerWidget {
                               ),
                             ),
 
-                            // Badge de estado
+                            // Badge de estado (Activo)
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -242,45 +298,6 @@ class UsuariosRegistradosScreen extends HookConsumerWidget {
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 80,
-                      color: Colors.red.shade300,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error al cargar usuarios',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.red.shade300,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      error.toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        ref.invalidate(obtenerTodosUsuariosProvider);
-                      },
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reintentar'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade700,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
         ],

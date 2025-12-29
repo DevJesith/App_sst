@@ -1,6 +1,7 @@
 // features/auth/presentation/screens/recuperar_contrasena_screen.dart
 
 import 'dart:convert';
+import 'package:app_sst/core/utils/crypto_helper.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,10 @@ import '../../domain/entities/usuarios.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 
-/// Pantalla para recuperar contraseña
+/// Pantalla para el restablecimiento de contraseña.
+///
+/// Permite buscar un usuario por correo y actualizar su contraseña
+/// directamente en la base de datos local
 class RecuperarContrasenaScreen extends HookConsumerWidget {
   const RecuperarContrasenaScreen({super.key});
 
@@ -24,18 +28,24 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
+
+    // Controladores
     final emailController = useTextEditingController();
     final newPasswordController = useTextEditingController();
     final confirmPasswordController = useTextEditingController();
+
+    // Estados
     final isLoading = useState(false);
     final obscureNewPassword = useState(true);
     final obscureConfirmPassword = useState(true);
 
+    /// Logica de recuperacion
     Future<void> recuperar() async {
       if (!formKey.currentState!.validate()) return;
 
-      // Validar que las contraseñas coincidan
-      if (newPasswordController.text.trim() != confirmPasswordController.text.trim()) {
+      // 1. Validar que las contraseñas coincidan
+      if (newPasswordController.text.trim() !=
+          confirmPasswordController.text.trim()) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Las contraseñas no coinciden'),
@@ -50,17 +60,16 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
       try {
         final email = emailController.text.trim();
 
-        // Obtener el use case directamente
-        final obtenerUsuarioUseCase = ref.read(obtenerUsuarioPorEmailUseCaseProvider);
-        
-        // Buscar el usuario
-        final usuario = await obtenerUsuarioUseCase(email);
+        // 2. Buscar si el usuario existe
+        final usuario = await ref.read(
+          obtenerUsuarioPorEmailProvider(email).future,
+        );
 
         if (usuario == null) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Este correo no está registrado'),
+                content: Text('Este correo no esta registrado'),
                 backgroundColor: Colors.orange,
               ),
             );
@@ -69,20 +78,19 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
           return;
         }
 
-        // Actualizar la contraseña
+        // 3. Crear objeto con la nueva contraseña encriptada
         final usuarioActualizado = Usuarios(
           id: usuario.id,
           nombre: usuario.nombre,
+          apellido: usuario.apellido,
           email: usuario.email,
-          contrasena: encriptar(newPasswordController.text.trim()),
+          contrasena: CryptoHelper.encriptar(newPasswordController.text.trim()),
         );
 
-        // Actualizar en la base de datos
-        final actualizarUseCase = ref.read(actualizarUsuarioUseCaseProvider);
-        await actualizarUseCase(usuarioActualizado);
+        // 4. Actualizar en BD
+        await ref.read(actualizarUsuarioProvider(usuarioActualizado).future);
 
         if (context.mounted) {
-          // Mostrar mensaje de éxito
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('¡Contraseña actualizada exitosamente!'),
@@ -90,7 +98,7 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
             ),
           );
 
-          // Redirigir al login
+          // Volver al login
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -145,7 +153,7 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      /// Ícono
+                      // --- ENCABEZADO ---
                       const Icon(
                         Icons.lock_reset,
                         size: 80,
@@ -168,13 +176,12 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                       /// Subtítulo
                       const Text(
                         'Ingresa tu correo registrado y crea una nueva contraseña',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 30),
+
+                      // --- INPUTS ---
 
                       /// Campo: Email
                       inputReutilizables(
@@ -235,8 +242,8 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                             borderSide: BorderSide.none,
                           ),
                           suffixIcon: IconButton(
-                            onPressed: () =>
-                                obscureNewPassword.value = !obscureNewPassword.value,
+                            onPressed: () => obscureNewPassword.value =
+                                !obscureNewPassword.value,
                             icon: Icon(
                               obscureNewPassword.value
                                   ? Icons.visibility_off
@@ -286,7 +293,7 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 30),
 
-                      /// Botón
+                      // --- BOTON ---
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -320,7 +327,7 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 16),
 
-                      /// Ayuda
+                      // --- AYUDA ---
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(

@@ -1,6 +1,5 @@
-// features/auth/presentation/screens/registro_screen.dart
-
 import 'dart:convert';
+import 'package:app_sst/core/utils/crypto_helper.dart';
 import 'package:app_sst/services/email_service.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,6 +12,14 @@ import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import 'verificacion_code_screen.dart';
 
+/// Pantalla de registro de nuevos usuarios
+/// 
+/// Maneja el flujo completo:
+/// 1. Captura de datos (Nombre, Apellido, Email, Password).
+/// 2. Validacion de campos y contraseñas.
+/// 3. Verificacion de correo existente.
+/// 4. Envio de codigo de verificacion (Email).
+/// 5. Navegacion a la pantalla de validacion de codigo.
 class RegistroScreen extends HookConsumerWidget {
   const RegistroScreen({super.key});
 
@@ -25,18 +32,23 @@ class RegistroScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
+
+    // Controladores
     final nombreController = useTextEditingController();
     final apellidoController = useTextEditingController();
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
     final confirmController = useTextEditingController();
+
+    // Estados
     final isLoading = useState(false);
     final obscureText = useState(true);
+    final obscureConfirmText = useState(true);
 
+    /// Inicia el proceso de registro.
+    /// No guarda en BD todavia, solo valida y envia el codigo
     Future<void> iniciarProcesoRegistro() async {
       if (!formKey.currentState!.validate()) return;
-
-      isLoading.value = true;
 
       //Validar contraseña
       if (passwordController.text.trim() != confirmController.text.trim()) {
@@ -49,11 +61,13 @@ class RegistroScreen extends HookConsumerWidget {
         return;
       }
 
+      isLoading.value = true;
+
       try {
 
         final email = emailController.text.trim();
 
-        // Verificar si el email ya existe en la BD
+        // 1. Verificar si el email ya existe en la BD local
         final existente = await ref.read(obtenerUsuarioPorEmailProvider(email).future);
 
         if (existente != null) {
@@ -69,7 +83,7 @@ class RegistroScreen extends HookConsumerWidget {
           return;
         }
 
-        // Generar codigo y enviar correo
+        // 2. Generar codigo y enviar correo
         final codigo = EmailService.generarCodigo();
         final enviado = await EmailService.enviarCodigoVerificacion(email, codigo);
 
@@ -77,24 +91,24 @@ class RegistroScreen extends HookConsumerWidget {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('No se pudo enviar el correo. Verifica tu contexion.'),
+                content: Text('No se pudo enviar el correo. Verifica tu conexion.'),
                 backgroundColor: Colors.red,
-              ),
+              )
             );
           }
           isLoading.value = false;
           return;
         }
 
-        // Crear objeto usuario temporal 
+        // 3. Crear objeto usuario temporal
         final usuarioTemporal = Usuarios(
           nombre: nombreController.text.trim(),
           apellido: apellidoController.text.trim(),
           email: email,
-          contrasena: encriptar(passwordController.text.trim())
+          contrasena: CryptoHelper.encriptar(passwordController.text.trim())
         );
 
-        // Navegar a pantalla de verificacion
+        // 4. Navegar a pantalla de verificacion
         if (context.mounted) {
           Navigator.push(
             context,
@@ -170,7 +184,8 @@ class RegistroScreen extends HookConsumerWidget {
                   ),
                   
                   const SizedBox(height: 16),
-                  // Nombre
+
+                  // Apellido
                   inputReutilizables(
                     controller: apellidoController,
                     nameInput: 'Apellido completo',
@@ -229,11 +244,11 @@ class RegistroScreen extends HookConsumerWidget {
                   
                   const SizedBox(height: 16),
 
-                  // Contraseña
+                  // Confirmar contraseña
                   inputReutilizables(
                     controller: confirmController,
                     nameInput: 'Confirmar contraseña',
-                    obscuredText: obscureText.value,
+                    obscuredText: obscureConfirmText.value,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Confirma tu contraseña';
@@ -246,18 +261,18 @@ class RegistroScreen extends HookConsumerWidget {
                     decoration: InputDecoration(
                       suffixIcon: IconButton(
                         icon: Icon(
-                          obscureText.value
+                          obscureConfirmText.value
                               ? Icons.visibility_off
                               : Icons.visibility,
                         ),
-                        onPressed: () => obscureText.value = !obscureText.value,
+                        onPressed: () => obscureConfirmText.value = !obscureConfirmText.value,
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 30),
 
-                  // Botón Registrar
+                  // Boton Registrar
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -276,7 +291,7 @@ class RegistroScreen extends HookConsumerWidget {
                               ),
                             )
                           : const Text(
-                              'Registrarse',
+                              'Continuar',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

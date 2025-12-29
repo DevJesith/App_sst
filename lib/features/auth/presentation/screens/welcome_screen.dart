@@ -6,32 +6,41 @@ import 'package:app_sst/features/home/presentation/home_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// Pantalla de bienvenida para usuarios verificados.
-/// Muestra acceso a funcionalidades clave como reportes y formularios.
+/// Pantalla de bienvenida
+///
+/// Se muestra inmediatamente despues de un inicio de sesion existoso.
+/// Funciona como el menu principal para acceder a:
+/// 1. Reporte de riesgos (Grid de formularios).
+/// 2. Gestion de inspeccion.
+/// 3. Menu lateral (Drawer) con informacion del perfil
 class WelcomeScreen extends HookConsumerWidget {
-  final Usuarios usuario; // Usuario autenticado
+  /// El usuario autenticado que ha iniciado sesion.
+  final Usuarios usuario;
   const WelcomeScreen({super.key, required this.usuario});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      /// AppBar con botón para abrir el Drawer
+      backgroundColor: const Color(0xFFF5F7FA),
+
+      /// AppBar personalizado
+      /// Usamos un [Builder] para obtener el contexto correcto y poder abrir el Drawer
       appBar: AppBar(
         leading: Builder(
           builder: (context) => IconButton(
             onPressed: () {
               Scaffold.of(context).openDrawer();
             },
-            icon: Icon(Icons.menu),
+            icon: Icon(Icons.menu, color: Colors.black87),
           ),
         ),
       ),
 
-      /// Drawer personalizado con información del usuario
+      /// Menu lateral con la informacion del usuario actual
       drawer: CustomDrawer(usuarios: usuario),
-      backgroundColor: const Color(0xFFF5F7FA),
 
-      /// Layout adaptable según ancho de pantalla
+      /// Cuerpo responsive
+      /// Usa [LayoutBuilder] para centrar el contenido en pantallas grandes (Tablets/Web)
       body: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth > 600;
@@ -46,15 +55,16 @@ class WelcomeScreen extends HookConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // 1. LOGO
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
-                          // BoxShadow(
-                          //   color: Colors.black.withOpacity(0.15),
-                          //   blurRadius: 12,
-                          //   offset: const Offset(0, 6),
-                          // ),
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
                       ),
                       child: ClipOval(
@@ -69,9 +79,9 @@ class WelcomeScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 30),
 
-                    /// Saludo personalizado
+                    /// 2. SALUDO PERSONALIZADO
                     Text(
-                      "¡Hola! 👋",
+                      "¡Hola, ${usuario.nombre.split(' ')[0]}! ",
                       style: TextStyle(
                         fontSize: 28,
                         color: Colors.blue[800],
@@ -82,7 +92,7 @@ class WelcomeScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 10),
 
-                    /// Mensaje de bienvenida
+                    /// 3. DESCRIPCION
                     const Text(
                       "Ya estás dentro del sistema.\nDesde aquí puedes reportar riesgos, gestionar formularios y mantener tu entorno laboral seguro.",
                       style: TextStyle(fontSize: 18, color: Colors.black87),
@@ -91,7 +101,9 @@ class WelcomeScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 40),
 
-                    /// Botón para ir a reportar riesgos
+                    /// 4. BOTONES DE ACCION PRINCIPAL
+
+                    /// Boton: Reportar riesgos
                     BotonNavegacion(
                       text: "Reportar Riesgos",
                       textStyle: const TextStyle(
@@ -113,7 +125,7 @@ class WelcomeScreen extends HookConsumerWidget {
 
                     const SizedBox(height: 16),
 
-                    /// Botón para ir a gestión de formularios
+                    /// Boton: Gestion de formularios
                     BotonNavegacion(
                       text: "Gestión de Formularios",
                       textStyle: const TextStyle(

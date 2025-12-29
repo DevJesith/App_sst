@@ -1,7 +1,9 @@
-// features/auth/data/models/usuario_model.dart
-
 import '../../domain/entities/usuarios.dart';
 
+/// Modelo de datos que representa a un Usuario en la capa de Datos.
+/// 
+/// Extiende la entidad de dominio [Usuarios] y agrega metodos para la conversion
+/// desde/hacia Mapas (Base de datos SQLite).
 class UsuarioModel extends Usuarios {
   UsuarioModel({
     int? id,
@@ -17,6 +19,9 @@ class UsuarioModel extends Usuarios {
           contrasena: contrasena,
         );
 
+  /// Crea una instancia de [UsuarioModel] a partir de un mapa (BD).map
+  /// 
+  /// Util para convertir los resultados de una consulta SQL (`SELECT`) en objetos Dart.
   factory UsuarioModel.fromMap(Map<String, dynamic> map) {
     return UsuarioModel(
       id: map['id'] as int?,
@@ -27,6 +32,9 @@ class UsuarioModel extends Usuarios {
     );
   }
 
+  /// Convierte la instancia a un mapa para insertar en la BD
+  /// 
+  /// Util para operaciones `INSERT` o `UPDATE` en SQLite.
   Map<String, dynamic> toMap() {
     final Map<String, dynamic> map = {
       'nombre': nombre,
@@ -35,6 +43,8 @@ class UsuarioModel extends Usuarios {
       'contrasena': contrasena,
     };
 
+    // Solo incluimos el ID si existe (para actualizaciones)
+    // Para inserciones nuevas, SQLite lo autogenera.
     if (id != null) {
       map['id'] = id!;
     }

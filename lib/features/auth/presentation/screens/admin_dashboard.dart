@@ -1,22 +1,27 @@
-// features/auth/presentation/screens/admin_dashboard.dart
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../../core/utils/export_utils.dart';
+import '../../../../core/utils/exports/export_utils.dart';
 import '../../../../shared/widgets/perfil_widget.dart';
 import '../../domain/entities/usuarios.dart';
 import 'usuarios_registrados_screen.dart';
 import 'formularios_recibidos_screen.dart';
 
+/// Pantalla principal para el perfil de Administrador
+/// 
+/// Permite: 
+/// 1. Navegar a la gestion de usuarios registrados.
+/// 2. Ver los formularios recibidor.
+/// 3. Exportar la base de datos y generar reportes PDF
 class AdminDashboard extends HookConsumerWidget {
   const AdminDashboard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Crear un usuario dummy para el admin
+    // Crear un usuario temporal para representar el admin en el Drawer.
     final adminUser = Usuarios(
       id: 0,
       nombre: 'Administrador',
+      apellido: 'Sistema',
       email: 'admin@sst.com',
     );
 
@@ -34,6 +39,8 @@ class AdminDashboard extends HookConsumerWidget {
           ),
         ),
       ),
+
+      // Menu Lateral con permisos de admin activados
       drawer: CustomDrawer(
         usuarios: adminUser,
         esAdmin: true,
@@ -43,7 +50,7 @@ class AdminDashboard extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Mensaje de bienvenida
+            // --- ENCABEZADO ---
             Text(
               'Bienvenido, Administrador',
               style: TextStyle(
@@ -62,7 +69,7 @@ class AdminDashboard extends HookConsumerWidget {
             ),
             const SizedBox(height: 32),
 
-            // Sección: Gestión
+            // --- SECCION: GESTION ---
             Text(
               'Gestión',
               style: TextStyle(
@@ -73,7 +80,7 @@ class AdminDashboard extends HookConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Card: Usuarios Registrados
+            // Navegacion a Usuarios
             _DashboardCard(
               title: 'Usuarios Registrados',
               subtitle: 'Ver todos los usuarios del sistema',
@@ -90,7 +97,7 @@ class AdminDashboard extends HookConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Card: Formularios Recibidos
+            // Navegacion a Formularios
             _DashboardCard(
               title: 'Formularios Recibidos',
               subtitle: 'Ver todos los reportes enviados',
@@ -108,7 +115,7 @@ class AdminDashboard extends HookConsumerWidget {
 
             const SizedBox(height: 32),
 
-            // Sección: Exportación
+            // --- SECCION: EXPORTACION ---
             Text(
               'Exportación de Datos',
               style: TextStyle(
@@ -119,7 +126,7 @@ class AdminDashboard extends HookConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Card: Exportar Base de Datos
+            // Accion: Exportar BD
             _DashboardCard(
               title: 'Exportar Base de Datos',
               subtitle: 'Descargar archivo .db para respaldo',
@@ -131,13 +138,15 @@ class AdminDashboard extends HookConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // Card: Generar PDF
+            // Accion: Generar reporte
             _DashboardCard(
               title: 'Generar Reporte PDF',
               subtitle: 'Crear PDF con información de la BD',
               icon: Icons.picture_as_pdf,
               color: Colors.orange.shade700,
               onTap: () async {
+
+                // Llama a la utilidad refectorizada con JOINs
                 await ExportUtils.generateDatabasePDF(context);
               },
             ),
@@ -148,6 +157,8 @@ class AdminDashboard extends HookConsumerWidget {
   }
 }
 
+/// Widget interno para las tarjetas del dashboard
+/// Mantiene el codigo principal limpio y reutilizable
 class _DashboardCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -177,6 +188,7 @@ class _DashboardCard extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Row(
             children: [
+              // Icono con fondo coloreado
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -190,6 +202,8 @@ class _DashboardCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
+
+              // Textos
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,6 +227,8 @@ class _DashboardCard extends StatelessWidget {
                   ],
                 ),
               ),
+
+              // Flecha indicadora
               Icon(
                 Icons.arrow_forward_ios,
                 color: Colors.grey.shade600,

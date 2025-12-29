@@ -12,8 +12,10 @@ import 'admin_dashboard.dart';
 import 'recuperar_contrasena_screen.dart';
 import 'welcome_screen.dart';
 
-/// Pantalla de inicio de sesión simplificada.
-/// Valida credenciales y redirige según el tipo de usuario.
+/// Pantalla de inicio de sesion
+/// 
+/// Permite a los usuarios autenticarse con su correo y contraseña.
+/// Tambien maneja el acceso especial para el Administrador
 class LoginScreen extends HookConsumerWidget {
   // Credenciales de administrador
   static const String adminEmail = 'admin@sst.com';
@@ -21,7 +23,7 @@ class LoginScreen extends HookConsumerWidget {
 
   const LoginScreen({super.key});
 
-  /// Encripta la contraseña usando SHA256
+  /// Encripta la contraseña usando SHA256 para compararla con la base de datos
   String encriptar(String texto) {
     final bytes = utf8.encode(texto);
     final hash = sha256.convert(bytes);
@@ -31,11 +33,16 @@ class LoginScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
+
+    // Controladores de textp
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
+
+    // Estados locales
     final isLoading = useState(false);
     final obscureText = useState(true);
 
+    // Logica de inicio de sesion
     Future<void> login() async {
       if (!formKey.currentState!.validate()) return;
 
@@ -46,7 +53,7 @@ class LoginScreen extends HookConsumerWidget {
         final contrasena = encriptar(passwordController.text.trim());
         final adminPasswordHash = encriptar(adminPassword);
 
-        // Verificar si es el administrador
+        // 1. Verificar si es el administrador
         if (email == adminEmail && contrasena == adminPasswordHash) {
           if (context.mounted) {
             Navigator.pushReplacement(
@@ -57,7 +64,7 @@ class LoginScreen extends HookConsumerWidget {
           return;
         }
 
-        // Verificar credenciales del usuario normal
+        // 2. Verificar credenciales del usuario normal en la BD
         final usuario = await ref.read(
           loginProvider({
             'email': email,
@@ -68,7 +75,10 @@ class LoginScreen extends HookConsumerWidget {
         if (context.mounted) {
           if (usuario != null) {
 
+            // Guardar sesion en el estado global
             ref.read(usuarioAutenticadoProvider.notifier).state = usuario;
+
+            // Redirigir a la pantalla de usuario
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -128,7 +138,8 @@ class LoginScreen extends HookConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      /// Ícono principal
+
+                      /// --- ENCABEZADO ---
                       const Icon(
                         Icons.login,
                         size: 80,
@@ -159,7 +170,9 @@ class LoginScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 30),
 
-                      /// Campo de correo electrónico
+                      // --- CAMPOS DE TEXTO
+
+                      /// Email
                       inputReutilizables(
                         controller: emailController,
                         nameInput: 'Correo electrónico',
@@ -190,7 +203,7 @@ class LoginScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 16),
 
-                      /// Campo de contraseña
+                      /// Contraseña
                       inputReutilizables(
                         controller: passwordController,
                         nameInput: 'Contraseña',
@@ -228,7 +241,7 @@ class LoginScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 10),
 
-                      /// Enlace para recuperar contraseña
+                      /// Recuperar contraseña
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
@@ -251,7 +264,7 @@ class LoginScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 20),
 
-                      /// Botón para iniciar sesión
+                      // --- BOTON DE ACCION ---
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -285,7 +298,7 @@ class LoginScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 20),
 
-                      /// Mensaje informativo del admin
+                      // --- INFORMACION ADMIN ---
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
