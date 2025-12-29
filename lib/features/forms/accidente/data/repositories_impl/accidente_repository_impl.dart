@@ -3,6 +3,10 @@ import '../../domain/repositories/accidente_repository.dart';
 import '../datasources/accidente_local_datasource.dart';
 import '../model/accidente_model.dart';
 
+/// Implementacion del repositorio de Accidentes.
+/// 
+/// Actua como intermediario entre la capa de Dominio y la capa de datos (DataSource).
+/// Se encarga de la conversion de datos  entre el model y entity y entre el manejo de errores
 class AccidenteRepositoryImpl implements AccidenteRepository {
   final AccidenteLocalDatasource localDatasource;
 

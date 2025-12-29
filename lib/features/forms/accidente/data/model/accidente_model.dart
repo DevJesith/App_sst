@@ -1,5 +1,8 @@
 import 'package:app_sst/features/forms/accidente/domain/entities/accidente.dart';
 
+
+/// Modelo de datos para la tabla Accidente.
+/// Extiende la entidad de dominio y agrega metodos de serializacion
 class AccidenteModel extends Accidente {
   const AccidenteModel({
     int? id,
@@ -29,6 +32,7 @@ class AccidenteModel extends Accidente {
     usuarioId: usuarioId,
   );
 
+  /// Crea una instancia desde un Mapa BD
   factory AccidenteModel.fromMap(Map<String, dynamic> map){
     return AccidenteModel(
       id: map['id'] as int?,
@@ -46,6 +50,7 @@ class AccidenteModel extends Accidente {
     );
   }
 
+  /// Convierte la instancia a un Mapa para insertar en la BD
   Map<String, dynamic> toMap(){
     return{
       'id': id,

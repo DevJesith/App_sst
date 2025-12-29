@@ -1,5 +1,3 @@
-// features/forms/accidente/presentation/screens/accidente_form_screen.dart
-
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,27 +10,29 @@ import '../../domain/entities/accidente.dart';
 import '../providers/accidente_providers.dart';
 
 /// Pantalla para llenar el formulario de reporte de accidente.
+///
 /// Utiliza Clean Architecture + MVVM + Riverpod.
+/// Maneja la logica de cascada: Seleccion de Proyecto -> Carga de Contratistas.
 class AccidenteFormScreen extends HookConsumerWidget {
-  final Accidente? accidente; // null = crear, con valor = editar
+  /// Si es null, se crea un nuevo registro.
+  /// Si tiene valor, se edita el registro existente.
+  final Accidente? accidente;
 
   const AccidenteFormScreen({Key? key, this.accidente}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Form key
+    // Clave para validar el formulario
     final formKey = useMemoized(() => GlobalKey<FormState>());
 
-    // Controladores de texto
+    // --- CONTROLADORES DE TEXTO ---
     final eventualidadController = useTextEditingController(
       text: accidente?.eventualidad ?? '',
     );
     final contratistaController = useTextEditingController(
       text: accidente?.contratista ?? '',
     );
-    final mesController = useTextEditingController(
-      text: accidente?.mes ?? '',
-    );
+    final mesController = useTextEditingController(text: accidente?.mes ?? '');
     final descripcionController = useTextEditingController(
       text: accidente?.descripcion ?? '',
     );
@@ -43,18 +43,16 @@ class AccidenteFormScreen extends HookConsumerWidget {
       text: accidente?.avances ?? '',
     );
 
-    // Estado del formulario (valores de dropdowns y fecha)
+    // --- ESTADO DEL FORMULARIO (RIVERPOD) ---
     final formState = ref.watch(accidenteFormNotifierProvider);
     final formNotifier = ref.read(accidenteFormNotifierProvider.notifier);
-
-    // Estado de envío
     final isSubmitting = ref.watch(accidentesSubmittingProvider);
 
-    // Opciones de dropdown
-    final proyectos = ["Proyecto 1", "Proyecto 2", "Proyecto 3"];
+    // Opciones estaticas
     final estados = ["Pendiente", "En proceso", "Completado"];
 
-    // ✅ Convertir las listas de Map a List<String> para el Dropdown
+    // --- PREPARACION DE LISTAS PARA DROPDOWNS ---
+    // Convertimos los mapas de la BD a listas de Strings para el widget visual
     final listaProyectosNombres = formState.listaProyectos
         .map((e) => (e['Nombre'] ?? e['nombre']).toString())
         .toList();
@@ -63,23 +61,32 @@ class AccidenteFormScreen extends HookConsumerWidget {
         .map((e) => (e['Nombre'] ?? e['nombre']).toString())
         .toList();
 
-    // Inicializar valores si es edición
+    // --- INICIALIZACION (EDICION) ---
     useEffect(() {
       if (accidente != null) {
-        formNotifier.setProyecto(accidente!.proyecto);
-        formNotifier.setEstado(accidente!.estado);
-        formNotifier.setFecha(accidente!.fechaRegistro);
+        Future.microtask(() {
+
+          // 1. Seteamos el proyecto (Esto disparara la carga de contratistas)
+          formNotifier.setProyecto(accidente!.proyecto);
+
+          // 2. Seteamos el resto de campos
+          formNotifier.setEstado(accidente!.estado);
+          formNotifier.setFecha(accidente!.fechaRegistro);
+
+          // 3. Seteamos el contratista manualmente
+          formNotifier.setContratista(accidente!.contratista);
+        });
       }
       return null;
     }, []);
 
-    /// Función para enviar el formulario
+    /// Funcion para enviar el formulario
     Future<void> submit() async {
-      // Validar campos del form
       if (!formKey.currentState!.validate()) return;
 
-      // Validar que los campos de estado estén completos
+      // Validar campos del estado (Dropdowns y Fecha)
       if (formState.proyecto == null ||
+          formState.contratista == null ||
           formState.estado == null ||
           formState.fecha == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -100,7 +107,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
         avances: avancesController.text,
         estado: formState.estado!,
         fechaRegistro: formState.fecha!,
-        usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1, // TODO: Obtener del auth provider
+        usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1,
       );
 
       // Llamar al notifier para crear/actualizar
@@ -120,7 +127,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
           diasIncapacidadController.clear();
           avancesController.clear();
 
-          // Mostrar diálogo de éxito
+          // Mostrar dialogo de éxito
           showDialog(
             context: context,
             builder: (_) => AlertDialog(
@@ -129,7 +136,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context); // Cerrar diálogo
+                    Navigator.pop(context); // Cerrar dialogo
                     Navigator.pop(context); // Volver a pantalla anterior
                   },
                   child: const Text('OK'),
@@ -140,9 +147,9 @@ class AccidenteFormScreen extends HookConsumerWidget {
         } else {
           // Mostrar error
           final error = ref.read(accidentesErrorProvider);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error ?? 'Error desconocido')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error ?? 'Error desconocido')));
         }
       }
     }
@@ -160,17 +167,19 @@ class AccidenteFormScreen extends HookConsumerWidget {
             key: formKey,
             child: Column(
               children: [
-                /// Título del formulario
+                /// Titulo del formulario
                 Text(
-                  accidente == null ? "Accidente" : "Editar Accidente",
+                  accidente == null ? "Reportar Accidente" : "Editar Accidente",
                   style: const TextStyle(
-                    fontSize: 40,
+                    fontSize: 32,
                     color: Colors.black,
                     fontWeight: FontWeight.w600,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 30),
+
+                // --- CAMPOS DEL FORMULARIO ---
 
                 /// Campo: Eventualidad
                 inputReutilizables(
@@ -204,25 +213,15 @@ class AccidenteFormScreen extends HookConsumerWidget {
                 /// Campo: Contratista
                 ListaInputWigets(
                   nameInput: 'Contratista',
-                  label: listaContratistasNombres.isEmpty 
-                      ? 'Selecciona un proyecto primero' 
+                  label: listaContratistasNombres.isEmpty
+                      ? 'Selecciona un proyecto primero'
                       : 'Selecciona el contratista',
-                  items: listaContratistasNombres, // Solo muestra los válidos
-                  value: formState.contratista, // Usamos el del estado, no el controller
+                  items: listaContratistasNombres, // Solo muestra los validos
+                  value: formState
+                      .contratista, // Usamos el del estado, no el controller
                   onChanged: formNotifier.setContratista,
                   validator: (value) => value == null ? 'Obligatorio' : null,
                 ),
-
-                // inputReutilizables(
-                //   controller: contratistaController,
-                //   nameInput: "Contratista",
-                //   validator: (value) {
-                //     if (value == null || value.isEmpty) {
-                //       return 'Este campo es obligatorio';
-                //     }
-                //     return null;
-                //   },
-                // ),
                 const SizedBox(height: 20),
 
                 /// Campo: Mes
@@ -253,7 +252,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 20),
 
-                /// Campo: Descripción
+                /// Campo: Descripcion
                 inputReutilizables(
                   controller: descripcionController,
                   nameInput: "Descripción",
@@ -267,7 +266,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 20),
 
-                /// Campo: Días de incapacidad
+                /// Campo: Dias de incapacidad
                 inputReutilizables(
                   controller: diasIncapacidadController,
                   nameInput: "Días de incapacidad",
@@ -314,7 +313,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 30),
 
-                /// Botón para enviar el formulario
+                // --- BOTON DE ENVIO ---
                 ElevatedButton(
                   onPressed: isSubmitting ? null : submit,
                   style: ElevatedButton.styleFrom(
@@ -323,6 +322,9 @@ class AccidenteFormScreen extends HookConsumerWidget {
                       horizontal: 90,
                     ),
                     backgroundColor: CupertinoColors.activeBlue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: isSubmitting
                       ? const SizedBox(

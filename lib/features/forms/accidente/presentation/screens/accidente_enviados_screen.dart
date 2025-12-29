@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -8,13 +6,16 @@ import '../../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../providers/accidente_providers.dart';
 import 'accidente_detalle_screen.dart';
 
-/// Pantalla que muestra todos los formularios de accidentes enviados por el usuario actual
+/// Pantalla que muestra el historial de accidentes reportados por el usuario actual.
+/// 
+/// Filtra la lista global de accidentes para mostrar solo los que pertenecen
+/// al usuario autenticado en la sesion.
 class AccidentesEnviadosScreen extends HookConsumerWidget {
   const AccidentesEnviadosScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Cargar accidentes cuando se monta el widget
+    // Cargar accidentes al iniciar la pantalla
     useEffect(() {
       Future.microtask(() {
         ref.read(accidenteNotifierProvider.notifier).loadAccidentes();
@@ -33,7 +34,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
         ? accidenteState.accidentes
             .where((a) => a.usuarioId == usuarioActual.id)
             .toList()
-        : <dynamic>[]; // Lista vacía si no hay usuario
+        : <dynamic>[]; // Lista vacia si no hay usuario
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
@@ -98,7 +99,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header con estadísticas
+                    // --- HEADER CON ESTADISTICAS ---
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -141,7 +142,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
                       ),
                     ),
 
-                    // Lista de accidentes
+                    // --- LISTA DE ACCIDENTES ---
                     Expanded(
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
@@ -174,7 +175,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Encabezado con tipo y fecha
+                                    // Encabezado con tipo y estado
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -222,7 +223,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
                                     ),
                                     const SizedBox(height: 12),
 
-                                    // Información del proyecto
+                                    // Informacion del proyecto
                                     Row(
                                       children: [
                                         const Icon(
@@ -286,7 +287,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
                                     ),
                                     const SizedBox(height: 12),
 
-                                    // Botón de ver más
+                                    // Boton de ver mas
                                     Align(
                                       alignment: Alignment.centerRight,
                                       child: TextButton.icon(

@@ -7,6 +7,10 @@ import 'package:app_sst/features/forms/accidente/domain/usecases/get_maestros_us
 import 'package:app_sst/features/forms/accidente/presentation/states/accidente_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+
+/// Notifier encargado de la gestion de la lista de accidentes y operaciones CRUD
+/// 
+/// Maneja los estados de carga, exito y error al interactuar con la BD.
 class AccidenteNotifier extends StateNotifier<AccidenteState> {
   final GetAccidentesUsecases getAccidentesUsecases;
   final CrearAccidenteUsecases crearAccidenteUsecases;
@@ -20,7 +24,7 @@ class AccidenteNotifier extends StateNotifier<AccidenteState> {
     required this.eliminarAccidenteUsecases,
   }) : super(const AccidenteState());
 
-  //Cargar todos los accidentes
+  //Carga la lista completa de accidentes desde la BD
   Future<void> loadAccidentes() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
@@ -35,7 +39,8 @@ class AccidenteNotifier extends StateNotifier<AccidenteState> {
     }
   }
 
-  //Crear nuevo accidente
+  /// Crear nuevo accidente
+  /// Retorna true si la operacion fue exitosa.
   Future<bool> crearAccidente(Accidente accidente) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
 
@@ -71,10 +76,10 @@ class AccidenteNotifier extends StateNotifier<AccidenteState> {
     }
   }
 
-  //Eliminar accidente
+  //Eliminar accidente por su ID
   Future<bool> eliminarAccidente(int id) async {
     try {
-      await eliminarAccidente(id);
+      await eliminarAccidenteUsecases(id);
       await loadAccidentes();
       return true;
     } catch (e) {
@@ -89,6 +94,13 @@ class AccidenteNotifier extends StateNotifier<AccidenteState> {
   }
 }
 
+/// Notifier encargado del estado del formulario
+/// 
+/// Maneja:
+/// 1. Los valores seleccionados en los campos
+/// 2. La carga de listas desplegables
+/// 3. La logica de cascada, al seleccionar un proyecto se carga los contratistas
+
 class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
   final GetProyectosUseCase getProyectosUseCase;
   final GetContratistasPorProyectoUseCase getContratistasPorProyectoUseCase;
@@ -100,19 +112,23 @@ class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
     _cargarProyectosIniciales();
   }
 
+  /// Carga la lsita inicial de proyectos disponibles
   Future<void> _cargarProyectosIniciales() async {
     final proyectos = await getProyectosUseCase();
     state = state.copyWith(listaProyectos: proyectos);
   }
 
+  /// Selecciona un proyecto y carga sus contratistas asociados.
+  /// 
+  /// [nombreProyecto] : El nombre del proyecto sleecciona (String).nombreProyecto
   void setProyecto(String? nombreProyecto) async {
     if (nombreProyecto == null) return;
 
-    // ⚠️ CAMBIO IMPORTANTE:
-    // No usamos copyWith. Creamos un estado NUEVO para forzar que contratista sea NULL.
+    /// Creamos un estado nuevo para forzar que contratistas sea null.
+    /// Esto evita erroes visuales en el Dropdown al cambiar de proyecto
     state = AccidenteFormState(
       proyecto: nombreProyecto,
-      contratista: null, // ✅ Ahora sí se fuerza el null
+      contratista: null, // Se fuerza el null
       estado: state.estado,
       fecha: state.fecha,
       listaProyectos: state.listaProyectos,
@@ -120,6 +136,7 @@ class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
     );
 
     try {
+      // Buscamos el objeto proyecto completo para obtener su ID.
       final proyectoObj = state.listaProyectos.firstWhere(
         (p) => (p['Nombre'] ?? p['nombre']) == nombreProyecto,
         orElse: () => {},
@@ -128,9 +145,9 @@ class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
       if (proyectoObj.isNotEmpty) {
         final proyectoId = proyectoObj['id'] as int;
 
+        // Cargamos los contratistas filtrados por ese ID
         final contratistas = await getContratistasPorProyectoUseCase(proyectoId);
 
-        // Aquí sí podemos usar copyWith porque estamos AGREGANDO datos, no borrando
         state = state.copyWith(listaContratistas: contratistas);
       }
       
@@ -151,6 +168,7 @@ class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
     state = state.copyWith(fecha: value);
   }
 
+  /// Reinicia el formulario a su estado inicial, mateniendo los proyectos cargados.
   void reset() {
     state = AccidenteFormState(listaProyectos: state.listaProyectos);
   }

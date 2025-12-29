@@ -11,11 +11,15 @@ import 'package:app_sst/features/forms/accidente/presentation/notifiers/accident
 import 'package:app_sst/features/forms/accidente/presentation/states/accidente_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+// ----------------------------------------------------------------------------------------
+// 1. CAPA DE DATOS
+// ----------------------------------------------------------------------------------------
 final databaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
 });
 
-//Provider de DataSource
+/// Provider de DataSource loca.
+/// Se encarga de las consultas directas a SQLite
 final accidenteLocaDataSourceProvider = Provider<AccidenteLocalDatasource>((
   ref,
 ) {
@@ -23,13 +27,18 @@ final accidenteLocaDataSourceProvider = Provider<AccidenteLocalDatasource>((
   return AccidenteLocalDataSourceImpl(database: database);
 });
 
-//Provider de Repositort
+/// Provider de Repositorio.
+/// Implementa la interfaz del dominio usando el DataSource local.
 final accidenteRepositoryProvider = Provider<AccidenteRepository>((ref) {
   final localDataSource = ref.watch(accidenteLocaDataSourceProvider);
   return AccidenteRepositoryImpl(localDatasource: localDataSource);
 });
 
-//Providers de Use Cases
+// ----------------------------------------------------------------------------------------
+// 2. CAPA DE DOMINIO (CASOS DE USO)
+// ---------------------------------------------------------------------------------------
+
+// --- CRUD ---
 final getAccidenteUseCaseProvider = Provider<GetAccidentesUsecases>((ref) {
   final repository = ref.watch(accidenteRepositoryProvider);
   return GetAccidentesUsecases(repository);
@@ -58,12 +67,17 @@ final getProyectosUseCaseProvider = Provider<GetProyectosUseCase>((ref) {
   return GetProyectosUseCase(repo);
 });
 
-final getContratistasUseCaseProvider = Provider<GetContratistasPorProyectoUseCase>((ref) {
-  final repo = ref.watch(accidenteRepositoryProvider);
-  return GetContratistasPorProyectoUseCase(repo);
-});
+final getContratistasUseCaseProvider =
+    Provider<GetContratistasPorProyectoUseCase>((ref) {
+      final repo = ref.watch(accidenteRepositoryProvider);
+      return GetContratistasPorProyectoUseCase(repo);
+    });
 
-//Provider del Notifier princiapl (lista y CRUD)
+// ----------------------------------------------------------------------------------------
+// 3. CAPA DE PRESENTACION (STATE MANAGEMENT)
+// ----------------------------------------------------------------------------------------
+
+/// Provider del Notifier principal (Lista de Accidentes y operaciones CRUD).
 final accidenteNotifierProvider =
     StateNotifierProvider<AccidenteNotifier, AccidenteState>((ref) {
       return AccidenteNotifier(
@@ -76,16 +90,23 @@ final accidenteNotifierProvider =
       );
     });
 
-//Provider del Notifier del formulario (valores de campos)
+/// Provider del Notifier del formulario (Manejo de campos y dropdowns).
+/// Usamos 'autoDispose' para limpiar el estado al salir de la pantalla.
 final accidenteFormNotifierProvider =
     StateNotifierProvider<AccidenteFormNotifier, AccidenteFormState>((ref) {
       return AccidenteFormNotifier(
         getProyectosUseCase: ref.watch(getProyectosUseCaseProvider),
-        getContratistasPorProyectoUseCase: ref.watch(getContratistasUseCaseProvider),
+        getContratistasPorProyectoUseCase: ref.watch(
+          getContratistasUseCaseProvider,
+        ),
       );
     });
 
-// Providers derivados (para acceso directo a partes del estado)
+
+// ----------------------------------------------------------------------------------------
+// 4. SELECTORS (ACCESO RAPIDO A VALORES)
+// ----------------------------------------------------------------------------------------
+
 final accidentesListProvider = Provider((ref) {
   return ref.watch(accidenteNotifierProvider).accidentes;
 });
@@ -101,5 +122,3 @@ final accidentesErrorProvider = Provider((ref) {
 final accidentesSubmittingProvider = Provider((ref) {
   return ref.watch(accidenteNotifierProvider).isSubmitting;
 });
-
-
