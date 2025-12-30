@@ -1,7 +1,13 @@
-
 import 'package:app_sst/features/forms/gestion/domain/entities/gestion.dart';
 import 'package:image_picker/image_picker.dart';
 
+/// Estado global del modulo
+/// 
+/// Gestiona la informacion de la vista de lista (CRUD):
+/// * [gestiones]: La lista de reportes cargados.
+/// * [isLoading]: Si se esta consultando la BD.
+/// * [errorMessage]: Si ocurrio un error.
+/// * [isSubmitting]: Si se esta guardando/eliminando un registro.
 class GestionState {
   final List<Gestion> gestiones;
   final bool isLoading;
@@ -30,9 +36,20 @@ class GestionState {
   }
 }
 
+/// Estado especifico del formulario.
+/// 
+/// Gestiona:
+/// 1. La listade imagenes seleccionadas.
+/// 2. El proyecto seleccionado
+/// 3. La lista de maestra de proyectos para el Dropdown.
 class GestionFormState {
+  /// Lista de imagenes seleccionadas (Camara o Galeria)
   final List<XFile> imagenes;
+
+  /// ID del proyecto seleccionado.
   final int? proyectoId;
+
+  /// Lista de proyectos cargados desde la BD para el Dropdown.
   final List<Map<String, dynamic>> listaProyectos;
 
   const GestionFormState({

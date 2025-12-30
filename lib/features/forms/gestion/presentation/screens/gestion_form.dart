@@ -9,6 +9,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 /// Pantalla para llenar el formulario de gestión de inspección.
 /// Incluye campos de texto y carga de imágenes como evidencia.
@@ -121,10 +123,25 @@ class GestionFormScreen extends HookConsumerWidget {
         ).showSnackBar(const SnackBar(content: Text('Debes subir 3 fotos')));
         return;
       }
+
+      // Obtener directorio permanente
+      final directory = await getApplicationCacheDirectory();
+      final String documentsPath = directory.path;
+
+      Future<String> guardarImagenPermanente(XFile imagen, int index) async {
+        //Crear nombre unico: gestion_TIMESTAMP_index.jpg
+        final String fileName ='gestion_${DateTime.now().millisecondsSinceEpoch}_$index.jpg';
+        final String newPath = path.join(documentsPath, fileName);
+
+        // Copiar archivo de cache a documentos
+        await File(imagen.path).copy(newPath);
+        return newPath;
+      }
+
       //Convertir XFILE paths a String
-      final foto1Path = formState.imagenes[0].path;
-      final foto2Path = formState.imagenes[1].path;
-      final foto3Path = formState.imagenes[2].path;
+      final foto1Path = await guardarImagenPermanente(formState.imagenes[0], 1);
+      final foto2Path = await guardarImagenPermanente(formState.imagenes[1], 2);
+      final foto3Path = await guardarImagenPermanente(formState.imagenes[2], 3);
 
       final nuevaGestion = Gestion(
         id: gestion?.id,
@@ -156,6 +173,7 @@ class GestionFormScreen extends HookConsumerWidget {
           extintorMaquinaController.clear();
           rutinariaMaquinaController.clear();
           gestionCumpleController.clear();
+          formNotifier.clearImagenes;
 
           showDialog(
             context: context,
@@ -184,7 +202,9 @@ class GestionFormScreen extends HookConsumerWidget {
 
     useEffect(() {
       if (gestion != null) {
-        formNotifier.setProyectos(gestion!.proyectoId);
+        Future.microtask(() {
+          formNotifier.setProyectos(gestion!.proyectoId);
+        });
       }
       return null;
     }, []);

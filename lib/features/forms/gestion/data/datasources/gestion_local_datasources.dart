@@ -2,6 +2,8 @@ import 'package:app_sst/data/database/app_database.dart';
 import 'package:app_sst/features/forms/gestion/data/model/gestion_model.dart';
 import 'package:sqflite/sql.dart';
 
+/// Interfaz para el acceso a datos locales
+/// Define las operaciones CRUD y la consulta de proyectos
 abstract class GestionLocalDatasources {
   Future<List<GestionModel>> getGestion();
   Future<GestionModel?> getGestionById(int id);
@@ -9,9 +11,12 @@ abstract class GestionLocalDatasources {
   Future<int> crearGestion(GestionModel gestion);
   Future<int> actualizarGestion(GestionModel gestion);
   Future<int> eliminarGestion(int id);
+  
+  // Metodos para listas desplegables
   Future<List<Map<String, dynamic>>> getProyectos();
 }
 
+/// Implementacion concreta del DataSource local usando SQLite.
 class GestionLocalDataSourceImpl implements GestionLocalDatasources {
   final AppDatabase database;
 

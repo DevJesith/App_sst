@@ -1,5 +1,8 @@
 
-
+/// Entidad de dominio que representa un reporte
+/// 
+/// Contiene la evaluacion de diversos aspectos de seguridad.
+/// y permite adjuntar evidencias fotograficas
 class Gestion {
   final int? id;
   final String ee;

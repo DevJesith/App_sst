@@ -1,5 +1,7 @@
 import 'package:app_sst/features/forms/gestion/domain/entities/gestion.dart';
 
+/// Modelo de datos para la tabla
+/// Extiende la entidad de dominio y agrega metodos de serializacion
 class GestionModel extends Gestion {
   const GestionModel({
     int? id,
@@ -33,25 +35,29 @@ class GestionModel extends Gestion {
          usuarioId: usuarioId,
        );
 
+  /// Crea una instancia desde un Mapa BD.
   factory GestionModel.fromMap(Map<String, dynamic> map) {
     return GestionModel(
       id: map['id'] as int?,
-      ee: map['ee'] as String,
-      proyectoId: map['Proyecto_id'] as int,
-      epp: map['epp'] as String,
-      locativa: map['locativa'] as String,
-      extintorMaquina: map['extintor_maquina'] as String,
-      rutinariaMaquina: map['rutinaria_maquina'] as String,
-      gestionCumple: map['gestion_cumpl_cont'] as String,
-      foto1: map['foto1'] as String,
-      foto2: map['foto2'] as String,
-      foto3: map['foto3'] as String,
-      fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
+      ee: map['ee'] as String? ?? '',
+      proyectoId: map['Proyecto_id'] as int? ?? 0,
+      epp: map['epp'] as String? ?? '',
+      locativa: map['locativa'] as String? ?? '',
+      extintorMaquina: map['extintor_maquina'] as String? ?? '',
+      rutinariaMaquina: map['rutinaria_maquina'] as String? ?? '',
+      gestionCumple: map['gestion_cumpl_cont'] as String? ?? '',
+      foto1: map['foto1'] as String? ?? '',
+      foto2: map['foto2'] as String? ?? '',
+      foto3: map['foto3'] as String? ?? '',
+      fechaRegistro: map['fecha_registro'] != null 
+          ? DateTime.parse(map['fecha_registro'] as String) 
+          : DateTime.now(),
       sincronizado: map['sincronizado'] as int? ?? 0,
-      usuarioId: map['Usuarios_id'] as int,
+      usuarioId: map['Usuarios_id'] as int? ?? 0,
     );
   }
 
+  /// Convierte la instancia a un Mapa para insertar en la BD
   Map<String, dynamic> toMap() {
     return {
       'id': id,

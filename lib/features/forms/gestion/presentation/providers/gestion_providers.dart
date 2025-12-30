@@ -1,4 +1,3 @@
-
 import 'package:app_sst/data/database/app_database.dart';
 import 'package:app_sst/features/forms/gestion/data/datasources/gestion_local_datasources.dart';
 import 'package:app_sst/features/forms/gestion/data/repositories_impl/gestion_repository_impl.dart';
@@ -12,21 +11,32 @@ import 'package:app_sst/features/forms/gestion/presentation/notifiers/gestion_no
 import 'package:app_sst/features/forms/gestion/presentation/states/gestion_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+// -------------------------------------------------------------------------------------------
+// 1. CAPA DE DATOS
+// -------------------------------------------------------------------------------------------
+
+/// Provider de la base de datos local.
 final databaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
 });
 
+/// Provider del DataSource Local.
 final gestionLocalDataBaseSourceProvider = Provider<GestionLocalDatasources>((ref) {
   final database = ref.watch(databaseProvider);
   return GestionLocalDataSourceImpl(database: database);
 });
 
+/// Provider del Repositorio.
 final gestionRepositoryProvider = Provider<GestionRepository>((ref) {
   final localDataSource = ref.watch(gestionLocalDataBaseSourceProvider);
   return GestionRepositoryImpl(localDatasources: localDataSource);
 });
 
-//Providers de Use Cases
+// -------------------------------------------------------------------------------------------
+// 2. CAPA DE DOMINIO
+// -------------------------------------------------------------------------------------------
+
+// --- CRUD ---
 final getGestionesUseCaseProvider = Provider<GetGestionUsecases>((ref) {
   final repository = ref.watch(gestionRepositoryProvider);
   return GetGestionUsecases(repository);
@@ -52,7 +62,11 @@ final getProyectosGestionUseCaseProvider = Provider<GetProyectosGestionUseCase>(
   return GetProyectosGestionUseCase(repo);
 });
 
-//Provider del Notifier principal
+// -------------------------------------------------------------------------------------------
+// 3. CAPA DE PRESENTACION
+// -------------------------------------------------------------------------------------------
+
+/// Provider del Notifier principal (Lista de gestiones y CRUD)
 final gestionNotifierProvider = StateNotifierProvider<GestionNotifier, GestionState>((ref) {
   return GestionNotifier(
   getGestionUsecases: ref.watch(getGestionesUseCaseProvider), 
@@ -62,15 +76,18 @@ final gestionNotifierProvider = StateNotifierProvider<GestionNotifier, GestionSt
   );
 });
 
-//Provider del Notifier principal del formulario
-
-final gestionFormNotifierProvider = StateNotifierProvider<GestionFormNotifier, GestionFormState>((ref) {
+/// Provider del Notifier del formulario
+final gestionFormNotifierProvider = StateNotifierProvider.autoDispose<GestionFormNotifier, GestionFormState>((ref) {
   return GestionFormNotifier(
     getProyectosUseCase: ref.watch(getProyectosGestionUseCaseProvider),
   );
 });
 
-//Providers derivados
+
+// -------------------------------------------------------------------------------------------
+// 4. SELECTORS
+// -------------------------------------------------------------------------------------------
+
 final gestionesListProvider = Provider((ref) {
   return ref.watch(gestionNotifierProvider).gestiones;
 });

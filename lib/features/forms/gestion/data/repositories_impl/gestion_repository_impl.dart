@@ -1,10 +1,11 @@
-
-
 import 'package:app_sst/features/forms/gestion/data/datasources/gestion_local_datasources.dart';
 import 'package:app_sst/features/forms/gestion/data/model/gestion_model.dart';
 import 'package:app_sst/features/forms/gestion/domain/entities/gestion.dart';
 import 'package:app_sst/features/forms/gestion/domain/repositories/gestion_repository.dart';
 
+/// Implementacion del repositorio de gesion de inspeccion
+/// 
+/// Actua como intermediario entre la capa de Dominio (Casos de uso) y la capa de Datos (DataSource).
 class GestionRepositoryImpl implements GestionRepository {
   final GestionLocalDatasources localDatasources;
 
