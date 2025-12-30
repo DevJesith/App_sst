@@ -1,5 +1,12 @@
 import 'package:app_sst/features/forms/incidente/domain/entities/incidente.dart';
 
+/// Estado global del modulo
+/// 
+/// Gestiona la informacion de la vista de lista (CRUD):
+/// * [incidentes]: La lista de reportes cargados.
+/// * [isLoading]: Si se esta consultando la base de datos.
+/// * [errorMessage]: Si ocurrio un error.
+/// * [isSubmitting]: Si se esta guardando/eliminando un registro
 class IncidenteState {
   final List<Incidente> incidentes;
   final bool isLoading;
@@ -28,6 +35,12 @@ class IncidenteState {
   }
 }
 
+/// Estado especifico del formulario
+/// 
+/// Gestiona: 
+/// 1. El proyecto seleccionado (ID).
+/// 2. La lista maestra de proyectos para el Dropdown
+/// 3. Otros campos temporales
 class IncidenteFormState {
   final int? proyectoId;
   final String? estado;

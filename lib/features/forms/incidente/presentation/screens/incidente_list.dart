@@ -1,22 +1,39 @@
-import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
-import 'package:app_sst/features/forms/incidente/presentation/providers/incidente_providers.dart';
-import 'package:app_sst/features/forms/incidente/presentation/screens/incidente_detalles_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-/// Lista de Incidentes
+import '../../../../../features/auth/presentation/providers/auth_provider.dart';
+import '../providers/incidente_providers.dart';
+import 'incidente_detalles_screen.dart';
+
 class IncidenteList extends HookConsumerWidget {
   final String searchQuery;
 
-  const IncidenteList({required this.searchQuery});
+  const IncidenteList({super.key, required this.searchQuery});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final incidenteState = ref.watch(incidenteNotifierProvider);
     final usuariosAsync = ref.watch(obtenerTodosUsuariosProvider);
 
+    // Cargar proyectos para nombres reales
+    final getProyectos = ref.read(getProyectosIncidenteUseCaseProvider);
+    final listaProyectos = useState<List<Map<String, dynamic>>>([]);
+
+    useEffect(() {
+      Future.microtask(() async {
+        try {
+          final proyectos = await getProyectos();
+          listaProyectos.value = proyectos;
+        } catch (_) {}
+      });
+      return null;
+    }, []);
+
     return usuariosAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text('Error: $error')),
       data: (usuarios) {
         if (incidenteState.isLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -25,192 +42,232 @@ class IncidenteList extends HookConsumerWidget {
         final incidentes = incidenteState.incidentes;
 
         if (incidentes.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.assignment_outlined,
-                  size: 80,
-                  color: Colors.black,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No hay reportes de incidentes',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-          );
+          return _buildEmptyState();
         }
 
-        // Filtrar por búsqueda - CORREGIDO
+        // Filtrado
         final filteredIncidentes = searchQuery.isEmpty
             ? incidentes
             : incidentes.where((incidente) {
+                final query = searchQuery.toLowerCase();
+                String nombreUsuario = '';
                 try {
-                  final usuario = usuarios.firstWhere(
+                  final u = usuarios.firstWhere(
                     (u) => u.id == incidente.usuarioId,
                   );
-                  final searchLower = searchQuery.toLowerCase();
-                  return usuario.nombre.toLowerCase().contains(searchLower) ||
-                      usuario.email.toLowerCase().contains(searchLower);
-                } catch (e) {
-                  return false;
-                }
+                  nombreUsuario = u.nombre.toLowerCase();
+                } catch (_) {}
+
+                return incidente.eventualidad.toLowerCase().contains(query) ||
+                    nombreUsuario.contains(query);
               }).toList();
 
         if (filteredIncidentes.isEmpty) {
-          return Center(
-            child: Text(
-              'No se encontraron resultados',
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade400),
-            ),
-          );
+          return const Center(child: Text('No se encontraron resultados'));
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: filteredIncidentes.length,
-          itemBuilder: (context, index) {
-            final incidente = filteredIncidentes[index];
-            
-            // Buscar usuario de forma segura - CORREGIDO
-            String nombreUsuario = "Usuario desconocido";
-            String emailUsuario = "Sin correo";
-            
-            try {
-              final usuario = usuarios.firstWhere(
-                (u) => u.id == incidente.usuarioId,
-              );
-              nombreUsuario = usuario.nombre;
-              emailUsuario = usuario.email;
-            } catch (e) {
-              // Si no encuentra el usuario, usa los valores por defecto
-            }
-            
-            final fechaFormateada = DateFormat('dd/MM/yyyy HH:mm')
-                .format(incidente.fechaRegistro);
-
-            return Card(
-              color: Colors.white,
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        return Column(
+          children: [
+            // --- HEADER ESTADÍSTICAS ---
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade700,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
               ),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => IncidenteDetallesScreen(
-                        incidente: incidente,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Incidentes Registrados',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.assignment,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Total: ${filteredIncidentes.length}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // --- LISTA ---
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: filteredIncidentes.length,
+                itemBuilder: (context, index) {
+                  final incidente = filteredIncidentes[index];
+
+                  String nombreUsuario = "Usuario desconocido";
+                  String emailUsuario = "";
+                  try {
+                    final u = usuarios.firstWhere(
+                      (u) => u.id == incidente.usuarioId,
+                    );
+                    nombreUsuario = u.nombre;
+                    emailUsuario = u.email;
+                  } catch (_) {}
+
+                  String nombreProyecto = "ID: ${incidente.proyectoId}";
+                  if (listaProyectos.value.isNotEmpty) {
+                    try {
+                      final p = listaProyectos.value.firstWhere(
+                        (p) => p['id'] == incidente.proyectoId,
+                      );
+                      nombreProyecto =
+                          p['Nombre'] ?? p['nombre'] ?? nombreProyecto;
+                    } catch (_) {}
+                  }
+
+                  final fecha = DateFormat(
+                    'dd/MM/yyyy HH:mm',
+                  ).format(incidente.fechaRegistro);
+
+                  return Card(
+                    elevation: 2,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                IncidenteDetallesScreen(incidente: incidente),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: Colors.orange.shade700,
+                                  child: const Icon(
+                                    Icons.report_problem,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        incidente.eventualidad,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      Text(
+                                        nombreProyecto,
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  DateFormat(
+                                    'dd/MM/yy',
+                                  ).format(incidente.fechaRegistro),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            const Divider(),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.person,
+                                  size: 16,
+                                  color: Colors.black54,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Nombre: $nombreUsuario',
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      Text(
+                                        emailUsuario,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
                 },
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Encabezado con usuario
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.amber.shade900,
-                            radius: 20,
-                            child: const Icon(
-                              Icons.report,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  incidente.eventualidad,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  fechaFormateada,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      const Divider(color: Colors.grey),
-
-                      const SizedBox(height: 8),
-
-                      // Información del usuario - CORREGIDO
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.person,
-                            size: 16,
-                            color: Colors.black,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Nombre: $nombreUsuario',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  emailUsuario,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
               ),
-            );
-          },
+            ),
+          ],
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(
-        child: Text(
-          'Error: $error',
-          style: const TextStyle(color: Colors.red),
-        ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.assignment_outlined, size: 80, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            'No hay reportes de incidentes',
+            style: TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+        ],
       ),
     );
   }

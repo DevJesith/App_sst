@@ -1,9 +1,11 @@
-
 import 'package:app_sst/features/forms/incidente/data/datasources/incidente_local_datasource.dart';
 import 'package:app_sst/features/forms/incidente/data/model/incidente_model.dart';
 import 'package:app_sst/features/forms/incidente/domain/entities/incidente.dart';
 import 'package:app_sst/features/forms/incidente/domain/repositories/incidente_repository.dart';
 
+/// Implementacion del repositorio.
+/// 
+/// Actua como intermediario entre la capa de Dominio (Casos de uso) y la capa de Datos (DataSource).
 class IncidenteRepositoryImpl implements IncidenteRepository {
   final IncidenteLocalDatasource localDatasource;
 

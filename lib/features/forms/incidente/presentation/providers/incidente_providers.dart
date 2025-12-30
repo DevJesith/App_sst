@@ -11,11 +11,16 @@ import 'package:app_sst/features/forms/incidente/presentation/notifiers/incident
 import 'package:app_sst/features/forms/incidente/presentation/states/incidente_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+// -------------------------------------------------------------------------------------------
+// 1. CAPA DE DATOS
+// -------------------------------------------------------------------------------------------
+
+/// Provider de la base de datos local.
 final databaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
 });
 
-//Provider de DataSource
+/// Provider del DataSource Local. 
 final incidenteLocalDataSourceProvider = Provider<IncidenteLocalDatasource>((
   ref,
 ) {
@@ -23,13 +28,17 @@ final incidenteLocalDataSourceProvider = Provider<IncidenteLocalDatasource>((
   return IncidenteLocalDatasourceImpl(database: database);
 });
 
-//Provider de Repositorio
+//Provider de Repositorio.
 final incidenteRepositoryProvider = Provider<IncidenteRepository>((ref) {
   final localDataSource = ref.watch(incidenteLocalDataSourceProvider);
   return IncidenteRepositoryImpl(localDatasource: localDataSource);
 });
 
-//Providers de Use Cases
+// -------------------------------------------------------------------------------------------
+// 2. CAPA DE DOMINIO (CASOS DE USO)
+// -------------------------------------------------------------------------------------------
+
+// --- CRUD ---
 final getIncidenteUseCaseProvider = Provider<GetIncidenteUsecases>((ref) {
   final repository = ref.watch(incidenteRepositoryProvider);
   return GetIncidenteUsecases(repository);
@@ -58,7 +67,11 @@ final getProyectosIncidenteUseCaseProvider = Provider<GetProyectosIncidenteUseCa
   return GetProyectosIncidenteUseCase(repo);
 });
 
-//Provider del Notifier principal (lista y CRUD)
+// -------------------------------------------------------------------------------------------
+// 3. CAPA DE PRESENTACION
+// -------------------------------------------------------------------------------------------
+
+/// Provider del Notifier principal (Lista de Incidentes y CRUD).
 final incidenteNotifierProvider =
     StateNotifierProvider<IncidenteNotifier, IncidenteState>((ref) {
       return IncidenteNotifier(
@@ -71,7 +84,7 @@ final incidenteNotifierProvider =
       );
     });
 
-//Provider del Notifier del formulario (valores de campos)
+//Provider del Notifier del formulario.
 final incidenteFormNotifierProvider =
     StateNotifierProvider.autoDispose<IncidenteFormNotifier, IncidenteFormState>((ref) {
       return IncidenteFormNotifier(
@@ -79,7 +92,10 @@ final incidenteFormNotifierProvider =
       );
     });
 
-//Providers derivados (para acceso directo a partes del estado)
+// -------------------------------------------------------------------------------------------
+// 4. SELECTORS
+// -------------------------------------------------------------------------------------------
+
 final incidenteListProvider = Provider((ref) {
   return ref.watch(incidenteNotifierProvider).incidentes;
 });

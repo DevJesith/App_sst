@@ -52,7 +52,9 @@ class IncidenteFormScreen extends HookConsumerWidget {
 
     int? valorProyectoSeguro = formState.proyectoId;
 
-    final nombresProyectos = formState.listaProyectos.map((e) => (e['Nombre'] ?? e['nombre']).toString()).toList();
+    final nombresProyectos = formState.listaProyectos
+        .map((e) => (e['Nombre'] ?? e['nombre']).toString())
+        .toList();
 
     String? nombresProyectoSeleccionado;
     if (formState.proyectoId != null && formState.listaProyectos.isNotEmpty) {
@@ -65,9 +67,11 @@ class IncidenteFormScreen extends HookConsumerWidget {
     }
 
     if (formState.listaProyectos.isNotEmpty && valorProyectoSeguro != null) {
-      final existe = formState.listaProyectos.any((p) => p['id'] == valorProyectoSeguro);
+      final existe = formState.listaProyectos.any(
+        (p) => p['id'] == valorProyectoSeguro,
+      );
       if (!existe) {
-        valorProyectoSeguro = null; 
+        valorProyectoSeguro = null;
         // Opcional: Actualizar el estado para que sepa que es null
         // Future.microtask(() => formNotifier.setProyectoId(null));
       }
@@ -76,9 +80,11 @@ class IncidenteFormScreen extends HookConsumerWidget {
     //Inincializar valores si es edicion
     useEffect(() {
       if (incidente != null) {
-        formNotifier.setProyectoId(incidente!.proyectoId);
-        formNotifier.setEstado(incidente!.estado);
-        formNotifier.setFecha(incidente!.fechaRegistro);
+        Future.microtask(() {
+          formNotifier.setProyectoId(incidente!.proyectoId);
+          formNotifier.setEstado(incidente!.estado);
+          formNotifier.setFecha(incidente!.fechaRegistro);
+        });
       }
       return null;
     }, []);
@@ -193,21 +199,22 @@ class IncidenteFormScreen extends HookConsumerWidget {
                   const SizedBox(height: 20),
 
                   // ✅ PROYECTO (Estilo Tuyo)
-                ListaInputWigets(
-                  nameInput: 'Proyecto',
-                  label: 'Selecciona un proyecto',
-                  items: nombresProyectos,
-                  value: nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
-                  onChanged: (nombre) {
-                    // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
-                    final proyecto = formState.listaProyectos.firstWhere(
-                      (p) => (p['Nombre'] ?? p['nombre']) == nombre
-                    );
-                    // Mandar el ID al notifier
-                    formNotifier.setProyectoId(proyecto['id'] as int);
-                  },
-                  validator: (value) => value == null ? 'Requerido' : null,
-                ),
+                  ListaInputWigets(
+                    nameInput: 'Proyecto',
+                    label: 'Selecciona un proyecto',
+                    items: nombresProyectos,
+                    value:
+                        nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
+                    onChanged: (nombre) {
+                      // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
+                      final proyecto = formState.listaProyectos.firstWhere(
+                        (p) => (p['Nombre'] ?? p['nombre']) == nombre,
+                      );
+                      // Mandar el ID al notifier
+                      formNotifier.setProyectoId(proyecto['id'] as int);
+                    },
+                    validator: (value) => value == null ? 'Requerido' : null,
+                  ),
 
                   const SizedBox(height: 20),
 
@@ -319,7 +326,7 @@ class IncidenteFormScreen extends HookConsumerWidget {
               ),
             ),
           ),
-        ), 
+        ),
       ),
     );
   }

@@ -2,6 +2,8 @@ import 'package:app_sst/data/database/app_database.dart';
 import 'package:app_sst/features/forms/incidente/data/model/incidente_model.dart';
 import 'package:sqflite/sql.dart';
 
+/// Interfaz para el acceso a datos locales.
+/// Define las operaciones CRUD y la consulta de proyectos.
 abstract class IncidenteLocalDatasource {
   Future<List<IncidenteModel>> getIncidentes();
   Future<IncidenteModel?> getIncidenteById(int id);
@@ -9,9 +11,12 @@ abstract class IncidenteLocalDatasource {
   Future<int> crearIncidente(IncidenteModel incidente);
   Future<int> actualizarIncidente(IncidenteModel incidente);
   Future<int> eliminarIncidente(int id);
+
+  // Metodos para listas desplegables
   Future<List<Map<String, dynamic>>> getProyectos();
 }
 
+/// Implementacion concreta del DataSource local usando SQLite.
 class IncidenteLocalDatasourceImpl implements IncidenteLocalDatasource {
   final AppDatabase database;
 

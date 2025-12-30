@@ -7,6 +7,9 @@ import 'package:app_sst/features/forms/incidente/domain/usecases/get_maestros_in
 import 'package:app_sst/features/forms/incidente/presentation/states/incidente_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Notifier encargado de la gestion de la lsita de incidentes (CRUD).
+/// 
+/// Maneja los estados de carga, exito y error al interactuar con la base de datos.
 class IncidenteNotifier extends StateNotifier<IncidenteState> {
   final CrearIncidenteUsecases crearIncidenteUsecases;
   final GetIncidenteUsecases getIncidenteUsecases;
@@ -20,7 +23,7 @@ class IncidenteNotifier extends StateNotifier<IncidenteState> {
     required this.eliminarIncidenteUsecases,
   }) : super(const IncidenteState());
 
-  //Cargar todos los incidentes
+  /// Carga la lista completa de incidentes dedsde la base de datos
   Future<void> loadIncidentes() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
@@ -35,7 +38,7 @@ class IncidenteNotifier extends StateNotifier<IncidenteState> {
     }
   }
 
-  //Crear nuevo incidente
+  /// Crea un nuevo registro de incidente.
   Future<bool> crearIncidente(Incidente incidente) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
 
@@ -53,7 +56,7 @@ class IncidenteNotifier extends StateNotifier<IncidenteState> {
     }
   }
 
-  //Actualizar incidente existente
+  /// Actualiza un incidente existente.
   Future<bool> actualizarIncidente(Incidente incidente) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
 
@@ -71,7 +74,7 @@ class IncidenteNotifier extends StateNotifier<IncidenteState> {
     }
   }
 
-  //Eliminar incidente
+  /// Elimina un incidente por su ID.
   Future<bool> eliminarIncidente(int id) async {
     try {
       await eliminarIncidente(id);
@@ -83,12 +86,17 @@ class IncidenteNotifier extends StateNotifier<IncidenteState> {
     }
   }
 
-  //Limpiar mensaje de error
+  /// Limpia los mensajes de error del estado
   void clearError() {
     state = state.copyWith(errorMessage: null);
   }
 }
 
+/// Notifier para el estado del formulario
+/// 
+/// Maneja: 
+/// 1. La carga de la lista de proyectos
+/// 2. La seleccion del proyecto y otros campos.
 class IncidenteFormNotifier extends StateNotifier<IncidenteFormState> {
 
   final GetProyectosIncidenteUseCase getProyectosUseCase;
@@ -99,6 +107,7 @@ class IncidenteFormNotifier extends StateNotifier<IncidenteFormState> {
     _cargarProyectos();
   }
 
+  /// Carga la lista de proyectos disponibles desde la BD.
   Future<void> _cargarProyectos() async {
     try {
       print("🔄 INCIDENTE: Iniciando carga de proyectos...");
@@ -116,11 +125,12 @@ class IncidenteFormNotifier extends StateNotifier<IncidenteFormState> {
     }
   }
 
-  // Método público para recargar manualmente si falla
+  /// Metodo publico para forzar la recarga de proyectos si falla la inicial.
   Future<void> recargarProyectos() async {
     await _cargarProyectos();
   }
 
+  /// Establece el ID del proyecto seleccionado.
   void setProyectoId(int? value) {
     state = state.copyWith(proyectoId: value);
   }
@@ -133,6 +143,7 @@ class IncidenteFormNotifier extends StateNotifier<IncidenteFormState> {
     state = state.copyWith(fecha: value);
   }
 
+  /// Reinicia el formulario manteniendo la lista de proyectos cargada.
   void reset() {
     state = IncidenteFormState(listaProyectos: state.listaProyectos);
   }

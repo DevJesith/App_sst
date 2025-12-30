@@ -1,8 +1,8 @@
+/// Entidad de dominio que representa un reporte.
 class Incidente {
   final int? id;
   final String eventualidad;
   final int proyectoId;
-  //final String contratista;
   final String mes;
   final String descripcion;
   final int diasIncapacidad;
@@ -16,7 +16,6 @@ class Incidente {
     this.id,
     required this.eventualidad,
     required this.proyectoId,
-    //required this.contratista,
     required this.mes,
     required this.descripcion,
     required this.diasIncapacidad,
