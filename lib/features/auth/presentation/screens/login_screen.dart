@@ -1,6 +1,7 @@
 // features/auth/presentation/screens/login_screen.dart
 
 import 'dart:convert';
+import 'package:app_sst/services/storage_service.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +75,10 @@ class LoginScreen extends HookConsumerWidget {
 
         if (context.mounted) {
           if (usuario != null) {
+
+
+            // Guardar sesion permanentemente
+            await StorageService.guardarSesion(usuario.id!);
 
             // Guardar sesion en el estado global
             ref.read(usuarioAutenticadoProvider.notifier).state = usuario;
