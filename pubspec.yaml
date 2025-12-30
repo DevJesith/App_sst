@@ -49,6 +49,8 @@ dependencies:
   pdf: ^3.10.4  # Para generar PDFs
   printing: ^5.11.0  # Para imprimir/compartir PDFs
   share_plus: ^7.2.1  # Para compartir archivos
+  flutter_local_notifications: ^19.5.0
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

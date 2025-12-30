@@ -1,6 +1,8 @@
 import 'package:app_sst/data/database/drop_clean_database.dart';
+import 'package:app_sst/features/auth/presentation/screens/check_auth_screen.dart';
 import 'package:app_sst/features/auth/presentation/screens/introducion_screen.dart';
 import 'package:app_sst/services/connectivity_manager.dart';
+import 'package:app_sst/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -9,6 +11,9 @@ void main() async {
 
   // 1. Asegurar que el motor de flutter este listo antes de ejecutar codigo asincrono
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar Notificaciones
+  await NotificationService().initialize();
 
   // 2. Inicializar el gestor de conectividad (Sincronizacion automatica)
   // Esto comienza a escuchar si hay internet para subir/bajar datos
@@ -57,7 +62,7 @@ class AppSST extends StatelessWidget {
       ),
 
       //Pantalla inicial
-      home: const IntroducionScreen(),
+      home: const CheckAuthScreen(),
     );
   }
 }
