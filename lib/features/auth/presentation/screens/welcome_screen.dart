@@ -1,3 +1,4 @@
+import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
 import 'package:app_sst/shared/widgets/boton_navegacion_widgets.dart';
 import 'package:app_sst/shared/widgets/perfil_widget.dart';
 import 'package:app_sst/features/auth/domain/entities/usuarios.dart';
@@ -20,6 +21,10 @@ class WelcomeScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    final usuarioState = ref.watch(usuarioAutenticadoProvider);
+
+    final usuarioActual = usuarioState ?? usuario;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
 
@@ -37,7 +42,7 @@ class WelcomeScreen extends HookConsumerWidget {
       ),
 
       /// Menu lateral con la informacion del usuario actual
-      drawer: CustomDrawer(usuarios: usuario),
+      drawer: CustomDrawer(usuarios: usuarioActual),
 
       /// Cuerpo responsive
       /// Usa [LayoutBuilder] para centrar el contenido en pantallas grandes (Tablets/Web)

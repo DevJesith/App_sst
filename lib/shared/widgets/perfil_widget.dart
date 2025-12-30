@@ -1,29 +1,34 @@
-// shared/widgets/perfil_widget.dart
+import 'package:app_sst/features/auth/presentation/screens/perfil_screen.dart';
+import 'package:app_sst/services/storage_service.dart';
+import 'package:flutter/material.dart';
 
+// Imports de Pantallas de Historial
 import 'package:app_sst/features/forms/accidente/presentation/screens/accidente_enviados_screen.dart';
+import 'package:app_sst/features/forms/capacitacion/presentation/screens/capacitacion_enviados_screen.dart';
 import 'package:app_sst/features/forms/enfermedad/presentation/screens/enfermedad_enviados_screen.dart';
 import 'package:app_sst/features/forms/gestion/presentation/screens/gestion_enviados_screen.dart';
 import 'package:app_sst/features/forms/incidente/presentation/screens/incidente_enviados_screen.dart';
-import 'package:flutter/material.dart';
+
+// Imports de Autenticación y Navegación
 import 'package:app_sst/features/auth/domain/entities/usuarios.dart';
 import 'package:app_sst/features/auth/presentation/screens/introducion_screen.dart';
 import 'package:app_sst/features/auth/presentation/screens/usuarios_registrados_screen.dart';
 import 'package:app_sst/features/auth/presentation/screens/formularios_recibidos_screen.dart';
 
-/// Drawer personalizado para usuarios y administrador - RESPONSIVE
+/// Drawer personalizado para la navegación lateral.
+///
+/// Se adapta según el rol del usuario:
+/// * **Admin:** Ve opciones de gestión global (Usuarios, Todos los reportes).
+/// * **Usuario:** Ve opciones personales (Mis reportes, Perfil).
 class CustomDrawer extends StatelessWidget {
   final Usuarios usuarios;
   final bool esAdmin;
 
-  const CustomDrawer({
-    super.key,
-    required this.usuarios,
-    this.esAdmin = false,
-  });
+  const CustomDrawer({super.key, required this.usuarios, this.esAdmin = false});
 
   @override
   Widget build(BuildContext context) {
-    // Obtener ancho de pantalla para hacer responsive
+    // Diseño responsivo para tablets
     final screenWidth = MediaQuery.of(context).size.width;
     final drawerWidth = screenWidth > 600 ? 350.0 : 280.0;
 
@@ -33,33 +38,31 @@ class CustomDrawer extends StatelessWidget {
         color: Colors.white,
         child: Column(
           children: [
-            // Header del drawer - RESPONSIVE
+            // --- HEADER (Perfil) ---
             _buildHeader(context),
 
-            // Contenido scrollable
+            // --- CONTENIDO SCROLLABLE ---
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  // Opciones comunes
+                  // Opción común: Perfil
                   _buildMenuItem(
                     icon: Icons.person,
                     iconColor: esAdmin ? Colors.purple : Colors.blue,
                     title: "Mi Perfil",
                     onTap: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Funcionalidad en desarrollo'),
-                          duration: Duration(seconds: 2),
-                        ),
+                      Navigator.pop(context); // Cerrar drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const PerfilScreen()),
                       );
                     },
                   ),
 
                   const Divider(height: 1),
 
-                  // Opciones específicas del ADMIN
+                  // --- OPCIONES DE ADMINISTRADOR ---
                   if (esAdmin) ...[
                     _buildSectionHeader('Panel de Control'),
                     _buildMenuItem(
@@ -94,10 +97,10 @@ class CustomDrawer extends StatelessWidget {
                     ),
                   ],
 
-                  // Opciones específicas del USUARIO NORMAL
+                  // --- OPCIONES DE USUARIO NORMAL ---
                   if (!esAdmin) ...[
                     _buildSectionHeader('Mis Formularios Enviados'),
-                    
+
                     _buildMenuItem(
                       icon: Icons.warning_amber,
                       iconColor: Colors.red,
@@ -162,18 +165,18 @@ class CustomDrawer extends StatelessWidget {
                       },
                     ),
 
-                    const Divider(height: 1),
-
                     _buildMenuItem(
-                      icon: Icons.notifications,
-                      iconColor: Colors.blue,
-                      title: "Notificaciones",
+                      icon: Icons.school, // Icono corregido para capacitación
+                      iconColor: Colors.teal,
+                      title: "Capacitaciones",
+                      subtitle: "Ver capacitaciones",
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Funcionalidad en desarrollo'),
-                            duration: Duration(seconds: 2),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const CapacitacionesEnviadosScreen(),
                           ),
                         );
                       },
@@ -183,7 +186,7 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
 
-            // Botón de cerrar sesión al fondo
+            // --- BOTÓN DE CERRAR SESIÓN ---
             const Divider(height: 1),
             _buildLogoutButton(context),
             const SizedBox(height: 8),
@@ -193,9 +196,11 @@ class CustomDrawer extends StatelessWidget {
     );
   }
 
+  // --- WIDGETS INTERNOS ---
+
   Widget _buildHeader(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 600;
-    
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(
@@ -281,10 +286,7 @@ class CustomDrawer extends StatelessWidget {
           // Email
           Text(
             usuarios.email,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-            ),
+            style: const TextStyle(fontSize: 14, color: Colors.white70),
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -326,11 +328,7 @@ class CustomDrawer extends StatelessWidget {
                 color: iconColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 22,
-              ),
+              child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -358,11 +356,7 @@ class CustomDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: Colors.grey.shade400,
-              size: 20,
-            ),
+            Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
           ],
         ),
       ),
@@ -376,17 +370,19 @@ class CustomDrawer extends StatelessWidget {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Cerrar Sesión'),
-            content: const Text(
-              '¿Estás seguro de que deseas cerrar sesión?',
-            ),
+            content: const Text('¿Estás seguro de que deseas cerrar sesión?'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Cancelar'),
               ),
               TextButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
+
+                  // Borrar sesion de memoria
+                  await StorageService.cerrarSesion();
+                  // Navegar al inicio y borrar historial
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
                       builder: (_) => const IntroducionScreen(),
@@ -394,9 +390,7 @@ class CustomDrawer extends StatelessWidget {
                     (route) => false,
                   );
                 },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                ),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
                 child: const Text('Cerrar Sesión'),
               ),
             ],
@@ -413,11 +407,7 @@ class CustomDrawer extends StatelessWidget {
                 color: Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
-                Icons.logout,
-                color: Colors.red,
-                size: 22,
-              ),
+              child: const Icon(Icons.logout, color: Colors.red, size: 22),
             ),
             const SizedBox(width: 12),
             const Text(

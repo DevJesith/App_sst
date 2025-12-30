@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 /// Ideal para formularios con múltiples tipos de entrada.
 class inputReutilizables extends StatelessWidget {
   final TextEditingController controller;
-  //final String label;
   final String nameInput;
   final TextInputType keyboardType;
   final bool obscuredText;
@@ -15,11 +14,12 @@ class inputReutilizables extends StatelessWidget {
   final int maxLines;
   final int? maxLenght;
   final Widget? suffixIcon;
+  final Widget? prefixIcon;
+  final bool readOnly;
 
   const inputReutilizables({
     Key? key,
     required this.controller,
-    //required this.label,
     required this.nameInput,
     this.validator,
     this.decoration,
@@ -28,6 +28,8 @@ class inputReutilizables extends StatelessWidget {
     this.obscuredText = false,
     this.keyboardType = TextInputType.text,
     this.suffixIcon,
+    this.prefixIcon,
+    this.readOnly = false
   }) : super(key: key);
 
   @override
@@ -54,6 +56,7 @@ class inputReutilizables extends StatelessWidget {
           obscureText: obscuredText,
           maxLines: maxLines,
           maxLength: maxLenght,
+          readOnly: readOnly,
           decoration:
               decoration ??
               InputDecoration(
@@ -73,6 +76,7 @@ class inputReutilizables extends StatelessWidget {
                   borderRadius: BorderRadius.circular(5),
                 ),
                 suffixIcon: suffixIcon,
+                prefixIcon: prefixIcon,
               ),
         ),
       ],
