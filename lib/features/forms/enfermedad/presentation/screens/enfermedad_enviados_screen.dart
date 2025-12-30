@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
+
+// Imports
 import '../../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../providers/enfermedad_providers.dart';
 import 'enfermedad_detalle_screen.dart';
 
-/// Pantalla que muestra todos los formularios de enfermedades enviados por el usuario actual
 class EnfermedadesEnviadosScreen extends HookConsumerWidget {
   const EnfermedadesEnviadosScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Cargar enfermedades cuando se monta el widget
+    // Cargar datos al iniciar
     useEffect(() {
       Future.microtask(() {
         ref.read(enfermedadNotifierProvider.notifier).loadEnfermedad();
@@ -20,30 +21,26 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
       return null;
     }, []);
 
-    // Obtener el usuario autenticado
     final usuarioActual = ref.watch(usuarioAutenticadoProvider);
-
-    // Observar el estado de enfermedades
     final enfermedadState = ref.watch(enfermedadNotifierProvider);
 
-    // Filtrar solo los enfermedades del usuario actual
+    // Filtrar por usuario
     final misEnfermedades = usuarioActual != null
         ? enfermedadState.enfermedad
               .where((a) => a.usuarioId == usuarioActual.id)
               .toList()
-        : <dynamic>[]; // Lista vacía si no hay usuario
+        : <dynamic>[];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text('Mis Formularios Enviados'),
+        title: const Text('Mis Enfermedades Reportadas'),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         elevation: 2,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Recargar',
             onPressed: () {
               ref.read(enfermedadNotifierProvider.notifier).loadEnfermedad();
             },
@@ -51,47 +48,30 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
         ],
       ),
       body: enfermedadState.isLoading
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text(
-                    'Cargando formularios...',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : misEnfermedades.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.assignment_outlined,
+                    Icons.medical_services_outlined,
                     size: 80,
                     color: Colors.grey.shade400,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No has enviado formularios aún',
+                    'No has enviado reportes aún',
                     style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tus reportes de enfermedades aparecerán aquí',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
                   ),
                 ],
               ),
             )
           : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header con estadísticas
+                // --- HEADER ESTADÍSTICAS ---
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade700,
@@ -104,7 +84,7 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Enfermedades Reportados',
+                        'Enfermedades Reportadas',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -121,7 +101,7 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Total: ${misEnfermedades.length} reporte${misEnfermedades.length != 1 ? 's' : ''}',
+                            'Total: ${misEnfermedades.length}',
                             style: const TextStyle(
                               fontSize: 16,
                               color: Colors.white70,
@@ -133,14 +113,14 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
                   ),
                 ),
 
-                // Lista de enfermedades
+                // --- LISTA ---
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: misEnfermedades.length,
                     itemBuilder: (context, index) {
                       final enfermedad = misEnfermedades[index];
-                      final fechaFormateada = DateFormat(
+                      final fecha = DateFormat(
                         'dd/MM/yyyy',
                       ).format(enfermedad.fechaRegistro);
 
@@ -167,7 +147,6 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Encabezado con tipo y fecha
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -182,17 +161,16 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
+                                        horizontal: 8,
+                                        vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
                                         color: _getEstadoColor(
                                           enfermedad.estado,
                                         ).withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(20),
+                                        borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
                                           color: _getEstadoColor(
                                             enfermedad.estado,
@@ -202,83 +180,22 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
                                       child: Text(
                                         enfermedad.estado,
                                         style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
                                           color: _getEstadoColor(
                                             enfermedad.estado,
                                           ),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-
-                                // Información del proyecto
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.business,
-                                      size: 16,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        'Proyecto: ${enfermedad.proyecto}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                // Contratista
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.person_outline,
-                                      size: 16,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        'Contratista: ${enfermedad.contratista}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                // Fecha
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.calendar_today,
-                                      size: 16,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Fecha: $fechaFormateada',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ],
+                                _buildRow(
+                                  Icons.calendar_today,
+                                  'Fecha: $fecha',
                                 ),
                                 const SizedBox(height: 12),
-
-                                // Botón de ver más
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: TextButton.icon(
@@ -310,6 +227,21 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _buildRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.grey),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+        ),
+      ],
     );
   }
 

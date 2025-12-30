@@ -60,7 +60,10 @@ class EnfermedadFormScreen extends HookConsumerWidget {
         .toList();
 
     final nombresTrabajadores = formState.listaTrabajadores
-        .map((e) => (e['Nombres'] ?? e['nombres'] ?? e['Nombre'] ?? e['nombre']).toString())
+        .map(
+          (e) => (e['Nombres'] ?? e['nombres'] ?? e['Nombre'] ?? e['nombre'])
+              .toString(),
+        )
         .toList();
 
     String? nombresProyectoSeleccionado;
@@ -93,16 +96,20 @@ class EnfermedadFormScreen extends HookConsumerWidget {
           (t) => t['id'] == formState.trabajadorId,
         );
         nombresTrabajadoresSeleccionado =
-            trabajadores['Nombres'] ?? trabajadores['nombres'] ?? trabajadores['Nombre'];
+            trabajadores['Nombres'] ??
+            trabajadores['nombres'] ??
+            trabajadores['Nombre'];
       } catch (_) {}
     }
 
     //Inicializar valores si es edicion
     useEffect(() {
       if (enfermedad != null) {
-        formNotifier.setProyectoId(enfermedad!.proyectoId);
-        formNotifier.setEstado(enfermedad!.estado);
-        formNotifier.setFecha(enfermedad!.fechaRegistro);
+        Future.microtask(() {
+          formNotifier.setProyectoId(enfermedad!.proyectoId);
+          formNotifier.setEstado(enfermedad!.estado);
+          formNotifier.setFecha(enfermedad!.fechaRegistro);
+        });
       }
       return null;
     }, []);
@@ -226,7 +233,7 @@ class EnfermedadFormScreen extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
-                // ✅ PROYECTO (Estilo Tuyo)
+                // Proyecto
                 ListaInputWigets(
                   nameInput: 'Proyecto',
                   label: 'Selecciona un proyecto',
@@ -246,7 +253,7 @@ class EnfermedadFormScreen extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
-                // ✅ CONTRATISTA (Estilo Tuyo)
+                // Contratista
                 ListaInputWigets(
                   nameInput: 'Contratista',
                   label: nombresContratistas.isEmpty
@@ -267,18 +274,21 @@ class EnfermedadFormScreen extends HookConsumerWidget {
 
                 const SizedBox(height: 20),
 
-                // ✅ TRABAJADOR (Estilo Tuyo)
+                // Trabajador
                 ListaInputWigets(
                   nameInput: 'Trabajador',
                   label: nombresTrabajadores.isEmpty
                       ? 'Selecciona un proyecto primero'
                       : 'Selecciona un contratista',
                   items: nombresTrabajadores,
-                  value: nombresTrabajadoresSeleccionado, // Le pasamos el nombre
+                  value:
+                      nombresTrabajadoresSeleccionado, // Le pasamos el nombre
                   onChanged: (nombre) {
                     // BUSCAR EL ID BASADO EN EL NOMBRE
                     final trabajador = formState.listaTrabajadores.firstWhere(
-                      (t) => (t['Nombres'] ?? t['nombres'] ?? t['Nombre']) == nombre,
+                      (t) =>
+                          (t['Nombres'] ?? t['nombres'] ?? t['Nombre']) ==
+                          nombre,
                     );
                     // Mandar el ID al notifier
                     formNotifier.setTrabajadorId(trabajador['id'] as int);

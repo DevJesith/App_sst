@@ -7,6 +7,7 @@ import 'package:app_sst/features/forms/enfermedad/domain/usecases/get_maestros_e
 import 'package:app_sst/features/forms/enfermedad/presentation/states/enfermedad_states.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Notifier encargado de la gestion de la lista de reportes (CRUD)
 class EnfermedadNotifier extends StateNotifier<EnfermedadStates> {
   final CrearEnfermedadUsecases crearEnfermedadUsecases;
   final GetEnfermedadUsecases getEnfermedadUsecases;
@@ -20,7 +21,7 @@ class EnfermedadNotifier extends StateNotifier<EnfermedadStates> {
     required this.eliminarEnfermedadUsecases,
   }) : super(const EnfermedadStates());
 
-  //Cargar todos enfermedad
+  /// Carga la lista completa de enfermedades registradas.
   Future<void> loadEnfermedad() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
@@ -35,7 +36,7 @@ class EnfermedadNotifier extends StateNotifier<EnfermedadStates> {
     }
   }
 
-  //Crear nueva enfermedad
+  //Crear nuevo reporte y actualiza la lista.
   Future<bool> crearEnfermedad(Enfermedad enfermedad) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
 
@@ -53,7 +54,7 @@ class EnfermedadNotifier extends StateNotifier<EnfermedadStates> {
     }
   }
 
-  //Actualizar enfermedad existente
+  /// Actualiza un reporte existente.
   Future<bool> actualizarEnfermedad(Enfermedad enfermedad) async {
     state = state.copyWith(isSubmitting: true, errorMessage: null);
 
@@ -71,7 +72,7 @@ class EnfermedadNotifier extends StateNotifier<EnfermedadStates> {
     }
   }
 
-  //Eliminar enfermedad
+  /// Elimina un reporte por su ID.
   Future<bool> eliminarEnfermedad(int id) async {
     try {
       await eliminarEnfermedadUsecases(id);
@@ -89,6 +90,9 @@ class EnfermedadNotifier extends StateNotifier<EnfermedadStates> {
   }
 }
 
+/// Notifier para el estado del formulario.
+/// 
+/// Maneja la logica de cascada de los 3 niveles
 class EnfermedadFormNotifier extends StateNotifier<EnfermedadFormState> {
 
   final GetProyectosEnfermedadUseCase getProyectosUseCase;
@@ -103,6 +107,7 @@ class EnfermedadFormNotifier extends StateNotifier<EnfermedadFormState> {
     _cargarProyectos();
   }
 
+  /// Carga inicial de proyectos.
   Future<void> _cargarProyectos() async {
     try {
       final proyectos = await getProyectosUseCase();
@@ -112,9 +117,11 @@ class EnfermedadFormNotifier extends StateNotifier<EnfermedadFormState> {
     }
   }
 
+  /// Selecciona Proyecto y reinicia la cascada (Contratista y Trabajadores).
   void setProyectoId(int? id) async {
     if (id == null) return;
 
+    /// Usamos el constructor para limpiar listas y selecciones dependientes.
     state = EnfermedadFormState(
       proyectoId: id,
       contratistaId: null,
@@ -122,8 +129,8 @@ class EnfermedadFormNotifier extends StateNotifier<EnfermedadFormState> {
       estado: state.estado,
       fecha: state.fecha,
       listaProyectos: state.listaProyectos,
-      listaContratista: [],
-      listaTrabajadores: [],
+      listaContratista: [], // Limpiar lista
+      listaTrabajadores: [], // Limpiar lista
     );
 
     try {
@@ -134,6 +141,7 @@ class EnfermedadFormNotifier extends StateNotifier<EnfermedadFormState> {
     }
   }
 
+  /// Selecciona Contratista y carga Trabajadores.
   void setContratistaId(int? id) async {
     if (id == null || state.proyectoId == null) return;
 
@@ -164,6 +172,7 @@ class EnfermedadFormNotifier extends StateNotifier<EnfermedadFormState> {
     state = state.copyWith(fecha: value);
   }
 
+  /// Reinicia el formulario manteniendo los proyectos cargados.
   void reset() {
     state = EnfermedadFormState(listaProyectos: state.listaProyectos);
   }

@@ -1,181 +1,203 @@
+import 'package:app_sst/features/forms/enfermedad/presentation/screens/enfermedad_form.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../domain/entities/enfermedad.dart';
 
-/// Pantalla que muestra todos los detalles de una enfermedad reportado
-class EnfermedadDetalleScreen extends StatelessWidget {
+import '../../domain/entities/enfermedad.dart';
+import '../providers/enfermedad_providers.dart';
+
+class EnfermedadDetalleScreen extends HookConsumerWidget {
   final Enfermedad enfermedad;
 
   const EnfermedadDetalleScreen({super.key, required this.enfermedad});
 
   @override
-  Widget build(BuildContext context) {
-    final fechaFormateada = DateFormat(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fecha = DateFormat(
       'dd/MM/yyyy HH:mm',
     ).format(enfermedad.fechaRegistro);
+
+    // --- LÓGICA PARA OBTENER NOMBRES REALES ---
+    final getProyectos = ref.read(getProyectosEnfermedadUseCaseProvider);
+    final getContratistas = ref.read(
+      getContratistasEnfermedadesUseCaseProvider,
+    );
+    final getTrabajadores = ref.read(getTrabajadoresEnfermedadUseCaseProvider);
+
+    final nombreProyecto = useState('Cargando...');
+    final nombreContratista = useState('Cargando...');
+    final nombreTrabajador = useState('Cargando...');
+
+    useEffect(() {
+      Future.microtask(() async {
+        try {
+          // 1. Proyecto
+          final proyectos = await getProyectos();
+          final p = proyectos.firstWhere(
+            (e) => e['id'] == enfermedad.proyectoId,
+            orElse: () => {},
+          );
+          nombreProyecto.value =
+              p['Nombre'] ?? p['nombre'] ?? 'ID: ${enfermedad.proyectoId}';
+
+          // 2. Contratista
+          final contratistas = await getContratistas(enfermedad.proyectoId);
+          final c = contratistas.firstWhere(
+            (e) => e['id'] == enfermedad.contratistaId,
+            orElse: () => {},
+          );
+          nombreContratista.value =
+              c['Nombre'] ?? c['nombre'] ?? 'ID: ${enfermedad.contratistaId}';
+
+          // 3. Trabajador
+          final trabajadores = await getTrabajadores(
+            enfermedad.proyectoId,
+            enfermedad.contratistaId,
+          );
+          final t = trabajadores.firstWhere(
+            (e) => e['id'] == enfermedad.trabajadorId,
+            orElse: () => {},
+          );
+          nombreTrabajador.value =
+              t['Nombres'] ?? t['nombres'] ?? 'ID: ${enfermedad.trabajadorId}';
+        } catch (_) {
+          nombreProyecto.value = 'Error';
+          nombreContratista.value = 'Error';
+          nombreTrabajador.value = 'Error';
+        }
+      });
+      return null;
+    }, []);
+
+    // --- LÓGICA DE ELIMINACIÓN ---
+    Future<void> confirmarEliminacion() async {
+      final confirmar = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('¿Eliminar reporte?'),
+          content: const Text('Esta acción no se puede deshacer.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmar == true && context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const Center(child: CircularProgressIndicator()),
+        );
+
+        try {
+          await ref
+              .read(enfermedadNotifierProvider.notifier)
+              .eliminarEnfermedad(enfermedad.id!);
+
+          if (context.mounted) {
+            Navigator.pop(context); // Loading
+            Navigator.pop(context); // Pantalla
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Eliminado correctamente'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+            );
+          }
+        }
+      }
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text('Detalle de Enfermedad'),
+        title: const Text('Detalle Enfermedad'),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
-        elevation: 2,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header con estado
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade700,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+        actions: [
+          if (enfermedad.sincronizado == 0) ...[
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EnfermedadFormScreen(enfermedad: enfermedad),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: confirmarEliminacion,
+            ),
+          ],
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildCard('Información General', Icons.info, [
+              _row('Proyecto', nombreProyecto.value),
+              _row('Contratista', nombreContratista.value),
+              _row('Trabajador', nombreTrabajador.value),
+              _row('Fecha', fecha),
+            ]),
+            const SizedBox(height: 16),
+            _buildCard('Detalles del Caso', Icons.medical_services, [
+              _row('Eventualidad', enfermedad.eventualidad),
+              _row('Descripción', enfermedad.descripcion),
+              _row('Incapacidad', '${enfermedad.diasIncapacidad} días'),
+              _row('Avances', enfermedad.avances),
+            ]),
+            const SizedBox(height: 16),
+            _buildCard('Estado', Icons.sync, [
+              Row(
                 children: [
+                  Icon(
+                    enfermedad.sincronizado == 1
+                        ? Icons.check_circle
+                        : Icons.pending,
+                    color: enfermedad.sincronizado == 1
+                        ? Colors.green
+                        : Colors.orange,
+                  ),
+                  const SizedBox(width: 8),
                   Text(
-                    enfermedad.eventualidad,
-                    style: const TextStyle(
-                      fontSize: 24,
+                    enfermedad.sincronizado == 1 ? 'Sincronizado' : 'Pendiente',
+                    style: TextStyle(
+                      color: enfermedad.sincronizado == 1
+                          ? Colors.green
+                          : Colors.orange,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      enfermedad.estado,
-                      style: TextStyle(
-                        color: _getEstadoColor(enfermedad.estado),
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-
-            // Contenido
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Tarjeta de información general
-                  _buildInfoCard(
-                    title: 'Información General',
-                    icon: Icons.info_outline,
-                    children: [
-                      // _buildInfoRow('Proyecto', enfermedad.proyecto),
-                      // _buildInfoRow('Contratista', enfermedad.contratista),
-                      _buildInfoRow('Mes', enfermedad.mes),
-                      _buildInfoRow('Fecha de Registro', fechaFormateada),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Tarjeta de descripción
-                  _buildInfoCard(
-                    title: 'Descripción de la Enfermedad',
-                    icon: Icons.description_outlined,
-                    children: [
-                      Text(
-                        enfermedad.descripcion,
-                        style: const TextStyle(fontSize: 16, height: 1.5),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Tarjeta de incapacidad
-                  _buildInfoCard(
-                    title: 'Incapacidad',
-                    icon: Icons.medical_services_outlined,
-                    children: [
-                      _buildInfoRow(
-                        'Días de Incapacidad',
-                        '${enfermedad.diasIncapacidad} día${enfermedad.diasIncapacidad != 1 ? 's' : ''}',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Tarjeta de avances
-                  _buildInfoCard(
-                    title: 'Avances',
-                    icon: Icons.timeline_outlined,
-                    children: [
-                      Text(
-                        enfermedad.avances,
-                        style: const TextStyle(fontSize: 16, height: 1.5),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Tarjeta de sincronización
-                  _buildInfoCard(
-                    title: 'Estado de Sincronización',
-                    icon: Icons.sync,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            enfermedad.sincronizado == 1
-                                ? Icons.check_circle
-                                : Icons.pending,
-                            color: enfermedad.sincronizado == 1
-                                ? Colors.green
-                                : Colors.orange,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            enfermedad.sincronizado == 1
-                                ? 'Sincronizado'
-                                : 'Pendiente de sincronización',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: enfermedad.sincronizado == 1
-                                  ? Colors.green
-                                  : Colors.orange,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            ]),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoCard({
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
+  Widget _buildCard(String title, IconData icon, List<Widget> children) {
     return Card(
-      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -184,8 +206,8 @@ class EnfermedadDetalleScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.blue.shade700, size: 24),
-                const SizedBox(width: 12),
+                Icon(icon, color: Colors.blue.shade700),
+                const SizedBox(width: 8),
                 Text(
                   title,
                   style: const TextStyle(
@@ -195,7 +217,7 @@ class EnfermedadDetalleScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const Divider(),
             ...children,
           ],
         ),
@@ -203,46 +225,24 @@ class EnfermedadDetalleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _row(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             flex: 2,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            child: Text(label, style: const TextStyle(color: Colors.grey)),
           ),
-          const SizedBox(width: 8),
           Expanded(
             flex: 3,
             child: Text(
               value,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
         ],
       ),
     );
-  }
-
-  Color _getEstadoColor(String estado) {
-    switch (estado.toLowerCase()) {
-      case 'pendiente':
-        return Colors.orange;
-      case 'en proceso':
-        return Colors.blue;
-      case 'completado':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
   }
 }

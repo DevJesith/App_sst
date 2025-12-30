@@ -2,6 +2,8 @@ import 'package:app_sst/data/database/app_database.dart';
 import 'package:app_sst/features/forms/enfermedad/data/model/enfermedad_model.dart';
 import 'package:sqflite/sql.dart';
 
+/// Interfaz para el acceso a datos locales de Enfermedad Laboral.
+/// Define las operaciones CRUD y las consultas a tablas maestras en cascada.
 abstract class EnfermedadLocalDatasource {
   Future<List<EnfermedadModel>> getEnfermedad();
   Future<EnfermedadModel?> getEnfermedadById(int id);
@@ -9,11 +11,14 @@ abstract class EnfermedadLocalDatasource {
   Future<int> crearEnfermedad(EnfermedadModel enfermedad);
   Future<int> actualizarEnfermedad(EnfermedadModel enfermedad);
   Future<int> eliminarEnfermedad(int id);
+
+  // Metodos para listas desplegables
   Future<List<Map<String, dynamic>>> getProyectos();
   Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId);
   Future<List<Map<String, dynamic>>> getTrabajadoresPorContratista(int proyectoId, int contratistaId);
 }
 
+/// Implementancion concreta del DataSource local usando SQLite.
 class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
   final AppDatabase database;
 
@@ -95,6 +100,7 @@ class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
   @override
   Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId) async {
     final db = await database.database;
+    // JOIN para filtrar contratistas asociados al proyecto seleccionado
     return await db.rawQuery('''
     SELECT c.id, c.Nombre
     FROM Contratista c
@@ -106,6 +112,7 @@ class EnfermedadLocalDataSourceImpl implements EnfermedadLocalDatasource {
   @override
   Future<List<Map<String, dynamic>>> getTrabajadoresPorContratista(int proyectoId, int contratistaId) async {
     final db = await database.database;
+    // JOIN para filtrar trabajadores asociados al proyecto seleccionado
     return await db.rawQuery('''
     SELECT t.id, t.Nombres
     FROM Trabajador t

@@ -1,3 +1,8 @@
+
+/// Entidad de dominio que representa un reporte
+/// 
+/// Contiene la informacion detallada del caso, vinculando tres niveles de jerarquia:
+/// Proyecto -> Contratista -> Trabajador.
 class Enfermedad {
   final int? id;
   final String eventualidad;

@@ -1,5 +1,7 @@
 import 'package:app_sst/features/forms/enfermedad/domain/entities/enfermedad.dart';
 
+/// Modelo de datos para la tabla
+/// Extiende la entidad de dominio y agrega metodos de serializacion
 class EnfermedadModel extends Enfermedad {
   const EnfermedadModel({
     int? id,
@@ -31,24 +33,28 @@ class EnfermedadModel extends Enfermedad {
          usuarioId: usuarioId,
        );
 
+  /// Crea una instancia desde un Mapa BD.
   factory EnfermedadModel.fromMap(Map<String, dynamic> map) {
     return EnfermedadModel(
       id: map['id'] as int?,
-      eventualidad: map['eventualidad'] as String,
-      proyectoId: map['Proyecto_id'] as int,
-      contratistaId: map['contratista_id'] as int,
-      trabajadorId: map['Trabajador_id'] as int,
-      mes: map['mes'] as String,
-      descripcion: map['descripcion'] as String,
-      diasIncapacidad: map['dias_incapacidad'] as int,
-      avances: map['avances'] as String,
-      estado: map['estado'] as String,
-      fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
+      eventualidad: map['eventualidad'] as String? ?? '',
+      proyectoId: map['Proyecto_id'] as int? ?? 0,
+      contratistaId: map['contratista_id'] as int? ?? 0,
+      trabajadorId: map['Trabajador_id'] as int? ?? 0,
+      mes: map['mes'] as String? ?? '',
+      descripcion: map['descripcion'] as String? ?? '',
+      diasIncapacidad: map['dias_incapacidad'] as int? ?? 0,
+      avances: map['avances'] as String? ?? '',
+      estado: map['estado'] as String? ?? '',
+      fechaRegistro: map['fecha_registro'] != null 
+          ? DateTime.parse(map['fecha_registro'] as String) 
+          : DateTime.now(),
       sincronizado: map['sincronizado'] as int? ?? 0,
-      usuarioId: map['Usuarios_id'] as int,
+      usuarioId: map['Usuarios_id'] as int? ?? 0,
     );
   }
 
+  /// Convierte la instancia a un Mapa para insertar en la BD.
   Map<String, dynamic> toMap() {
     return {
       'id': id,

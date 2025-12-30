@@ -1,10 +1,11 @@
-
-
 import 'package:app_sst/features/forms/enfermedad/data/datasources/enfermedad_local_datasource.dart';
 import 'package:app_sst/features/forms/enfermedad/data/model/enfermedad_model.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/entities/enfermedad.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/repositories/enfermedad_repository.dart';
 
+/// Implementacion del repositorio de Enfermedad Laboral.
+/// 
+/// Actua como intermediario entre la capa de Dominio (Casos de uso) y la capa de Datos (DataSource).
 class EnfermedadRepositoryImpl implements EnfermedadRepository {
   final EnfermedadLocalDatasource localDatasource;
 

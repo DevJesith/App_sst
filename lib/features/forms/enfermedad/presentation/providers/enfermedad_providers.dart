@@ -13,24 +13,33 @@ import 'package:app_sst/features/forms/enfermedad/presentation/notifiers/enferme
 import 'package:app_sst/features/forms/enfermedad/presentation/states/enfermedad_states.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+// -------------------------------------------------------------------------------------------
+// 1. CAPA DE DATOS
+// -------------------------------------------------------------------------------------------
+
+/// Provider de la base de datos local.
 final databaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
 });
 
-//Provider de DataSource
+/// Provider del DataSource local.
 final enfermedadLocalDataSourceProvider =
     Provider<EnfermedadLocalDataSourceImpl>((ref) {
       final database = ref.watch(databaseProvider);
       return EnfermedadLocalDataSourceImpl(database: database);
     });
 
-//Provider de Repositorio
+/// Provider del Repositorio.
 final enfermedadRepositoryProvider = Provider<EnfermedadRepository>((ref) {
   final localDataSource = ref.watch(enfermedadLocalDataSourceProvider);
   return EnfermedadRepositoryImpl(localDatasource: localDataSource);
 });
 
-//Provider de Use Cases
+// -------------------------------------------------------------------------------------------
+// 2. CAPA DE DOMINIO (CASOS DE USO)
+// -------------------------------------------------------------------------------------------
+
+// --- CRUD ---
 final getEnfermedadUseCaseProvider = Provider<GetEnfermedadUsecases>((ref) {
   final repository = ref.watch(enfermedadRepositoryProvider);
   return GetEnfermedadUsecases(repository);
@@ -58,8 +67,11 @@ final getContratistasEnfermedadesUseCaseProvider = Provider((ref) => GetContrati
 
 final getTrabajadoresEnfermedadUseCaseProvider = Provider((ref) => GetTrabajadoresEnfermedadUseCase(ref.watch(enfermedadRepositoryProvider)));
 
-//Provider del Notifier principal (lista y CRUD)
+// -------------------------------------------------------------------------------------------
+// 3. CAPA DE PRESENTACION
+// -------------------------------------------------------------------------------------------
 
+/// Provider del Notifier principal
 final enfermedadNotifierProvider = StateNotifierProvider<EnfermedadNotifier, EnfermedadStates>((ref) {
   return EnfermedadNotifier(
   getEnfermedadUsecases: ref.watch(getEnfermedadUseCaseProvider), 
@@ -79,7 +91,9 @@ final enfermedadFormNotifierProvider = StateNotifierProvider<EnfermedadFormNotif
   );
 });
 
-//Providers derivados (para acceso directo a partes del estado)
+// -------------------------------------------------------------------------------------------
+// 4. SELECTORS
+// -------------------------------------------------------------------------------------------
 
 final enfermedadListProvider = Provider((ref) {
   return ref.watch(enfermedadNotifierProvider).enfermedad;

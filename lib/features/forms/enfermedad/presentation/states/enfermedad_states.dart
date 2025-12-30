@@ -1,5 +1,12 @@
 import 'package:app_sst/features/forms/enfermedad/domain/entities/enfermedad.dart';
 
+/// Estado global del modulo 
+/// 
+/// Gestiona la informacion de la vista de lista (CRUD):
+/// * [enfermedad]: La lista de registro cargados.
+/// * [isLoading]: Si se esta consultando la BD.
+/// * [errorMessage]: Si ocurrio un error.
+/// * [isSubmitting]: Si se esta guardando/rliminando un registro.
 class EnfermedadStates {
   final List<Enfermedad> enfermedad;
   final bool isLoading;
@@ -28,6 +35,9 @@ class EnfermedadStates {
   }
 }
 
+/// Estado especifico del formulario
+/// 
+/// Gestiona los valores seleccionados y las listas para los Dropdwns en cascada.
 class EnfermedadFormState {
   final int? proyectoId;
   final int? contratistaId;
