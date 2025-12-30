@@ -1,3 +1,4 @@
+import 'package:app_sst/services/sync_service.dart';
 import 'package:app_sst/shared/widgets/card_form_widgets.dart';
 import 'package:app_sst/features/forms/accidente/presentation/screens/accidente_form_screen.dart';
 import 'package:app_sst/features/forms/capacitacion/presentation/screens/capacitacion_form.dart';
@@ -14,6 +15,68 @@ class HomeScreens extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+      //Funcion para manejar la sincronizacion
+      Future<void> ejecutarSincronizacion() async {
+        
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) =>  const Center(
+            child: Card(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16,),
+                    Text("Sincronizando con la nube..."),
+                    Text("(Simulacion)", style: TextStyle(fontSize: 10, color: Colors.grey),)
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+
+        try {
+          
+          //Llamar al servicio simulado
+          final resultado = await SyncService().sincronizarTodo();
+
+          if (context.mounted) {
+            Navigator.pop(context);
+
+            //Mostrar resultado
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text("✅ Sincronización Exitosa"),
+                content: Text(
+                "Se han subido ${resultado['total']} registros al servidor.\n\n"
+                "• Accidentes: ${resultado['accidentes']}\n"
+                "• Incidentes: ${resultado['incidentes']}\n"
+                "• Gestiones: ${resultado['gestiones']}\n"
+                "• Capacitaciones: ${resultado['capacitaciones']}\n"
+                "• Enfermedades: ${resultado['enfermedades']}"
+                ),
+                actions: [
+                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Aceptar'))
+                ],
+              )
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Error al sincronizar: $e"))
+            );
+          }
+        }
+      }
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       /// AppBar con título y notificación
@@ -27,6 +90,15 @@ class HomeScreens extends HookConsumerWidget {
         automaticallyImplyLeading: true,
         leadingWidth: 30,
         backgroundColor: const Color.fromARGB(255, 221, 221, 221),
+
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.cloud_upload),
+            tooltip: "Sincronizar datos",
+            onPressed: ejecutarSincronizacion,
+          ),
+          const SizedBox(width: 10,)
+        ],
       ),
 
       /// Layout adaptable según ancho de pantalla
