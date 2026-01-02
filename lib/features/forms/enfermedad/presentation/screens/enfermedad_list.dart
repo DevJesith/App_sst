@@ -99,8 +99,6 @@ class EnfermedadesList extends HookConsumerWidget {
                 nombreProyecto = p['Nombre'] ?? p['nombre'] ?? nombreProyecto;
               } catch (_) {}
             }
-            
-            final fechaFormateada = DateFormat('dd/MM/yyyy HH:mm').format(enfermedad.fechaRegistro);
 
             return Card(
               color: Colors.white,

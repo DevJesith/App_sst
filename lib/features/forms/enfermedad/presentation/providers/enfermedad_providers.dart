@@ -1,8 +1,6 @@
 import 'package:app_sst/data/database/app_database.dart';
-import 'package:app_sst/features/forms/accidente/domain/usecases/crear_accidente_usecases.dart';
 import 'package:app_sst/features/forms/enfermedad/data/datasources/enfermedad_local_datasource.dart';
 import 'package:app_sst/features/forms/enfermedad/data/repositories_impl/enfermedad_repository_impl.dart';
-import 'package:app_sst/features/forms/enfermedad/domain/entities/enfermedad.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/repositories/enfermedad_repository.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/usecases/actualizar_enfermedad_usecases.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/usecases/crear_enfermedad_usecases.dart';

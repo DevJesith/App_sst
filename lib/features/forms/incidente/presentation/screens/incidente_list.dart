@@ -141,10 +141,6 @@ class IncidenteList extends HookConsumerWidget {
                     } catch (_) {}
                   }
 
-                  final fecha = DateFormat(
-                    'dd/MM/yyyy HH:mm',
-                  ).format(incidente.fechaRegistro);
-
                   return Card(
                     elevation: 2,
                     margin: const EdgeInsets.only(bottom: 12),
