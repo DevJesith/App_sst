@@ -15,11 +15,11 @@ import 'package:app_sst/features/auth/presentation/screens/introducion_screen.da
 import 'package:app_sst/features/auth/presentation/screens/usuarios_registrados_screen.dart';
 import 'package:app_sst/features/auth/presentation/screens/formularios_recibidos_screen.dart';
 
-/// Drawer personalizado para la navegación lateral.
+/// Drawer personalizado para la navegacion lateral de la aplciacion.
 ///
-/// Se adapta según el rol del usuario:
-/// * **Admin:** Ve opciones de gestión global (Usuarios, Todos los reportes).
-/// * **Usuario:** Ve opciones personales (Mis reportes, Perfil).
+/// Renderiza opciones diferentes dependiendo del rol del usuario:
+/// * [esAdmin] = true: Muestra panel de control y gestion global.
+/// * [esAdmin] = false: Muestra historial personal y formularios.
 class CustomDrawer extends StatelessWidget {
   final Usuarios usuarios;
   final bool esAdmin;
@@ -28,7 +28,7 @@ class CustomDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Diseño responsivo para tablets
+    // Diseño responsivo 
     final screenWidth = MediaQuery.of(context).size.width;
     final drawerWidth = screenWidth > 600 ? 350.0 : 280.0;
 
@@ -41,12 +41,12 @@ class CustomDrawer extends StatelessWidget {
             // --- HEADER (Perfil) ---
             _buildHeader(context),
 
-            // --- CONTENIDO SCROLLABLE ---
+            // --- LISTA DE OPCIONES ---
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  // Opción común: Perfil
+                  // Opción comUn: Perfil
                   _buildMenuItem(
                     icon: Icons.person,
                     iconColor: esAdmin ? Colors.purple : Colors.blue,
@@ -186,7 +186,7 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
 
-            // --- BOTÓN DE CERRAR SESIÓN ---
+            // --- BOTÓN DE CERRAR SESION ---
             const Divider(height: 1),
             _buildLogoutButton(context),
             const SizedBox(height: 8),
