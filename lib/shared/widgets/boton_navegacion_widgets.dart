@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Botón reutilizable para navegación o acciones.
-/// Personalizable en color, texto, estilo y padding
+/// Boton generico reutilizable para la navegacion o acciones principales.
+/// 
+/// Permite personalizar color, texot border y padding.
+/// Se usa principalmente en la pantalla de bienvenida WelcomeScreen.
 class BotonNavegacion extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;

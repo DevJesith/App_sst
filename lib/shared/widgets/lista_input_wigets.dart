@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-
-/// Selector desplegable reutilizable para listas de opciones.
-/// Ideal para campos como tipo de incidente, área, responsable, etc.
+/// Selector desplegable (Dropdown) reutilizable.
+/// 
+/// Se utiliza para seleccionar una opcion de una lista Strings.
+/// Ideal para campos como "Estado", "Proyecto" (cuando se mapean nombres).
+/// ignore: camel_case_types
 class ListaInputWigets extends StatelessWidget {
   final String label;
   final String nameInput;
