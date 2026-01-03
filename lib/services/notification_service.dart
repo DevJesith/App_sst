@@ -1,7 +1,12 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+/// Service encargado de gestionar las notificaciones locales del dispositivo.
+///
+/// Utiliza el patron Singleton para asaegurar una unica instancia.
+/// Se usa principalmente para dar feedback al usuario cuando la sincronizacion
+/// automatica se completa en segundo plano.
 class NotificationService {
-  // Singleton
+  // --- Patron Singleton ---
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
@@ -9,19 +14,32 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  /// Inicializa el servicio (Llamar en main.dart)
+  /// Inicializa el plugin de notificaciones y solicita permisos.
+  ///
+  /// Debe llamarse en el main.dart antes de arrancar la app.
   Future<void> initialize() async {
     // Configuracion para Android
-    // 'mipmap/ic_launcher' usa el icono de tu app
+    // '@mipmap/ic_launcher' usa el icono nativo de la app
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
+    // Configuracion para IOS
+    const DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
+
     const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsDarwin,
+        );
 
     await _notificationsPlugin.initialize(initializationSettings);
 
-    // Pedir permisos en Android 13+ (Opcional pero recomendado)
+    // Solicitar permisos explicitos en Android 13+
     await _notificationsPlugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -29,7 +47,11 @@ class NotificationService {
         ?.requestNotificationsPermission();
   }
 
-  /// Muestra una notificacion inmediata
+  /// Muestra una notificacion inmediata en la barra de estado.
+  ///
+  /// * [id]: Identificador unico
+  /// * [title]: Titulo en negrita.
+  /// * [body]: Mensaje descriptivo.
   Future<void> showNotificacion({
     required int id,
     required String title,
@@ -38,7 +60,7 @@ class NotificationService {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
           'channel_sst_sync', // ID del canal
-          'Sincronizacion SST', // Nombre del canal
+          'Sincronizacion SST', // Nombre visible para el usuario e ajustes
           channelDescription: 'Notificaciones de estado de sincronizacion',
           importance: Importance.max,
           priority: Priority.high,
