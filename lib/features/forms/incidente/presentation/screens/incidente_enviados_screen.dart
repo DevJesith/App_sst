@@ -52,14 +52,6 @@ class IncidentesEnviadosScreen extends HookConsumerWidget {
         backgroundColor: Colors.orange.shade700,
         foregroundColor: Colors.white,
         elevation: 2,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.read(incidenteNotifierProvider.notifier).loadIncidentes();
-            },
-          ),
-        ],
       ),
       body: incidenteState.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -190,29 +182,50 @@ class IncidentesEnviadosScreen extends HookConsumerWidget {
                                     ),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
+                                        horizontal: 12,
+                                        vertical: 6,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: _getEstadoColor(
-                                          incidente.estado,
-                                        ).withOpacity(0.1),
+                                        color: Colors.white, // Fondo blanco
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: _getEstadoColor(
-                                            incidente.estado,
-                                          ),
+                                          // ✅ AQUÍ ESTÁ LA MAGIA DEL BORDE
+                                          color: incidente.sincronizado == 1
+                                              ? Colors
+                                                    .green // Verde si está completo
+                                              : Colors
+                                                    .red, // Rojo si está incompleto
+                                          width: 2.0, // Grosor del borde
                                         ),
                                       ),
-                                      child: Text(
-                                        incidente.estado,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: _getEstadoColor(
-                                            incidente.estado,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            incidente.sincronizado == 1
+                                                ? Icons
+                                                      .thumb_up_alt_outlined // Dedito arriba (Completo)
+                                                : Icons
+                                                      .circle_outlined, // Círculo (Incompleto)
+                                            size: 16,
+                                            color: incidente.sincronizado == 1
+                                                ? Colors.green
+                                                : Colors.red,
                                           ),
-                                        ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            incidente.sincronizado == 1
+                                                ? "Completa"
+                                                : "Incompleta",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: incidente.sincronizado == 1
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -278,18 +291,5 @@ class IncidentesEnviadosScreen extends HookConsumerWidget {
         ),
       ],
     );
-  }
-
-  Color _getEstadoColor(String estado) {
-    switch (estado.toLowerCase()) {
-      case 'pendiente':
-        return Colors.orange;
-      case 'en proceso':
-        return Colors.blue;
-      case 'completado':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
   }
 }

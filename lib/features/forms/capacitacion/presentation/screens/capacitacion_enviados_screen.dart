@@ -27,8 +27,8 @@ class CapacitacionesEnviadosScreen extends HookConsumerWidget {
     // Filtrar por usuario
     final misCapacitaciones = usuarioActual != null
         ? capacitacionState.capacitaciones
-            .where((c) => c.usuarioId == usuarioActual.id)
-            .toList()
+              .where((c) => c.usuarioId == usuarioActual.id)
+              .toList()
         : <dynamic>[];
 
     return Scaffold(
@@ -38,167 +38,226 @@ class CapacitacionesEnviadosScreen extends HookConsumerWidget {
         backgroundColor: Colors.orange.shade700, // Color temático
         foregroundColor: Colors.white,
         elevation: 2,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.read(capacitacionNotifierProvider.notifier).loadCapacitaciones();
-            },
-          ),
-        ],
       ),
       body: capacitacionState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : misCapacitaciones.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.school_outlined, size: 80, color: Colors.grey.shade400),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No has enviado capacitaciones',
-                        style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.school_outlined,
+                    size: 80,
+                    color: Colors.grey.shade400,
                   ),
-                )
-              : Column(
-                  children: [
-                    // --- HEADER ESTADÍSTICAS (Igual a Accidente) ---
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade700,
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(30),
-                          bottomRight: Radius.circular(30),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No has enviado capacitaciones',
+                    style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              children: [
+                // --- HEADER ESTADÍSTICAS (Igual a Accidente) ---
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade700,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Reportes Realizados',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 8),
+                      Row(
                         children: [
-                          const Text(
-                            'Reportes Realizados',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          const Icon(
+                            Icons.assignment,
+                            color: Colors.white,
+                            size: 20,
                           ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.assignment, color: Colors.white, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Total: ${misCapacitaciones.length}',
-                                style: const TextStyle(fontSize: 16, color: Colors.white70),
-                              ),
-                            ],
+                          const SizedBox(width: 8),
+                          Text(
+                            'Total: ${misCapacitaciones.length}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white70,
+                            ),
                           ),
                         ],
                       ),
-                    ),
+                    ],
+                  ),
+                ),
 
-                    // --- LISTA ---
-                    Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: misCapacitaciones.length,
-                        itemBuilder: (context, index) {
-                          final capacitacion = misCapacitaciones[index];
-                          final fecha = DateFormat('dd/MM/yyyy').format(capacitacion.fechaRegistro);
+                // --- LISTA ---
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: misCapacitaciones.length,
+                    itemBuilder: (context, index) {
+                      final capacitacion = misCapacitaciones[index];
+                      final fecha = DateFormat(
+                        'dd/MM/yyyy',
+                      ).format(capacitacion.fechaRegistro);
 
-                          return Card(
-                            elevation: 2,
-                            margin: const EdgeInsets.only(bottom: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => CapacitacionDetalleScreen(capacitacion: capacitacion),
-                                  ),
-                                );
-                              },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CapacitacionDetalleScreen(
+                                  capacitacion: capacitacion,
+                                ),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Título y Estado
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    // Título y Estado
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            capacitacion.descripcion, // Tema
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                    Expanded(
+                                      child: Text(
+                                        capacitacion.descripcion, // Tema
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: (capacitacion.sincronizado == 1 ? Colors.green : Colors.orange).withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: capacitacion.sincronizado == 1 ? Colors.green : Colors.orange),
-                                          ),
-                                          child: Text(
-                                            capacitacion.sincronizado == 1 ? "Enviado" : "Pendiente",
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: capacitacion.sincronizado == 1 ? Colors.green : Colors.orange,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    const SizedBox(height: 12),
-
-                                    // Datos
-                                    _buildRow(Icons.person, 'Responsable: ${capacitacion.responsable}'),
-                                    const SizedBox(height: 8),
-                                    _buildRow(Icons.group, 'Asistentes: ${capacitacion.numeroPersonas}'),
-                                    const SizedBox(height: 8),
-                                    _buildRow(Icons.calendar_today, 'Fecha: $fecha'),
-
-                                    const SizedBox(height: 12),
-                                    
-                                    // Botón Ver Detalles
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton.icon(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => CapacitacionDetalleScreen(capacitacion: capacitacion),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white, // Fondo blanco
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          // ✅ AQUÍ ESTÁ LA MAGIA DEL BORDE
+                                          color: capacitacion.sincronizado == 1
+                                              ? Colors
+                                                    .green // Verde si está completo
+                                              : Colors
+                                                    .red, // Rojo si está incompleto
+                                          width: 2.0, // Grosor del borde
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            capacitacion.sincronizado == 1
+                                                ? Icons
+                                                      .thumb_up_alt_outlined // Dedito arriba (Completo)
+                                                : Icons
+                                                      .circle_outlined, // Círculo (Incompleto)
+                                            size: 16,
+                                            color:
+                                                capacitacion.sincronizado == 1
+                                                ? Colors.green
+                                                : Colors.red,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            capacitacion.sincronizado == 1
+                                                ? "Completa"
+                                                : "Incompleta",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  capacitacion.sincronizado == 1
+                                                  ? Colors.green
+                                                  : Colors.red,
                                             ),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.arrow_forward, size: 16),
-                                        label: const Text('Ver detalles'),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
+                                const SizedBox(height: 12),
+
+                                // Datos
+                                _buildRow(
+                                  Icons.person,
+                                  'Responsable: ${capacitacion.responsable}',
+                                ),
+                                const SizedBox(height: 8),
+                                _buildRow(
+                                  Icons.group,
+                                  'Asistentes: ${capacitacion.numeroPersonas}',
+                                ),
+                                const SizedBox(height: 8),
+                                _buildRow(
+                                  Icons.calendar_today,
+                                  'Fecha: $fecha',
+                                ),
+
+                                const SizedBox(height: 12),
+
+                                // Botón Ver Detalles
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              CapacitacionDetalleScreen(
+                                                capacitacion: capacitacion,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.arrow_forward,
+                                      size: 16,
+                                    ),
+                                    label: const Text('Ver detalles'),
+                                  ),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
+              ],
+            ),
     );
   }
 
@@ -207,7 +266,12 @@ class CapacitacionesEnviadosScreen extends HookConsumerWidget {
       children: [
         Icon(icon, size: 16, color: Colors.grey),
         const SizedBox(width: 8),
-        Expanded(child: Text(text, style: const TextStyle(fontSize: 14, color: Colors.black87))),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+        ),
       ],
     );
   }

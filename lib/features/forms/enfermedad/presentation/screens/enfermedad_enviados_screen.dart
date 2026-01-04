@@ -38,14 +38,6 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         elevation: 2,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.read(enfermedadNotifierProvider.notifier).loadEnfermedad();
-            },
-          ),
-        ],
       ),
       body: enfermedadState.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -163,29 +155,51 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
                                     ),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
+                                        horizontal: 12,
+                                        vertical: 6,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: _getEstadoColor(
-                                          enfermedad.estado,
-                                        ).withOpacity(0.1),
+                                        color: Colors.white, // Fondo blanco
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: _getEstadoColor(
-                                            enfermedad.estado,
-                                          ),
+                                          // ✅ AQUÍ ESTÁ LA MAGIA DEL BORDE
+                                          color: enfermedad.sincronizado == 1
+                                              ? Colors
+                                                    .green // Verde si está completo
+                                              : Colors
+                                                    .red, // Rojo si está incompleto
+                                          width: 2.0, // Grosor del borde
                                         ),
                                       ),
-                                      child: Text(
-                                        enfermedad.estado,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: _getEstadoColor(
-                                            enfermedad.estado,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            enfermedad.sincronizado == 1
+                                                ? Icons
+                                                      .thumb_up_alt_outlined // Dedito arriba (Completo)
+                                                : Icons
+                                                      .circle_outlined, // Círculo (Incompleto)
+                                            size: 16,
+                                            color: enfermedad.sincronizado == 1
+                                                ? Colors.green
+                                                : Colors.red,
                                           ),
-                                        ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            enfermedad.sincronizado == 1
+                                                ? "Completa"
+                                                : "Incompleta",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  enfermedad.sincronizado == 1
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -243,18 +257,5 @@ class EnfermedadesEnviadosScreen extends HookConsumerWidget {
         ),
       ],
     );
-  }
-
-  Color _getEstadoColor(String estado) {
-    switch (estado.toLowerCase()) {
-      case 'pendiente':
-        return Colors.orange;
-      case 'en proceso':
-        return Colors.blue;
-      case 'completado':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
   }
 }
