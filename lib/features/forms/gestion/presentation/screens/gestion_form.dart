@@ -1,6 +1,8 @@
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
 import 'package:app_sst/features/forms/gestion/domain/entities/gestion.dart';
 import 'package:app_sst/features/forms/gestion/presentation/providers/gestion_providers.dart';
+import 'package:app_sst/services/connectivity_service.dart';
+import 'package:app_sst/services/sync_service.dart';
 import 'package:app_sst/shared/widgets/inputs_widgets.dart';
 import 'package:app_sst/shared/widgets/lista_input_wigets.dart';
 import 'package:flutter/cupertino.dart';
@@ -47,7 +49,9 @@ class GestionFormScreen extends HookConsumerWidget {
 
     final imagePicker = useMemoized(() => ImagePicker());
 
-    final nombresProyectos = formState.listaProyectos.map((e) => (e['Nombre'] ?? e['nombre']).toString()).toList();
+    final nombresProyectos = formState.listaProyectos
+        .map((e) => (e['Nombre'] ?? e['nombre']).toString())
+        .toList();
 
     String? nombresProyectoSeleccionado;
     if (formState.proyectoId != null && formState.listaProyectos.isNotEmpty) {
@@ -111,9 +115,9 @@ class GestionFormScreen extends HookConsumerWidget {
       if (!formKey.currentState!.validate()) return;
 
       if (formState.proyectoId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Selecciona un proyecto')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Selecciona un proyecto')));
         return;
       }
 
@@ -130,7 +134,8 @@ class GestionFormScreen extends HookConsumerWidget {
 
       Future<String> guardarImagenPermanente(XFile imagen, int index) async {
         //Crear nombre unico: gestion_TIMESTAMP_index.jpg
-        final String fileName ='gestion_${DateTime.now().millisecondsSinceEpoch}_$index.jpg';
+        final String fileName =
+            'gestion_${DateTime.now().millisecondsSinceEpoch}_$index.jpg';
         final String newPath = path.join(documentsPath, fileName);
 
         // Copiar archivo de cache a documentos
@@ -166,6 +171,29 @@ class GestionFormScreen extends HookConsumerWidget {
 
       if (context.mounted) {
         if (success) {
+          bool sincronizadoExitosamente = false;
+
+          final hayInternet = await ConnectivityService.tieneInternet();
+          if (hayInternet) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Conexión detectada. Sincronizando...'),
+                duration: Duration(seconds: 2),
+                backgroundColor: Colors.blue,
+              ),
+            );
+
+            try {
+              final resultado = await SyncService().sincronizarTodo();
+
+              if (resultado['total']! > 0) {
+                sincronizadoExitosamente = true;
+              }
+            } catch (e) {
+              print("Error al sincronizar: $e");
+            }
+          }
+
           formNotifier.reset();
           eeController.clear();
           eppController.clear();
@@ -175,22 +203,29 @@ class GestionFormScreen extends HookConsumerWidget {
           gestionCumpleController.clear();
           formNotifier.clearImagenes;
 
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Formulario enviado'),
-              content: const Text('Completado con exito'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  child: const Text('OK'),
+          // Mostrar dialogo de exito
+          if (context.mounted) {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Éxito'),
+                content: Text(
+                  sincronizadoExitosamente
+                      ? 'Reporte creado y sincronizado con la nube.'
+                      : 'Reporte guardado localmente. Se subirá cuando tengas internet',
                 ),
-              ],
-            ),
-          );
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          }
         } else {
           final error = ref.read(gestionesErrorProvider);
           ScaffoldMessenger.of(
@@ -234,16 +269,17 @@ class GestionFormScreen extends HookConsumerWidget {
 
                 const SizedBox(height: 30),
 
-                // ✅ PROYECTO (Estilo Tuyo)
+                // PROYECTO (Estilo Tuyo)
                 ListaInputWigets(
                   nameInput: 'Proyecto',
                   label: 'Selecciona un proyecto',
                   items: nombresProyectos,
-                  value: nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
+                  value:
+                      nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
                   onChanged: (nombre) {
                     // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
                     final proyecto = formState.listaProyectos.firstWhere(
-                      (p) => (p['Nombre'] ?? p['nombre']) == nombre
+                      (p) => (p['Nombre'] ?? p['nombre']) == nombre,
                     );
                     // Mandar el ID al notifier
                     formNotifier.setProyectos(proyecto['id'] as int);

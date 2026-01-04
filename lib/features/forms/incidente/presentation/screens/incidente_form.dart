@@ -1,6 +1,8 @@
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
 import 'package:app_sst/features/forms/incidente/domain/entities/incidente.dart';
 import 'package:app_sst/features/forms/incidente/presentation/providers/incidente_providers.dart';
+import 'package:app_sst/services/connectivity_service.dart';
+import 'package:app_sst/services/sync_service.dart';
 import 'package:app_sst/shared/widgets/fecha_input_widgets.dart';
 import 'package:app_sst/shared/widgets/inputs_widgets.dart';
 import 'package:app_sst/shared/widgets/lista_input_wigets.dart';
@@ -126,6 +128,29 @@ class IncidenteFormScreen extends HookConsumerWidget {
 
       if (context.mounted) {
         if (success) {
+          bool sincronizadoExitosamente = false;
+
+          final hayInternet = await ConnectivityService.tieneInternet();
+          if (hayInternet) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Conexión detectada. Sincronizando...'),
+                duration: Duration(seconds: 2),
+                backgroundColor: Colors.blue,
+              ),
+            );
+
+            try {
+              final resultado = await SyncService().sincronizarTodo();
+
+              if (resultado['total']! > 0) {
+                sincronizadoExitosamente = true;
+              }
+            } catch (e) {
+              print("Error al sincronizar: $e");
+            }
+          }
+
           //Limpiar formulario
           formNotifier.reset();
           eventualidadController.clear();
@@ -135,22 +160,28 @@ class IncidenteFormScreen extends HookConsumerWidget {
           avancesController.clear();
 
           //Mostrar dialogo de exito
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Formulario enviado'),
-              content: const Text('Completado con exito'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  child: const Text('OK'),
+          if (context.mounted) {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Éxito'),
+                content: Text(
+                  sincronizadoExitosamente
+                      ? 'Reporte creado y sincronizando con la nube.'
+                      : 'Reporte guardado localmente. Se subirá cuando tengas internet.',
                 ),
-              ],
-            ),
-          );
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          }
         } else {
           //Mostrar error
           final error = ref.read(incidentesErrorProvider);

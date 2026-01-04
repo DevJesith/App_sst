@@ -1,4 +1,6 @@
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
+import 'package:app_sst/services/connectivity_service.dart';
+import 'package:app_sst/services/sync_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -102,9 +104,7 @@ class CapacitacionFormScreen extends HookConsumerWidget {
         numeroPersonas: int.tryParse(numeroPersonasController.text) ?? 0,
         responsable: responsableController.text,
         fechaRegistro: DateTime.now(),
-        usuarioId:
-            ref.read(usuarioAutenticadoProvider)?.id ??
-            1, 
+        usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1,
       );
 
       final notifier = ref.read(capacitacionNotifierProvider.notifier);
@@ -114,28 +114,58 @@ class CapacitacionFormScreen extends HookConsumerWidget {
 
       if (context.mounted) {
         if (success) {
+          bool sincronizadoExitosamente = false;
+
+          final hayInternet = await ConnectivityService.tieneInternet();
+
+          if (hayInternet) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Conexión detectada. Sincronizando...'),
+                duration: Duration(seconds: 2),
+                backgroundColor: Colors.blue,
+              ),
+            );
+
+            try {
+              final resultado = await SyncService().sincronizarTodo();
+
+              if (resultado['total']! > 0) {
+                sincronizadoExitosamente = true;
+              }
+            } catch (e) {
+              print("Error al sincronizar: $e");
+            }
+          }
+
           formNotifier.reset();
           descripcionController.clear();
           numeroCapacitaController.clear();
           numeroPersonasController.clear();
           responsableController.clear();
 
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Formulario enviado'),
-              content: const Text('Completado con éxito'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  child: const Text('OK'),
+          if (context.mounted) {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Éxito'),
+                content: Text(
+                  sincronizadoExitosamente
+                      ? 'Reporte creado y sincronizado con la nube.'
+                      : 'Reporte guardado localemnte. Se subirá cuando tengas internet.',
                 ),
-              ],
-            ),
-          );
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          }
         } else {
           final error = ref.read(capacitacionesErrorProvider);
           ScaffoldMessenger.of(

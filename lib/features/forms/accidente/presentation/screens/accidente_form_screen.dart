@@ -1,4 +1,6 @@
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
+import 'package:app_sst/services/connectivity_service.dart';
+import 'package:app_sst/services/sync_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -65,7 +67,6 @@ class AccidenteFormScreen extends HookConsumerWidget {
     useEffect(() {
       if (accidente != null) {
         Future.microtask(() {
-
           // 1. Seteamos el proyecto (Esto disparara la carga de contratistas)
           formNotifier.setProyecto(accidente!.proyecto);
 
@@ -118,6 +119,35 @@ class AccidenteFormScreen extends HookConsumerWidget {
 
       if (context.mounted) {
         if (success) {
+          bool sincronizadoExitosamente = false;
+
+          // 1. Verificar conexión básica
+          final hayConexion = await ConnectivityService.tieneInternet();
+
+          if (hayConexion) {
+            // Mostrar SnackBar
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Conexión detectada. Intentando sincronizar...'),
+                duration: Duration(seconds: 1),
+                backgroundColor: Colors.blue,
+              ),
+            );
+
+            try {
+              // 2. Ejecutar sincronización
+              final resultado = await SyncService().sincronizarTodo();
+
+              // 3. VERIFICACIÓN REAL: ¿Se subió algo?
+              // Si el total es mayor a 0, significa que la BD se actualizó.
+              if (resultado['total']! > 0) {
+                sincronizadoExitosamente = true;
+              }
+            } catch (e) {
+              print("Error al sincronizar: $e");
+            }
+          }
+
           // Limpiar formulario
           formNotifier.reset();
           eventualidadController.clear();
@@ -127,23 +157,29 @@ class AccidenteFormScreen extends HookConsumerWidget {
           diasIncapacidadController.clear();
           avancesController.clear();
 
-          // Mostrar dialogo de éxito
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('Formulario enviado'),
-              content: const Text('Completado con éxito'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Cerrar dialogo
-                    Navigator.pop(context); // Volver a pantalla anterior
-                  },
-                  child: const Text('OK'),
+          // Mostrar diálogo con el mensaje correcto
+          if (context.mounted) {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Éxito'),
+                content: Text(
+                  sincronizadoExitosamente
+                      ? 'Reporte creado y sincronizado con la nube.'
+                      : 'Reporte guardado localmente. Se subirá cuando tengas internet.',
                 ),
-              ],
-            ),
-          );
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Cerrar diálogo
+                      Navigator.pop(context); // Volver a pantalla anterior
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          }
         } else {
           // Mostrar error
           final error = ref.read(accidentesErrorProvider);
