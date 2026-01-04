@@ -1,4 +1,5 @@
 import 'package:app_sst/data/database/app_database.dart';
+import 'package:app_sst/services/connectivity_service.dart';
 
 /// Servicio encargado de la sincronizacion de datos.
 /// 
@@ -11,15 +12,29 @@ class SyncService {
   final AppDatabase _appDatabase = AppDatabase();
 
   /// Ejecuta el proceso de sincronizacion simulado.
-  /// 
+  /// 1. Verifica si hay internet
   /// 1. Simula un retardo de red (2 segundos).
   /// 2. Busca registros locales con estado sincronizado = 0.
   /// 3. Actualiza el estado a sincronizado = 1 (verde).
   /// 4. Retorna un reporte con la cantidad de registros procesados.
   Future<Map<String, int>> sincronizarTodo() async {
+
+    // 1. Freno de emergencia: Si no hay internte, no hacemos nada.
+    final hayInternet = await ConnectivityService.tieneInternet();
+    if (!hayInternet) {
+      return {
+        'total': 0,
+        'accidentes': 0,
+        'incidentes': 0,
+        'gestiones': 0,
+        'capacitaciones': 0, 
+        'enfermedades': 0, 
+      };
+    }
+
     final db = await _appDatabase.database;
     
-    // 1. Simular tiempo de espera de red para realismo (UX)
+    // 2. Simular tiempo de espera de red para realismo (UX)
     await Future.delayed(const Duration(seconds: 2));
 
     int totalSincronizados = 0;
@@ -41,7 +56,7 @@ class SyncService {
       return 0;
     }
 
-    // 2. Actualizar todas las tablas (Simulacion de subida)
+    // 3. Actualizar todas las tablas (Simulacion de subida)
     int acc = await simularEnvioTabla('Accidente');
     int inc = await simularEnvioTabla('Incidente');
     int ges = await simularEnvioTabla('Gestion_inspeccion');
@@ -50,7 +65,7 @@ class SyncService {
 
     totalSincronizados = acc + inc + ges + cap + enf;
 
-    // 3. Retornar reporte de resultados
+    // 4. Retornar reporte de resultados
     return {
       'total': totalSincronizados,
       'accidentes': acc,
