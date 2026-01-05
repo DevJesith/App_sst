@@ -13,7 +13,7 @@ import 'login_screen.dart';
 import 'verificacion_code_screen.dart';
 
 /// Pantalla de registro de nuevos usuarios
-/// 
+///
 /// Maneja el flujo completo:
 /// 1. Captura de datos (Nombre, Apellido, Email, Password).
 /// 2. Validacion de campos y contraseñas.
@@ -56,7 +56,7 @@ class RegistroScreen extends HookConsumerWidget {
           const SnackBar(
             content: Text('Las contraseñas no coinciden'),
             backgroundColor: Colors.red,
-          )
+          ),
         );
         return;
       }
@@ -64,11 +64,12 @@ class RegistroScreen extends HookConsumerWidget {
       isLoading.value = true;
 
       try {
-
         final email = emailController.text.trim().toLowerCase();
 
         // 1. Verificar si el email ya existe en la BD local
-        final existente = await ref.read(obtenerUsuarioPorEmailProvider(email).future);
+        final existente = await ref.read(
+          obtenerUsuarioPorEmailProvider(email).future,
+        );
 
         if (existente != null) {
           if (context.mounted) {
@@ -76,7 +77,7 @@ class RegistroScreen extends HookConsumerWidget {
               const SnackBar(
                 content: Text("Este correo ya esta registrado"),
                 backgroundColor: Colors.orange,
-              )
+              ),
             );
           }
           isLoading.value = false;
@@ -85,15 +86,20 @@ class RegistroScreen extends HookConsumerWidget {
 
         // 2. Generar codigo y enviar correo
         final codigo = EmailService.generarCodigo();
-        final enviado = await EmailService.enviarCodigoVerificacion(email, codigo);
+        final enviado = await EmailService.enviarCodigoVerificacion(
+          email,
+          codigo,
+        );
 
         if (!enviado) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('No se pudo enviar el correo. Verifica tu conexion.'),
+                content: Text(
+                  'No se pudo enviar el correo. Verifica tu conexion.',
+                ),
                 backgroundColor: Colors.red,
-              )
+              ),
             );
           }
           isLoading.value = false;
@@ -105,7 +111,7 @@ class RegistroScreen extends HookConsumerWidget {
           nombre: nombreController.text.trim(),
           apellido: apellidoController.text.trim(),
           email: email,
-          contrasena: CryptoHelper.encriptar(passwordController.text.trim())
+          contrasena: CryptoHelper.encriptar(passwordController.text.trim()),
         );
 
         // 4. Navegar a pantalla de verificacion
@@ -113,18 +119,17 @@ class RegistroScreen extends HookConsumerWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => VerificacionCodeScreen(usuarioPendiente: usuarioTemporal, codigoGenerado: codigo)
-            )
+              builder: (_) => VerificacionCodeScreen(
+                usuarioPendiente: usuarioTemporal,
+                codigoGenerado: codigo,
+              ),
+            ),
           );
         }
-        
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: $e'),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
           );
         }
       } finally {
@@ -161,13 +166,10 @@ class RegistroScreen extends HookConsumerWidget {
                     color: CupertinoColors.activeBlue,
                   ),
                   const SizedBox(height: 20),
-                  
+
                   const Text(
                     'Crear Cuenta',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 30),
 
@@ -181,8 +183,26 @@ class RegistroScreen extends HookConsumerWidget {
                       }
                       return null;
                     },
+                    decoration: InputDecoration(
+                      hintText: 'Pepito Peréz',
+                      prefixIcon: const Icon(Icons.person),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.inactiveGray,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.activeBlue,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
                   ),
-                  
+
                   const SizedBox(height: 16),
 
                   // Apellido
@@ -195,6 +215,24 @@ class RegistroScreen extends HookConsumerWidget {
                       }
                       return null;
                     },
+                    decoration: InputDecoration(
+                      hintText: 'Hernandez Rodriguez',
+                      prefixIcon: const Icon(Icons.badge),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.inactiveGray,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.activeBlue,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 16),
@@ -213,6 +251,24 @@ class RegistroScreen extends HookConsumerWidget {
                       }
                       return null;
                     },
+                    decoration: InputDecoration(
+                      hintText: 'ejemplo@correo.com',
+                      prefixIcon: const Icon(Icons.mail_outline),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.inactiveGray,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.activeBlue,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
 
@@ -239,9 +295,29 @@ class RegistroScreen extends HookConsumerWidget {
                         ),
                         onPressed: () => obscureText.value = !obscureText.value,
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.inactiveGray,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.activeBlue,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 18,
+                        horizontal: 16,
+                      ),
+                      hintText: '******'
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
 
                   // Confirmar contraseña
@@ -265,8 +341,29 @@ class RegistroScreen extends HookConsumerWidget {
                               ? Icons.visibility_off
                               : Icons.visibility,
                         ),
-                        onPressed: () => obscureConfirmText.value = !obscureConfirmText.value,
+                        onPressed: () => obscureConfirmText.value =
+                            !obscureConfirmText.value,
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.inactiveGray,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.activeBlue,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 18,
+                        horizontal: 16,
+                      ),
+                      hintText: '******'
                     ),
                   ),
 
@@ -276,7 +373,9 @@ class RegistroScreen extends HookConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: isLoading.value ? null : iniciarProcesoRegistro,
+                      onPressed: isLoading.value
+                          ? null
+                          : iniciarProcesoRegistro,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: CupertinoColors.activeBlue,

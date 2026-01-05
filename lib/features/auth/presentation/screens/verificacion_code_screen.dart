@@ -7,12 +7,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 /// Pantalla de verificacion de codigo de seguridad
-/// 
+///
 /// Se muestra inmediatamente despues del registro. El usuario debe ingresar
 /// el codigo de 6 digitos enviado a su correo electronico para confirmar su identidad
 /// antes de que el usuario sea guardado en la BD
 class VerificacionCodeScreen extends HookConsumerWidget {
-
   /// El objeto usuario con los datos capturados en el registro.
   /// Aun no existe en la BD
   final Usuarios usuarioPendiente;
@@ -28,7 +27,6 @@ class VerificacionCodeScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     // Controlador para el input del PIN
     final codigoController = useTextEditingController();
     final isLoading = useState(false);
@@ -81,10 +79,10 @@ class VerificacionCodeScreen extends HookConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF3F6),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
         title: const Text('Verificación'),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 252, 248, 248),
         foregroundColor: Colors.black,
         elevation: 0,
       ),
@@ -109,10 +107,20 @@ class VerificacionCodeScreen extends HookConsumerWidget {
                     ),
                     const SizedBox(height: 20),
 
+                    const Text(
+                      'Ingresa el código',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 15,),
+
                     // Instrucciones
                     Text(
                       'Hemos enviado un código a:',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: Colors.grey[800], fontSize: 18),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
@@ -120,7 +128,7 @@ class VerificacionCodeScreen extends HookConsumerWidget {
                       usuarioPendiente.email,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 20,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -140,8 +148,18 @@ class VerificacionCodeScreen extends HookConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                         fieldHeight: 50,
                         fieldWidth: 40,
-                        activeFillColor: Colors.white,
-                        inactiveFillColor: Colors.white,
+                        activeFillColor: const Color.fromARGB(
+                          255,
+                          255,
+                          255,
+                          255,
+                        ),
+                        inactiveFillColor: const Color.fromARGB(
+                          255,
+                          240,
+                          240,
+                          240,
+                        ),
                         selectedFillColor: Colors.blue.shade50,
                         activeColor: Colors.blue,
                         selectedColor: Colors.blueAccent,
@@ -150,9 +168,7 @@ class VerificacionCodeScreen extends HookConsumerWidget {
                       cursorColor: Colors.black,
                       animationDuration: const Duration(milliseconds: 300),
                       enableActiveFill: true,
-                      onCompleted: (v) {
-                        verificarYRegistrar();
-                      },
+                      onCompleted: (_) => verificarYRegistrar(),
                       onChanged: (_) {},
                     ),
 
