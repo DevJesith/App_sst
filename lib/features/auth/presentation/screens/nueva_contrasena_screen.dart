@@ -1,344 +1,187 @@
-// // features/auth/presentation/screens/recuperar_contrasena_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../../core/utils/crypto_helper.dart';
+import '../../../../../shared/widgets/inputs_widgets.dart';
+import '../../domain/entities/usuarios.dart';
+import '../providers/auth_provider.dart';
+import 'login_screen.dart';
 
-// import 'dart:convert';
-// import 'package:crypto/crypto.dart';
-// import 'package:flutter/cupertino.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_hooks/flutter_hooks.dart';
-// import 'package:hooks_riverpod/hooks_riverpod.dart';
-// import '../../../../../shared/widgets/inputs_widgets.dart';
-// import '../../domain/entities/usuarios.dart';
-// import '../providers/auth_provider.dart';
-// import 'login_screen.dart';
+/// Pantalla para restablecer la contraseña.
+///
+/// Permite al usuario crear una nueva contraseña despues de verificar
+/// su identidad con el codigo de recuperacion.
+class NuevaContrasenaScreen extends HookConsumerWidget {
+  final Usuarios usuario;
 
-// /// Pantalla simplificada para recuperar contraseña.
-// /// El usuario ingresa su email y una nueva contraseña directamente.
-// class RecuperarContrasenaScreen extends HookConsumerWidget {
-//   const RecuperarContrasenaScreen({super.key});
+  const NuevaContrasenaScreen({super.key, required this.usuario});
 
-//   String encriptar(String texto) {
-//     final bytes = utf8.encode(texto);
-//     final hash = sha256.convert(bytes);
-//     return hash.toString();
-//   }
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formKey = useMemoized(() => GlobalKey<FormState>());
+    final passController = useTextEditingController();
+    final confirmController = useTextEditingController();
+    final isLoading = useState(false);
+    final obscurePass = useState(true);
+    final obscureConfirm = useState(true);
 
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final formKey = useMemoized(() => GlobalKey<FormState>());
-//     final emailController = useTextEditingController();
-//     final newPasswordController = useTextEditingController();
-//     final confirmPasswordController = useTextEditingController();
-//     final isLoading = useState(false);
-//     final obscureText = useState(true);
+    /// Actualiza la contraseña en la BD y redirige al login
+    Future<void> cambiarContrasena() async {
+      if (!formKey.currentState!.validate()) return;
 
-//     Future<void> recuperar() async {
-//       if (!formKey.currentState!.validate()) return;
+      if (passController.text != confirmController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Las contraseñas no coinciden'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
 
-//       // Validar que las contraseñas coincidan
-//       if (newPasswordController.text.trim() != confirmPasswordController.text.trim()) {
-//         ScaffoldMessenger.of(context).showSnackBar(
-//           const SnackBar(
-//             content: Text('Las contraseñas no coinciden'),
-//             backgroundColor: Colors.red,
-//           ),
-//         );
-//         return;
-//       }
+      isLoading.value = true;
 
-//       isLoading.value = true;
+      try {
+        // Crear usuario con la nueva contraseña encriptada
+        final usuarioActualizado = Usuarios(
+          id: usuario.id,
+          nombre: usuario.nombre,
+          apellido: usuario.apellido,
+          email: usuario.email,
+          contrasena: CryptoHelper.encriptar(passController.text.trim()),
+        );
 
-//       try {
-//         final email = emailController.text.trim();
+        // Actualizar en BD
+        await ref.read(actualizarUsuarioProvider(usuarioActualizado).future);
 
-//         // Verificar si el usuario existe
-//         final usuario = await ref.read(
-//           obtenerUsuarioPorEmailProvider(email).future,
-//         );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Contraseña actualizada correctamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
 
-//         if (usuario == null) {
-//           if (context.mounted) {
-//             ScaffoldMessenger.of(context).showSnackBar(
-//               const SnackBar(
-//                 content: Text('Este correo no está registrado'),
-//                 backgroundColor: Colors.orange,
-//               ),
-//             );
-//           }
-//           return;
-//         }
+          // Ir al Login y borrar historial
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          );
+        }
+      } finally {
+        isLoading.value = false;
+      }
+    }
 
-//         // Actualizar la contraseña
-//         final usuarioActualizado = Usuarios(
-//           id: usuario.id,
-//           nombre: usuario.nombre,
-//           email: usuario.email,
-//           contrasena: encriptar(newPasswordController.text.trim()),
-//         );
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: const Text('Restablecer Contraseña'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            constraints: const BoxConstraints(maxWidth: 500),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 15),
+              ],
+            ),
+            child: Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  const Icon(Icons.lock_open, size: 80, color: Colors.orange),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Crea una nueva contraseña',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 30),
 
-//         await ref.read(actualizarUsuarioProvider(usuarioActualizado).future);
+                  // Nueva contraseña
+                  inputReutilizables(
+                    controller: passController,
+                    nameInput: 'Nueva Contraseña',
+                    obscuredText: obscurePass.value,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscurePass.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () => obscurePass.value = !obscurePass.value,
+                    ),
+                    validator: (v) =>
+                        v!.length < 6 ? 'Mínimo 6 caracteres' : null,
+                  ),
+                  const SizedBox(height: 20),
 
-//         if (context.mounted) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             const SnackBar(
-//               content: Text('¡Contraseña actualizada exitosamente!'),
-//               backgroundColor: Colors.green,
-//             ),
-//           );
+                  // Confirmar contraseña
+                  inputReutilizables(
+                    controller: confirmController,
+                    nameInput: 'Confirmar Contraseña',
+                    obscuredText: obscureConfirm.value,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureConfirm.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () =>
+                          obscureConfirm.value = !obscureConfirm.value,
+                    ),
+                    validator: (v) =>
+                        v!.isEmpty ? 'Confirma la contraseña' : null,
+                  ),
+                  const SizedBox(height: 30),
 
-//           Navigator.pushReplacement(
-//             context,
-//             MaterialPageRoute(builder: (_) => const LoginScreen()),
-//           );
-//         }
-//       } catch (e) {
-//         if (context.mounted) {
-//           ScaffoldMessenger.of(context).showSnackBar(
-//             SnackBar(
-//               content: Text('Error: $e'),
-//               backgroundColor: Colors.red,
-//             ),
-//           );
-//         }
-//       } finally {
-//         isLoading.value = false;
-//       }
-//     }
-
-//     return Scaffold(
-//       backgroundColor: const Color(0xFFF5F7FA),
-//       appBar: AppBar(
-//         title: const Text('Recuperar contraseña'),
-//         backgroundColor: Colors.transparent,
-//         elevation: 0,
-//       ),
-//       body: LayoutBuilder(
-//         builder: (context, constraints) {
-//           final isWide = constraints.maxWidth > 600;
-
-//           return Center(
-//             child: SingleChildScrollView(
-//               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-//               child: Container(
-//                 padding: const EdgeInsets.all(24),
-//                 constraints: BoxConstraints(
-//                   maxWidth: isWide ? 500 : double.infinity,
-//                 ),
-//                 decoration: BoxDecoration(
-//                   color: Colors.white,
-//                   borderRadius: BorderRadius.circular(20),
-//                   boxShadow: const [
-//                     BoxShadow(
-//                       color: Colors.black12,
-//                       blurRadius: 15,
-//                       offset: Offset(0, 8),
-//                     ),
-//                   ],
-//                 ),
-//                 child: Form(
-//                   key: formKey,
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.center,
-//                     children: [
-//                       /// Ícono
-//                       const Icon(
-//                         Icons.lock_reset,
-//                         size: 80,
-//                         color: CupertinoColors.systemOrange,
-//                       ),
-//                       const SizedBox(height: 20),
-
-//                       /// Título
-//                       const Text(
-//                         'Recuperar Contraseña',
-//                         style: TextStyle(
-//                           fontSize: 28,
-//                           fontWeight: FontWeight.bold,
-//                           color: Colors.black,
-//                         ),
-//                         textAlign: TextAlign.center,
-//                       ),
-//                       const SizedBox(height: 10),
-
-//                       /// Subtítulo
-//                       const Text(
-//                         'Ingresa tu correo registrado y crea una nueva contraseña',
-//                         style: TextStyle(
-//                           fontSize: 16,
-//                           color: Colors.black87,
-//                         ),
-//                         textAlign: TextAlign.center,
-//                       ),
-//                       const SizedBox(height: 30),
-
-//                       /// Campo: Email
-//                       inputReutilizables(
-//                         controller: emailController,
-//                         nameInput: 'Correo electrónico',
-//                         validator: (value) {
-//                           if (value == null || value.trim().isEmpty) {
-//                             return 'Ingresa tu correo';
-//                           }
-//                           final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-//                           if (!emailRegex.hasMatch(value.trim())) {
-//                             return 'Correo inválido';
-//                           }
-//                           return null;
-//                         },
-//                         decoration: InputDecoration(
-//                           hintText: 'ejemplo@correo.com',
-//                           prefixIcon: const Icon(Icons.mail_outline),
-//                           filled: true,
-//                           fillColor: const Color(0xFFF0F2F5),
-//                           contentPadding: const EdgeInsets.symmetric(
-//                             vertical: 18,
-//                             horizontal: 16,
-//                           ),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(12),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                         ),
-//                       ),
-//                       const SizedBox(height: 16),
-
-//                       /// Campo: Nueva Contraseña
-//                       inputReutilizables(
-//                         controller: newPasswordController,
-//                         nameInput: 'Nueva contraseña',
-//                         obscuredText: obscureText.value,
-//                         validator: (value) {
-//                           if (value == null || value.isEmpty) {
-//                             return 'Ingresa una contraseña';
-//                           }
-//                           if (value.length < 6) {
-//                             return 'Mínimo 6 caracteres';
-//                           }
-//                           return null;
-//                         },
-//                         decoration: InputDecoration(
-//                           hintText: '••••••',
-//                           prefixIcon: const Icon(Icons.lock_outline),
-//                           filled: true,
-//                           fillColor: const Color(0xFFF0F2F5),
-//                           contentPadding: const EdgeInsets.symmetric(
-//                             vertical: 18,
-//                             horizontal: 16,
-//                           ),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(12),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                           suffixIcon: IconButton(
-//                             onPressed: () =>
-//                                 obscureText.value = !obscureText.value,
-//                             icon: Icon(
-//                               obscureText.value
-//                                   ? Icons.visibility_off
-//                                   : Icons.visibility,
-//                               color: Colors.grey,
-//                             ),
-//                           ),
-//                         ),
-//                       ),
-//                       const SizedBox(height: 16),
-
-//                       /// Campo: Confirmar Contraseña
-//                       inputReutilizables(
-//                         controller: confirmPasswordController,
-//                         nameInput: 'Confirmar contraseña',
-//                         obscuredText: obscureText.value,
-//                         validator: (value) {
-//                           if (value == null || value.isEmpty) {
-//                             return 'Confirma tu contraseña';
-//                           }
-//                           return null;
-//                         },
-//                         decoration: InputDecoration(
-//                           hintText: '••••••',
-//                           prefixIcon: const Icon(Icons.lock_outline),
-//                           filled: true,
-//                           fillColor: const Color(0xFFF0F2F5),
-//                           contentPadding: const EdgeInsets.symmetric(
-//                             vertical: 18,
-//                             horizontal: 16,
-//                           ),
-//                           border: OutlineInputBorder(
-//                             borderRadius: BorderRadius.circular(12),
-//                             borderSide: BorderSide.none,
-//                           ),
-//                         ),
-//                       ),
-//                       const SizedBox(height: 30),
-
-//                       /// Botón
-//                       SizedBox(
-//                         width: double.infinity,
-//                         child: ElevatedButton(
-//                           onPressed: isLoading.value ? null : recuperar,
-//                           style: ElevatedButton.styleFrom(
-//                             padding: const EdgeInsets.symmetric(vertical: 16),
-//                             backgroundColor: CupertinoColors.systemOrange,
-//                             foregroundColor: Colors.white,
-//                             shape: RoundedRectangleBorder(
-//                               borderRadius: BorderRadius.circular(12),
-//                             ),
-//                             elevation: 3,
-//                           ),
-//                           child: isLoading.value
-//                               ? const SizedBox(
-//                                   height: 20,
-//                                   width: 20,
-//                                   child: CircularProgressIndicator(
-//                                     strokeWidth: 2,
-//                                     color: Colors.white,
-//                                   ),
-//                                 )
-//                               : const Text(
-//                                   'Actualizar Contraseña',
-//                                   style: TextStyle(
-//                                     fontSize: 16,
-//                                     fontWeight: FontWeight.bold,
-//                                   ),
-//                                 ),
-//                         ),
-//                       ),
-//                       const SizedBox(height: 16),
-
-//                       /// Ayuda
-//                       Container(
-//                         padding: const EdgeInsets.all(12),
-//                         decoration: BoxDecoration(
-//                           color: Colors.orange.shade50,
-//                           borderRadius: BorderRadius.circular(8),
-//                         ),
-//                         child: Row(
-//                           children: [
-//                             Icon(
-//                               Icons.info_outline,
-//                               color: Colors.orange.shade700,
-//                               size: 20,
-//                             ),
-//                             const SizedBox(width: 8),
-//                             Expanded(
-//                               child: Text(
-//                                 'Solo necesitas tu correo registrado para recuperar tu contraseña',
-//                                 style: TextStyle(
-//                                   fontSize: 12,
-//                                   color: Colors.orange.shade700,
-//                                 ),
-//                               ),
-//                             ),
-//                           ],
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
+                  // Boton
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading.value ? null : cambiarContrasena,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: Colors.orange,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: isLoading.value
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'Cambiar Contraseña',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

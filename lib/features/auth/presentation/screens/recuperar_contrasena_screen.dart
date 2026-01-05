@@ -1,66 +1,46 @@
-// features/auth/presentation/screens/recuperar_contrasena_screen.dart
-
-import 'dart:convert';
-import 'package:app_sst/core/utils/crypto_helper.dart';
-import 'package:crypto/crypto.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:app_sst/services/email_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../../../shared/widgets/inputs_widgets.dart';
-import '../../domain/entities/usuarios.dart';
-import '../providers/auth_provider.dart';
-import 'login_screen.dart';
 
-/// Pantalla para el restablecimiento de contraseña.
+// Imports de Servicios y Utils
+import '../../../../../shared/widgets/inputs_widgets.dart';
+
+// Imports de Dominio y Providers
+import '../providers/auth_provider.dart';
+import 'verificar_recuperacion_screen.dart';
+
+/// Pantalla para el restablecimiento de contraseña (Paso 1).
 ///
-/// Permite buscar un usuario por correo y actualizar su contraseña
-/// directamente en la base de datos local
+/// 1. Pide el correo.
+/// 2. Verifica si existe en la BD local.
+/// 3. Envia el código de verificacion.
+/// 4. Navega a la pantalla de ingresar código.
 class RecuperarContrasenaScreen extends HookConsumerWidget {
   const RecuperarContrasenaScreen({super.key});
-
-  String encriptar(String texto) {
-    final bytes = utf8.encode(texto);
-    final hash = sha256.convert(bytes);
-    return hash.toString();
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
-
-    // Controladores
     final emailController = useTextEditingController();
-    final newPasswordController = useTextEditingController();
-    final confirmPasswordController = useTextEditingController();
-
-    // Estados
     final isLoading = useState(false);
-    final obscureNewPassword = useState(true);
-    final obscureConfirmPassword = useState(true);
 
-    /// Logica de recuperacion
-    Future<void> recuperar() async {
+    /// Logica de recuperación
+    Future<void> enviarCodigo() async {
       if (!formKey.currentState!.validate()) return;
-
-      // 1. Validar que las contraseñas coincidan
-      if (newPasswordController.text.trim() !=
-          confirmPasswordController.text.trim()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Las contraseñas no coinciden'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
 
       isLoading.value = true;
 
       try {
-        final email = emailController.text.trim();
+        final email = emailController.text.trim().toLowerCase();
 
-        // 2. Buscar si el usuario existe
+        print('🔍 ========================================');
+        print('🔍 Email buscado: "$email"');
+
+        // Invalidar el cache del provider para obtener datos recientes
+        ref.invalidate(obtenerUsuarioPorEmailProvider(email));
+
+        // 1. Verificar si el usuario existe en la BD
         final usuario = await ref.read(
           obtenerUsuarioPorEmailProvider(email).future,
         );
@@ -69,7 +49,7 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Este correo no esta registrado'),
+                content: Text('Este correo no está registrado en el sistema'),
                 backgroundColor: Colors.orange,
               ),
             );
@@ -78,39 +58,44 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
           return;
         }
 
-        // 3. Crear objeto con la nueva contraseña encriptada
-        final usuarioActualizado = Usuarios(
-          id: usuario.id,
-          nombre: usuario.nombre,
-          apellido: usuario.apellido,
-          email: usuario.email,
-          contrasena: CryptoHelper.encriptar(newPasswordController.text.trim()),
+        // 2. Generar y enviar codigo
+        final codigo = EmailService.generarCodigo();
+        final enviado = await EmailService.enviarCodigoRecuperacion(
+          email,
+          codigo,
         );
 
-        // 4. Actualizar en BD
-        await ref.read(actualizarUsuarioProvider(usuarioActualizado).future);
+        if (!enviado) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Error al enviar el correo. Verifica tu conexión',
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          isLoading.value = false;
+          return;
+        }
 
+        // 3. Ir a la pantalla de verificacion de codigo
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('¡Contraseña actualizada exitosamente!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-
-          // Volver al login
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            MaterialPageRoute(
+              builder: (_) => VerificarRecuperacionScreen(
+                usuario: usuario,
+                codigoGenerado: codigo,
+              ),
+            ),
           );
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: ${e.toString()}'),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
           );
         }
       } finally {
@@ -131,7 +116,7 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
 
           return Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding: const EdgeInsets.all(24),
               child: Container(
                 padding: const EdgeInsets.all(24),
                 constraints: BoxConstraints(
@@ -157,15 +142,15 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                       const Icon(
                         Icons.lock_reset,
                         size: 80,
-                        color: CupertinoColors.systemOrange,
+                        color: Colors.orange,
                       ),
                       const SizedBox(height: 20),
 
-                      /// Título
+                      /// Titulo
                       const Text(
-                        'Recuperar Contraseña',
+                        '¿Olvidaste tu contraseña?',
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -173,9 +158,9 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 10),
 
-                      /// Subtítulo
+                      /// Subtitulo
                       const Text(
-                        'Ingresa tu correo registrado y crea una nueva contraseña',
+                        'Ingresa tu correo electrónico para recibir un código de verificación',
                         style: TextStyle(fontSize: 16, color: Colors.black87),
                         textAlign: TextAlign.center,
                       ),
@@ -212,95 +197,17 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
 
-                      /// Campo: Nueva Contraseña
-                      inputReutilizables(
-                        controller: newPasswordController,
-                        nameInput: 'Nueva contraseña',
-                        obscuredText: obscureNewPassword.value,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Ingresa una contraseña';
-                          }
-                          if (value.length < 6) {
-                            return 'Mínimo 6 caracteres';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          hintText: '••••••',
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          filled: true,
-                          fillColor: const Color(0xFFF0F2F5),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 16,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          suffixIcon: IconButton(
-                            onPressed: () => obscureNewPassword.value =
-                                !obscureNewPassword.value,
-                            icon: Icon(
-                              obscureNewPassword.value
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      /// Campo: Confirmar Contraseña
-                      inputReutilizables(
-                        controller: confirmPasswordController,
-                        nameInput: 'Confirmar contraseña',
-                        obscuredText: obscureConfirmPassword.value,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Confirma tu contraseña';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          hintText: '••••••',
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          filled: true,
-                          fillColor: const Color(0xFFF0F2F5),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 16,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          suffixIcon: IconButton(
-                            onPressed: () => obscureConfirmPassword.value =
-                                !obscureConfirmPassword.value,
-                            icon: Icon(
-                              obscureConfirmPassword.value
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 30),
 
                       // --- BOTON ---
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: isLoading.value ? null : recuperar,
+                          onPressed: isLoading.value ? null : enviarCodigo,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: CupertinoColors.systemOrange,
+                            backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -317,7 +224,7 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                                   ),
                                 )
                               : const Text(
-                                  'Actualizar Contraseña',
+                                  'Enviar Código',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -327,7 +234,6 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: 16),
 
-                      // --- AYUDA ---
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -344,7 +250,7 @@ class RecuperarContrasenaScreen extends HookConsumerWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Solo necesitas tu correo registrado para recuperar tu contraseña',
+                                'Solo necesitas tu correo registrado para restablecer tu contraseña',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.orange.shade700,
