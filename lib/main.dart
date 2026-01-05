@@ -19,7 +19,7 @@ void main() async {
   ConnectivityManager().initialize();
 
   // 3. Limpieeza de base de datos 
-  await DatabaseResetter.eliminarBD();
+  // await DatabaseResetter.eliminarBD();
 
   // 4. Ejecutar la aplicacion envuelta en ProviderScopw (Riverpod)
   runApp(ProviderScope(child: AppSST()));
