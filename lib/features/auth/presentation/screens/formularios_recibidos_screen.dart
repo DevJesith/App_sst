@@ -1,7 +1,4 @@
-// features/auth/presentation/screens/formularios_recibidos_screen.dart
-
 import 'package:app_sst/features/forms/capacitacion/presentation/providers/capacitacion_providers.dart';
-import 'package:app_sst/features/forms/enfermedad/presentation/providers/enfermedad_providers.dart';
 import 'package:app_sst/features/forms/enfermedad/presentation/screens/enfermedad_list.dart';
 import 'package:app_sst/features/forms/gestion/presentation/providers/gestion_providers.dart';
 import 'package:app_sst/features/forms/gestion/presentation/screens/gestion_list.dart';
@@ -14,14 +11,13 @@ import '../../../forms/accidente/presentation/providers/accidente_providers.dart
 import '../../../forms/accidente/presentation/screens/accidente_list.dart';
 
 /// Pantalla que centraliza la visualizacion de todos los formularios enviados.
-/// 
+///
 /// Utiliza un [DefaultTabController] para navegar entre diferentes tipos de reportes (Accidente, Incidente, Capacitacion, etc.).
 class FormulariosRecibidosScreen extends HookConsumerWidget {
   const FormulariosRecibidosScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    
     // Controlador para la barra de busqueda
     final searchController = useTextEditingController();
     //Estado para forzar la reconstruccion al buscar
@@ -64,12 +60,12 @@ class FormulariosRecibidosScreen extends HookConsumerWidget {
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
-                tabs: const[
-                  Tab(text: 'Accidente',),
-                  Tab(text: 'Incidente',),
-                  Tab(text: 'Gestion',),
-                  Tab(text: 'Enfermedad',),
-                  Tab(text: 'Capacitacion',),
+                tabs: const [
+                  Tab(text: 'Accidente'),
+                  Tab(text: 'Incidente'),
+                  Tab(text: 'Gestion'),
+                  Tab(text: 'Enfermedad'),
+                  Tab(text: 'Capacitacion'),
                 ],
               ),
             ),
@@ -87,7 +83,7 @@ class FormulariosRecibidosScreen extends HookConsumerWidget {
                 decoration: InputDecoration(
                   hintText: 'Buscar por nombre o correo',
                   hintStyle: TextStyle(color: Colors.grey.shade600),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey.shade600,),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
                   filled: true,
                   fillColor: Colors.grey.shade100,
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -104,11 +100,11 @@ class FormulariosRecibidosScreen extends HookConsumerWidget {
                     borderSide: BorderSide.none,
                   ),
                 ),
-                onChanged: (value){
+                onChanged: (value) {
                   //Actualizamos el estado para que los hijos se reconstruyan con el filtro
                   searchQuery.value = value;
                 },
-              )
+              ),
             ),
 
             // Contenido de las tabs
@@ -128,7 +124,7 @@ class FormulariosRecibidosScreen extends HookConsumerWidget {
                   EnfermedadesList(searchQuery: searchController.text),
 
                   // 5. Capacitacion
-                  _PlaceholderTab(tipo: 'Capacitación',),
+                  _PlaceholderTab(tipo: 'Capacitación'),
                 ],
               ),
             ),

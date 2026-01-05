@@ -1,5 +1,3 @@
-// features/auth/presentation/screens/login_screen.dart
-
 import 'dart:convert';
 import 'package:app_sst/services/storage_service.dart';
 import 'package:crypto/crypto.dart';
@@ -50,7 +48,7 @@ class LoginScreen extends HookConsumerWidget {
       isLoading.value = true;
 
       try {
-        final email = emailController.text.trim();
+        final email = emailController.text.trim().toLowerCase();
         final contrasena = encriptar(passwordController.text.trim());
         final adminPasswordHash = encriptar(adminPassword);
 

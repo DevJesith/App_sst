@@ -65,7 +65,7 @@ class RegistroScreen extends HookConsumerWidget {
 
       try {
 
-        final email = emailController.text.trim();
+        final email = emailController.text.trim().toLowerCase();
 
         // 1. Verificar si el email ya existe en la BD local
         final existente = await ref.read(obtenerUsuarioPorEmailProvider(email).future);

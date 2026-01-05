@@ -80,8 +80,8 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
       final dbInstance = await db.database;
       final res = await dbInstance.query(
         'usuarios',
-        where: 'email = ?',
-        whereArgs: [email],
+        where: 'LOWER(email) = ?',
+        whereArgs: [email.toLowerCase()],
       );
 
       if (res.isEmpty) return null;

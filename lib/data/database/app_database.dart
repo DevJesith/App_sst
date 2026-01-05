@@ -374,8 +374,8 @@ class AppDatabase {
     final db = await database;
     final res = await db.query(
       'usuarios',
-      where: 'email = ? AND contrasena = ?',
-      whereArgs: [email, contrasena],
+      where: 'LOWER(email) = ? AND contrasena = ?',
+      whereArgs: [email.toLowerCase(), contrasena],
     );
     return res.isNotEmpty ? res.first : null;
   }
