@@ -354,13 +354,13 @@ class AccidenteFormScreen extends HookConsumerWidget {
                   onPressed: isSubmitting ? null : submit,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 90,
+                      vertical: 16,
+                      horizontal: 100,
                     ),
                     backgroundColor: CupertinoColors.activeBlue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    // shape: RoundedRectangleBorder(
+                    //   borderRadius: BorderRadius.circular(12),
+                    // ),
                   ),
                   child: isSubmitting
                       ? const SizedBox(
@@ -374,12 +374,15 @@ class AccidenteFormScreen extends HookConsumerWidget {
                       : const Text(
                           "Enviar reporte",
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 16,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                 ),
+
+                const SizedBox(height: 30),
+
               ],
             ),
           ),

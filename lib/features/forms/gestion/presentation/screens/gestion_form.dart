@@ -477,6 +477,8 @@ class GestionFormScreen extends HookConsumerWidget {
                           ),
                         ),
                 ),
+                const SizedBox(height: 30),
+
               ],
             ),
           ),

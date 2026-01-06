@@ -229,7 +229,7 @@ class IncidenteFormScreen extends HookConsumerWidget {
 
                   const SizedBox(height: 20),
 
-                  // ✅ PROYECTO (Estilo Tuyo)
+                  // PROYECTO (
                   ListaInputWigets(
                     nameInput: 'Proyecto',
                     label: 'Selecciona un proyecto',
@@ -284,6 +284,7 @@ class IncidenteFormScreen extends HookConsumerWidget {
                   inputReutilizables(
                     controller: diasIncapacidadController,
                     nameInput: 'Dias de capacidad',
+                    keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Este campo es obligatorio';
@@ -330,8 +331,8 @@ class IncidenteFormScreen extends HookConsumerWidget {
                     onPressed: isSubmitting ? null : submit,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 90,
+                        vertical: 16,
+                        horizontal: 100,
                       ),
                       backgroundColor: CupertinoColors.activeBlue,
                     ),
@@ -347,12 +348,14 @@ class IncidenteFormScreen extends HookConsumerWidget {
                         : const Text(
                             "Enviar reporte",
                             style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 16,
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                   ),
+                const SizedBox(height: 30),
+
                 ],
               ),
             ),

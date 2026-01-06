@@ -253,7 +253,7 @@ class CapacitacionFormScreen extends HookConsumerWidget {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
                 // Campo: Número de Capacitación
                 inputReutilizables(
@@ -308,8 +308,8 @@ class CapacitacionFormScreen extends HookConsumerWidget {
                   onPressed: isSubmitting ? null : submit,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 90,
+                      vertical: 16,
+                      horizontal: 100,
                     ),
                     backgroundColor: CupertinoColors.activeBlue,
                   ),
@@ -325,12 +325,15 @@ class CapacitacionFormScreen extends HookConsumerWidget {
                       : const Text(
                           "Enviar reporte",
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 16,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                 ),
+
+                const SizedBox(height: 30),
+
               ],
             ),
           ),
