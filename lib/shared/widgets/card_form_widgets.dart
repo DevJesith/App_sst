@@ -8,7 +8,7 @@ class CardForm extends StatelessWidget {
   final Widget icono;
   final double size;
   final double borderRadius;
-  final Color borderColor; // ✅ Nuevo: Color del borde personalizable
+  final Color borderColor; 
   final String typeForm;
   final TextStyle typeStyle;
 
@@ -24,7 +24,7 @@ class CardForm extends StatelessWidget {
       fontWeight: FontWeight.w600,
     ),
     this.borderRadius = 20.0, // Más redondeado como en la imagen de la profe
-    this.size = 90,
+    this.size = 120,
   });
 
   @override
@@ -42,7 +42,7 @@ class CardForm extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(borderRadius),
               side: BorderSide(
-                color: borderColor, // ✅ Borde de color (Rojo/Verde/Azul)
+                color: borderColor,
                 width: 3.0, // Borde grueso como en la imagen
               ),
             ),

@@ -154,6 +154,7 @@ class HomeScreens extends HookConsumerWidget {
                             width: 80,
                           ),
                           typeForm: "Accidente",
+                          borderColor: Colors.red,
                         ),
 
                         /// Tarjeta: Incidente
@@ -172,6 +173,7 @@ class HomeScreens extends HookConsumerWidget {
                             width: 80,
                           ),
                           typeForm: "Incidente",
+                          borderColor: Colors.orange ,
                         ),
 
                         /// Tarjeta: Enfermedad Laboral
@@ -190,6 +192,7 @@ class HomeScreens extends HookConsumerWidget {
                             width: 80,
                           ),
                           typeForm: "Enfermedad Laboral",
+                          borderColor: Colors.deepPurple,
                         ),
 
                         /// Tarjeta: Capacitaciones
@@ -208,9 +211,8 @@ class HomeScreens extends HookConsumerWidget {
                             width: 80,
                           ),
                           typeForm: "Capacitaciones",
+                          borderColor: Colors.green.shade800,
                         ),
-
-                        // ✅ Puedes agregar más formularios aquí sin romper el diseño
                       ],
                     ),
                   ),
