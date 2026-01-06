@@ -277,7 +277,7 @@ class LoginScreen extends HookConsumerWidget {
                             backgroundColor: CupertinoColors.activeBlue,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             elevation: 3,
                           ),

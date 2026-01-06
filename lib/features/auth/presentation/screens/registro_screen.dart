@@ -378,8 +378,12 @@ class RegistroScreen extends HookConsumerWidget {
                           : iniciarProcesoRegistro,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)
+                        ),
                         backgroundColor: CupertinoColors.activeBlue,
                       ),
+                      
                       child: isLoading.value
                           ? const SizedBox(
                               height: 20,

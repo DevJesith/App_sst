@@ -1,10 +1,10 @@
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
-import 'package:app_sst/shared/widgets/boton_navegacion_widgets.dart';
 import 'package:app_sst/shared/widgets/perfil_widget.dart';
 import 'package:app_sst/features/auth/domain/entities/usuarios.dart';
 import 'package:app_sst/features/forms/gestion/presentation/screens/gestion_form.dart';
 import 'package:app_sst/features/home/presentation/home_screens.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// Pantalla de bienvenida
@@ -21,7 +21,6 @@ class WelcomeScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final usuarioState = ref.watch(usuarioAutenticadoProvider);
 
     final usuarioActual = usuarioState ?? usuario;
@@ -109,45 +108,65 @@ class WelcomeScreen extends HookConsumerWidget {
                     /// 4. BOTONES DE ACCION PRINCIPAL
 
                     /// Boton: Reportar riesgos
-                    BotonNavegacion(
-                      text: "Reportar Riesgos",
-                      textStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const HomeScreens(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreens(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        );
-                      },
-                      color: Colors.blue.shade700,
-                      paddingHorizontal: 50,
+                          backgroundColor: CupertinoColors.activeBlue,
+                        ),
+                        child: const Text(
+                          'Reportar Riesgos',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: 16),
 
                     /// Boton: Gestion de formularios
-                    BotonNavegacion(
-                      text: "Gestión de Formularios",
-                      textStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const GestionFormScreen(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const GestionFormScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        );
-                      },
-                      color: Colors.green.shade700,
-                      paddingHorizontal: 40,
+                          backgroundColor: const Color.fromARGB(255, 0, 168, 42),
+                        ),
+                        child: const Text(
+                          'Gestión de Formularios',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
