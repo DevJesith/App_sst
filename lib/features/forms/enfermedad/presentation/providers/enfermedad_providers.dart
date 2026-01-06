@@ -1,4 +1,4 @@
-import 'package:app_sst/data/database/app_database.dart';
+import 'package:app_sst/core/data/database/app_database.dart';
 import 'package:app_sst/features/forms/enfermedad/data/datasources/enfermedad_local_datasource.dart';
 import 'package:app_sst/features/forms/enfermedad/data/repositories_impl/enfermedad_repository_impl.dart';
 import 'package:app_sst/features/forms/enfermedad/domain/repositories/enfermedad_repository.dart';

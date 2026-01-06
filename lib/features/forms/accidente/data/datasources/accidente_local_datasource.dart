@@ -1,5 +1,5 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:app_sst/data/database/app_database.dart';
+import 'package:app_sst/core/data/database/app_database.dart';
 import 'package:app_sst/features/forms/accidente/data/model/accidente_model.dart';
 
 /// Interfaz para el acceso a datos locales de Accidentes

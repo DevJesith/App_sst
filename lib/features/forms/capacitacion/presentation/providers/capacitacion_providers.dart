@@ -1,4 +1,4 @@
-import 'package:app_sst/data/database/app_database.dart';
+import 'package:app_sst/core/data/database/app_database.dart';
 import 'package:app_sst/features/forms/capacitacion/data/datasources/capacitacion_local_datasources.dart';
 import 'package:app_sst/features/forms/capacitacion/domain/repositories/capacitacion_repository.dart';
 import 'package:app_sst/features/forms/capacitacion/domain/usecases/actualizar_capacitacion_usecases.dart';

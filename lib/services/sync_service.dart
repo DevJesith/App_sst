@@ -1,4 +1,4 @@
-import 'package:app_sst/data/database/app_database.dart';
+import 'package:app_sst/core/data/database/app_database.dart';
 import 'package:app_sst/services/connectivity_service.dart';
 
 /// Servicio encargado de la sincronizacion de datos.

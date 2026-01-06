@@ -1,4 +1,4 @@
-import 'package:app_sst/data/database/app_database.dart';
+import 'package:app_sst/core/data/database/app_database.dart';
 import 'package:app_sst/features/forms/accidente/data/datasources/accidente_local_datasource.dart';
 import 'package:app_sst/features/forms/accidente/data/repositories_impl/accidente_repository_impl.dart';
 import 'package:app_sst/features/forms/accidente/domain/repositories/accidente_repository.dart';

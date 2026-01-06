@@ -1,4 +1,4 @@
-import 'package:app_sst/data/database/app_database.dart';
+import 'package:app_sst/core/data/database/app_database.dart';
 import 'package:app_sst/features/forms/incidente/data/model/incidente_model.dart';
 import 'package:sqflite/sql.dart';
 

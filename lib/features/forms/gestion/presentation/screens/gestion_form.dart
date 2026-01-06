@@ -121,10 +121,10 @@ class GestionFormScreen extends HookConsumerWidget {
         return;
       }
 
-      if (formState.imagenes.length < 3) {
+      if (formState.imagenes.isEmpty) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Debes subir 3 fotos')));
+        ).showSnackBar(const SnackBar(content: Text('Debes subir al menos 1 foto de evidencia')));
         return;
       }
 
@@ -143,10 +143,22 @@ class GestionFormScreen extends HookConsumerWidget {
         return newPath;
       }
 
-      //Convertir XFILE paths a String
-      final foto1Path = await guardarImagenPermanente(formState.imagenes[0], 1);
-      final foto2Path = await guardarImagenPermanente(formState.imagenes[1], 2);
-      final foto3Path = await guardarImagenPermanente(formState.imagenes[2], 3);
+      // Guardado seguro (Verificar si existen antes de acceder al indice)
+      String foto1Path = '';
+      String foto2Path = '';
+      String foto3Path = '';
+
+      if (formState.imagenes.isNotEmpty) {
+        foto1Path = await guardarImagenPermanente(formState.imagenes[0], 1);
+      }
+
+      if (formState.imagenes.isNotEmpty) {
+        foto2Path = await guardarImagenPermanente(formState.imagenes[1], 2);
+      }
+
+      if (formState.imagenes.isNotEmpty) {
+        foto3Path = await guardarImagenPermanente(formState.imagenes[2], 3);
+      }
 
       final nuevaGestion = Gestion(
         id: gestion?.id,

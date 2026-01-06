@@ -1,7 +1,7 @@
 import '../../domain/entities/usuarios.dart';
 import '../../domain/repositories/usuarios_repository.dart';
 import '../models/usuario_model.dart';
-import '../../../../data/database/app_database.dart';
+import '../../../../core/data/database/app_database.dart';
 
 /// Esta clase de encrga de la comunicacion directa con la base de datos SQLite
 /// a traves de la instancia [AppDatabase]. Convierte los modelos de datos en entidades

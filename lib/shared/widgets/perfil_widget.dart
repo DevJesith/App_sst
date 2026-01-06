@@ -1,4 +1,4 @@
-import 'package:app_sst/features/auth/presentation/screens/perfil_screen.dart';
+import 'package:app_sst/features/auth/presentation/screens/user/perfil_screen.dart';
 import 'package:app_sst/services/storage_service.dart';
 import 'package:flutter/material.dart';
 
@@ -11,9 +11,9 @@ import 'package:app_sst/features/forms/incidente/presentation/screens/incidente_
 
 // Imports de Autenticación y Navegación
 import 'package:app_sst/features/auth/domain/entities/usuarios.dart';
-import 'package:app_sst/features/auth/presentation/screens/introducion_screen.dart';
-import 'package:app_sst/features/auth/presentation/screens/usuarios_registrados_screen.dart';
-import 'package:app_sst/features/auth/presentation/screens/formularios_recibidos_screen.dart';
+import 'package:app_sst/features/auth/presentation/screens/startup/introducion_screen.dart';
+import 'package:app_sst/features/auth/presentation/screens/admin/usuarios_registrados_screen.dart';
+import 'package:app_sst/features/auth/presentation/screens/admin/formularios_recibidos_screen.dart';
 
 /// Drawer personalizado para la navegacion lateral de la aplciacion.
 ///

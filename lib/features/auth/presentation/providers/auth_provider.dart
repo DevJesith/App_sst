@@ -2,7 +2,7 @@
 
 import 'package:app_sst/features/auth/domain/usecases/obtener_usuario.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../../data/database/app_database.dart';
+import '../../../../core/data/database/app_database.dart';
 import '../../domain/entities/usuarios.dart';
 import '../../data/repositories_impl/usuario_repository_impl.dart';
 import '../../domain/usecases/actualizar_usuario.dart';

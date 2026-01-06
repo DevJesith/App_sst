@@ -1,4 +1,4 @@
-import 'package:app_sst/data/database/app_database.dart';
+import 'package:app_sst/core/data/database/app_database.dart';
 import 'package:app_sst/features/forms/gestion/data/datasources/gestion_local_datasources.dart';
 import 'package:app_sst/features/forms/gestion/data/repositories_impl/gestion_repository_impl.dart';
 import 'package:app_sst/features/forms/gestion/domain/repositories/gestion_repository.dart';
