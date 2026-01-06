@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../../core/utils/exports/export_utils.dart';
-import '../../../../shared/widgets/perfil_widget.dart';
-import '../../domain/entities/usuarios.dart';
+import '../../../../../core/utils/exports/export_utils.dart';
+import '../../../../../shared/widgets/perfil_widget.dart';
+import '../../../domain/entities/usuarios.dart';
 import 'usuarios_registrados_screen.dart';
 import 'formularios_recibidos_screen.dart';
 

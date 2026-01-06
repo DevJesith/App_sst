@@ -4,10 +4,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 // Imports de Servicios y Utils
-import '../../../../../shared/widgets/inputs_widgets.dart';
+import '../../../../../../shared/widgets/inputs_widgets.dart';
 
 // Imports de Dominio y Providers
-import '../providers/auth_provider.dart';
+import '../../providers/auth_provider.dart';
 import 'verificar_recuperacion_screen.dart';
 
 /// Pantalla para el restablecimiento de contraseña (Paso 1).

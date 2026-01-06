@@ -6,10 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../../../shared/widgets/inputs_widgets.dart';
-import '../../domain/entities/usuarios.dart';
-import '../providers/auth_provider.dart';
-import 'login_screen.dart';
+import '../../../../../../shared/widgets/inputs_widgets.dart';
+import '../../../domain/entities/usuarios.dart';
+import '../../providers/auth_provider.dart';
+import '../login/login_screen.dart';
 import 'verificacion_code_screen.dart';
 
 /// Pantalla de registro de nuevos usuarios

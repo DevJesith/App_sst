@@ -1,6 +1,6 @@
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
-import 'package:app_sst/features/auth/presentation/screens/introducion_screen.dart';
-import 'package:app_sst/features/auth/presentation/screens/welcome_screen.dart';
+import 'package:app_sst/features/auth/presentation/screens/startup/introducion_screen.dart';
+import 'package:app_sst/features/auth/presentation/screens/user/welcome_screen.dart';
 import 'package:app_sst/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
