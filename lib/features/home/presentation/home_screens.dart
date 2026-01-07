@@ -192,7 +192,7 @@ class HomeScreens extends HookConsumerWidget {
                             width: 80,
                           ),
                           typeForm: "Enfermedad Laboral",
-                          borderColor: Colors.deepPurple,
+                          borderColor: Colors.blue,
                         ),
 
                         /// Tarjeta: Capacitaciones

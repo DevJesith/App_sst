@@ -118,7 +118,7 @@ class CustomDrawer extends StatelessWidget {
                     ),
 
                     _buildMenuItem(
-                      icon: Icons.error_outline,
+                      icon: Icons.assignment,
                       iconColor: Colors.orange,
                       title: "Incidentes",
                       subtitle: "Ver reportes de incidentes",
@@ -135,7 +135,7 @@ class CustomDrawer extends StatelessWidget {
 
                     _buildMenuItem(
                       icon: Icons.medical_services,
-                      iconColor: Colors.purple,
+                      iconColor: Colors.blue,
                       title: "Enfermedades Laborales",
                       subtitle: "Ver reportes de enfermedades",
                       onTap: () {
@@ -150,8 +150,8 @@ class CustomDrawer extends StatelessWidget {
                     ),
 
                     _buildMenuItem(
-                      icon: Icons.checklist,
-                      iconColor: Colors.green,
+                      icon: Icons.fact_check,
+                      iconColor: Colors.purple,
                       title: "Gestiones",
                       subtitle: "Ver gestiones de inspección",
                       onTap: () {
@@ -166,7 +166,7 @@ class CustomDrawer extends StatelessWidget {
                     ),
 
                     _buildMenuItem(
-                      icon: Icons.school, // Icono corregido para capacitación
+                      icon: Icons.menu_book, // Icono corregido para capacitación
                       iconColor: Colors.teal,
                       title: "Capacitaciones",
                       subtitle: "Ver capacitaciones",

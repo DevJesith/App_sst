@@ -1,4 +1,5 @@
 import 'package:app_sst/features/forms/capacitacion/presentation/providers/capacitacion_providers.dart';
+import 'package:app_sst/features/forms/capacitacion/presentation/screens/capacitacion_list_screen.dart';
 import 'package:app_sst/features/forms/enfermedad/presentation/screens/enfermedad_list.dart';
 import 'package:app_sst/features/forms/gestion/presentation/providers/gestion_providers.dart';
 import 'package:app_sst/features/forms/gestion/presentation/screens/gestion_list.dart';
@@ -124,7 +125,7 @@ class FormulariosRecibidosScreen extends HookConsumerWidget {
                   EnfermedadesList(searchQuery: searchController.text),
 
                   // 5. Capacitacion
-                  _PlaceholderTab(tipo: 'Capacitación'),
+                  CapacitacionListScreen(searchQuery: searchController.text)
                 ],
               ),
             ),
