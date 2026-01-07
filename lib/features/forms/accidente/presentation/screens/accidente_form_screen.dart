@@ -31,9 +31,6 @@ class AccidenteFormScreen extends HookConsumerWidget {
     final eventualidadController = useTextEditingController(
       text: accidente?.eventualidad ?? '',
     );
-    final contratistaController = useTextEditingController(
-      text: accidente?.contratista ?? '',
-    );
     final mesController = useTextEditingController(text: accidente?.mes ?? '');
     final descripcionController = useTextEditingController(
       text: accidente?.descripcion ?? '',
@@ -63,19 +60,36 @@ class AccidenteFormScreen extends HookConsumerWidget {
         .map((e) => (e['Nombre'] ?? e['nombre']).toString())
         .toList();
 
+    // --- ENCONTRAR NOMBRES SELECCIONADOS ---
+    String? nombreProyectoSeleccionado;
+    if (formState.proyectoId != null && formState.listaProyectos.isNotEmpty) {
+      try {
+        final proyecto = formState.listaProyectos.firstWhere((p) => p['id'] == formState.proyectoId);
+        nombreProyectoSeleccionado = proyecto['Nombre'] ?? proyecto['nombre'];
+      } catch (_) {}
+    }
+
+    String? nombreContratistaSeleccionado;
+    if (formState.contratistaId != null && formState.listaContratistas.isNotEmpty) {
+      try {
+        final contratista = formState.listaContratistas.firstWhere((c) => c['id'] == formState.contratistaId);
+        nombreContratistaSeleccionado = contratista['Nombre'] ?? contratista['nombre'];
+      } catch (_) {}
+    }
+
     // --- INICIALIZACION (EDICION) ---
     useEffect(() {
       if (accidente != null) {
         Future.microtask(() {
           // 1. Seteamos el proyecto (Esto disparara la carga de contratistas)
-          formNotifier.setProyecto(accidente!.proyecto);
+          formNotifier.setProyectoId(accidente!.proyectoId);
 
           // 2. Seteamos el resto de campos
           formNotifier.setEstado(accidente!.estado);
           formNotifier.setFecha(accidente!.fechaRegistro);
 
           // 3. Seteamos el contratista manualmente
-          formNotifier.setContratista(accidente!.contratista);
+          formNotifier.setContratistaId(accidente!.contratistaId);
         });
       }
       return null;
@@ -86,8 +100,8 @@ class AccidenteFormScreen extends HookConsumerWidget {
       if (!formKey.currentState!.validate()) return;
 
       // Validar campos del estado (Dropdowns y Fecha)
-      if (formState.proyecto == null ||
-          formState.contratista == null ||
+      if (formState.proyectoId == null ||
+          formState.contratistaId == null ||
           formState.estado == null ||
           formState.fecha == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -100,8 +114,8 @@ class AccidenteFormScreen extends HookConsumerWidget {
       final nuevoAccidente = Accidente(
         id: accidente?.id,
         eventualidad: eventualidadController.text,
-        proyecto: formState.proyecto!,
-        contratista: formState.contratista!,
+        proyectoId: formState.proyectoId!,
+        contratistaId: formState.contratistaId!,
         mes: mesController.text,
         descripcion: descripcionController.text,
         diasIncapacidad: int.tryParse(diasIncapacidadController.text) ?? 0,
@@ -151,7 +165,6 @@ class AccidenteFormScreen extends HookConsumerWidget {
           // Limpiar formulario
           formNotifier.reset();
           eventualidadController.clear();
-          contratistaController.clear();
           mesController.clear();
           descripcionController.clear();
           diasIncapacidadController.clear();
@@ -235,8 +248,11 @@ class AccidenteFormScreen extends HookConsumerWidget {
                   nameInput: 'Proyecto',
                   label: 'Selecciona una opción',
                   items: listaProyectosNombres,
-                  value: formState.proyecto,
-                  onChanged: formNotifier.setProyecto,
+                  value: nombreProyectoSeleccionado,
+                  onChanged: (nombre) {
+                    final proyecto = formState.listaProyectos.firstWhere((p) => (p['Nombre'] ?? p['nombre']) == nombre);
+                    formNotifier.setProyectoId(proyecto['id'] as int);
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Este campo es obligatorio';
@@ -253,9 +269,11 @@ class AccidenteFormScreen extends HookConsumerWidget {
                       ? 'Selecciona un proyecto primero'
                       : 'Selecciona el contratista',
                   items: listaContratistasNombres, // Solo muestra los validos
-                  value: formState
-                      .contratista, // Usamos el del estado, no el controller
-                  onChanged: formNotifier.setContratista,
+                  value: nombreContratistaSeleccionado, // Usamos el del estado, no el controller
+                  onChanged: (nombre) {
+                    final contratista = formState.listaContratistas.firstWhere((c) => (c['Nombre'] ?? c['nombre']) == nombre);
+                    formNotifier.setContratistaId(contratista['id'] as int);
+                  },
                   validator: (value) => value == null ? 'Obligatorio' : null,
                 ),
                 const SizedBox(height: 20),

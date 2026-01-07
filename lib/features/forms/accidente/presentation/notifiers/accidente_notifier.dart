@@ -5,6 +5,7 @@ import 'package:app_sst/features/forms/accidente/domain/usecases/eliminar_accide
 import 'package:app_sst/features/forms/accidente/domain/usecases/get_accidentes_usecases.dart';
 import 'package:app_sst/features/forms/accidente/domain/usecases/get_maestros_usecases.dart';
 import 'package:app_sst/features/forms/accidente/presentation/states/accidente_state.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 
@@ -120,15 +121,15 @@ class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
 
   /// Selecciona un proyecto y carga sus contratistas asociados.
   /// 
-  /// [nombreProyecto] : El nombre del proyecto sleecciona (String).nombreProyecto
-  void setProyecto(String? nombreProyecto) async {
-    if (nombreProyecto == null) return;
+  /// [id] : El id del proyecto sleecciona (String).nombreProyecto
+  void setProyectoId(int? id) async {
+    if (id == null) return;
 
     /// Creamos un estado nuevo para forzar que contratistas sea null.
     /// Esto evita erroes visuales en el Dropdown al cambiar de proyecto
     state = AccidenteFormState(
-      proyecto: nombreProyecto,
-      contratista: null, // Se fuerza el null
+      proyectoId: id,
+      contratistaId: null, // Se fuerza el null
       estado: state.estado,
       fecha: state.fecha,
       listaProyectos: state.listaProyectos,
@@ -136,28 +137,17 @@ class AccidenteFormNotifier extends StateNotifier<AccidenteFormState> {
     );
 
     try {
-      // Buscamos el objeto proyecto completo para obtener su ID.
-      final proyectoObj = state.listaProyectos.firstWhere(
-        (p) => (p['Nombre'] ?? p['nombre']) == nombreProyecto,
-        orElse: () => {},
-      );
-
-      if (proyectoObj.isNotEmpty) {
-        final proyectoId = proyectoObj['id'] as int;
-
-        // Cargamos los contratistas filtrados por ese ID
-        final contratistas = await getContratistasPorProyectoUseCase(proyectoId);
-
-        state = state.copyWith(listaContratistas: contratistas);
-      }
+      // Cargamos los contratistas filtrados por ese ID
+      final contratistas = await getContratistasPorProyectoUseCase(id);
+      state = state.copyWith(listaContratistas: contratistas);
       
     } catch (e) {
-      print("Error cargando contratistas: $e");
+      debugPrint("Error cargando contratistas: $e");
     }
   }
 
-  void setContratista(String? value) {
-    state = state.copyWith(contratista: value);
+  void setContratistaId(int? value) {
+    state = state.copyWith(contratistaId: value);
   }
 
   void setEstado(String? value) {

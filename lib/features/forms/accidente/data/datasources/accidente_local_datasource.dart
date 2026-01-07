@@ -15,6 +15,7 @@ abstract class AccidenteLocalDatasource {
   // Metodos para listas desplegables
   Future<List<Map<String, dynamic>>> getProyectos();
   Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectosId);
+  Future<List<Map<String, dynamic>>> getAllContratistas();
 }
 
 
@@ -108,5 +109,12 @@ class AccidenteLocalDataSourceImpl implements AccidenteLocalDatasource {
     WHERE cp.Proyecto_id = ?
     ''', [proyectosId]);
     
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getAllContratistas() async {
+    final db = await database.database;
+    // Consulta simple para la lista
+    return await db.query('Contratista');
   }
 }

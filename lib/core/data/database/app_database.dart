@@ -178,8 +178,8 @@ class AppDatabase {
       CREATE TABLE Accidente (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         eventualidad TEXT,
-        proyecto TEXT,      
-        contratista TEXT,   
+        Proyecto_id INTEGER,      
+        Contratista_id INTEGER,   
         mes TEXT,
         descripcion TEXT,
         dias_incapacidad INTEGER,
@@ -188,7 +188,9 @@ class AppDatabase {
         fecha_registro TEXT,
         sincronizado INTEGER DEFAULT 0,
         Usuarios_id INTEGER,
-        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id),
+        FOREIGN KEY (Proyecto_id) REFERENCES Proyecto(id),
+        FOREIGN KEY (Contratista_id) REFERENCES Contratista(id)
       )
     ''');
 
@@ -244,7 +246,7 @@ class AppDatabase {
         Responsable TEXT,
         Proyecto_id INTEGER,      -- ID Relacional
         Contratista_id INTEGER,   -- ID Relacional
-        fecha_registro TEXT,      -- ✅ FALTABA ESTE CAMPO
+        fecha_registro TEXT,      
         sincronizado INTEGER DEFAULT 0,
         Usuarios_id INTEGER,
         FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id),

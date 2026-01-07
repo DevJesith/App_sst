@@ -7,8 +7,8 @@ class AccidenteModel extends Accidente {
   const AccidenteModel({
     int? id,
     required String eventualidad,
-    required String proyecto,
-    required String contratista,
+    required int proyectoId,
+    required int contratistaId,
     required String mes,
     required String descripcion,
     required int diasIncapacidad,
@@ -20,8 +20,8 @@ class AccidenteModel extends Accidente {
   }) : super (
     id: id,
     eventualidad: eventualidad,
-    proyecto: proyecto,
-    contratista: contratista,
+    proyectoId: proyectoId,
+    contratistaId: contratistaId,
     mes: mes,
     descripcion: descripcion,
     diasIncapacidad: diasIncapacidad,
@@ -36,17 +36,17 @@ class AccidenteModel extends Accidente {
   factory AccidenteModel.fromMap(Map<String, dynamic> map){
     return AccidenteModel(
       id: map['id'] as int?,
-      eventualidad: map['eventualidad'] as String,
-      proyecto: map['proyecto'] as String,
-      contratista: map['contratista'] as String,
-      mes: map['mes'] as String,
-      descripcion: map['descripcion'] as String,
-      diasIncapacidad: map['dias_incapacidad'] as int,
-      avances: map['avances'] as String,
-      estado: map['estado'] as String,
+      eventualidad: map['eventualidad'] as String? ?? '',
+      proyectoId: map['Proyecto_id'] as int? ?? 0,
+      contratistaId: map['Contratista_id'] as int? ?? 0,
+      mes: map['mes'] as String? ?? '',
+      descripcion: map['descripcion'] as String? ?? '',
+      diasIncapacidad: map['dias_incapacidad'] as int? ?? 0,
+      avances: map['avances'] as String? ?? '',
+      estado: map['estado'] as String? ?? '',
       fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
       sincronizado: map['sincronizado'] as int? ?? 0,
-      usuarioId: map['Usuarios_id'] as int,
+      usuarioId: map['Usuarios_id'] as int? ?? 0,
     );
   }
 
@@ -55,8 +55,8 @@ class AccidenteModel extends Accidente {
     return{
       'id': id,
       'eventualidad': eventualidad,
-      'proyecto': proyecto,
-      'contratista': contratista,
+      'Proyecto_id': proyectoId,
+      'Contratista_id': contratistaId,
       'mes': mes,
       'descripcion': descripcion,
       'dias_incapacidad': diasIncapacidad,
@@ -71,8 +71,8 @@ class AccidenteModel extends Accidente {
   AccidenteModel copyWith({
     int? id,
     String? eventualidad,
-    String? proyecto,
-    String? contratista,
+    int? proyectoId,
+    int? contratistaId,
     String? mes,
     String? descripcion,
     int? diasIncapacidad,
@@ -85,8 +85,8 @@ class AccidenteModel extends Accidente {
     return AccidenteModel(
       id: id ?? this.id,
       eventualidad: eventualidad ?? this.eventualidad,
-      proyecto: proyecto ?? this.proyecto,
-      contratista: contratista ?? this.contratista,
+      proyectoId: proyectoId ?? this.proyectoId,
+      contratistaId: contratistaId ?? this.contratistaId,
       mes: mes ?? this.mes,
       descripcion: descripcion ?? this.descripcion,
       diasIncapacidad: diasIncapacidad ?? this.diasIncapacidad,

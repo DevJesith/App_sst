@@ -2,32 +2,46 @@ import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart'
 import 'package:app_sst/features/forms/accidente/presentation/providers/accidente_providers.dart';
 import 'package:app_sst/features/forms/accidente/presentation/screens/accidente_detalle_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-/// Wiget que muestra el listado de accidentes registrados.
+/// Widget que muestra el listado de accidentes registrados.
 ///
 /// Incluye:
 /// * Filtrado por busqueda (Eventualidad, Proyecto, Usuario).
-/// * Visualizacion en tarjetas con resumen.
-/// * Navegacion al detalle
+/// * Visualización en tarjetas con resumen.
+/// * Navegación al detalle
 class AccidentesList extends HookConsumerWidget {
   final String searchQuery;
 
-  const AccidentesList({required this.searchQuery});
+  const AccidentesList({super.key, required this.searchQuery});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Observamos el estado de los accidentes y la lista de usuarios (para saber quien reporto).
+    // Observamos el estado de los accidentes y la lista de usuarios (para saber quien reportó).
     final accidenteState = ref.watch(accidenteNotifierProvider);
     final usuariosAsync = ref.watch(obtenerTodosUsuariosProvider);
+
+    // Cargar proyectos para mostrar nombres reales
+    final getProyectos = ref.read(getProyectosUseCaseProvider);
+    final listaProyectos = useState<List<Map<String, dynamic>>>([]);
+
+    useEffect(() {
+      Future.microtask(() async {
+        try {
+          final proyectos = await getProyectos();
+          listaProyectos.value = proyectos;
+        } catch (_) {}
+      });
+      return null;
+    }, []);
 
     return usuariosAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(
         child: Text('Error: $error', style: const TextStyle(color: Colors.red)),
       ),
-
       data: (usuarios) {
         // 1. Verificar si esta cargando la lista de accidentes
         if (accidenteState.isLoading) {
@@ -36,7 +50,7 @@ class AccidentesList extends HookConsumerWidget {
 
         final accidentes = accidenteState.accidentes;
 
-        // 2. Verificar si la lista esta vacia
+        // 2. Verificar si la lista esta vacía
         if (accidentes.isEmpty) {
           return _buildEmptyState();
         }
@@ -44,22 +58,21 @@ class AccidentesList extends HookConsumerWidget {
         // 3. Logica de filtrado (Busqueda)
         final filteredAccidentes = searchQuery.isEmpty
             ? accidentes
-            : accidentes.where((accidentes) {
+            : accidentes.where((accidente) {
                 final query = searchQuery.toLowerCase();
 
-                // Buscar nombre del usuario que reporto
+                // Buscar nombre del usuario que reportó
                 String nombreUsuario = '';
                 try {
                   final u = usuarios.firstWhere(
-                    (u) => u.id == accidentes.usuarioId,
+                    (u) => u.id == accidente.usuarioId,
                   );
                   nombreUsuario = u.nombre.toLowerCase();
                 } catch (_) {
                   // Si no encuentra usuario, nombreUsuario se queda vacio
                 }
                 // Filtramos si coincide con: Eventualidad, Proyecto o nombre de usuario
-                return accidentes.eventualidad.toLowerCase().contains(query) ||
-                    accidentes.proyecto.toLowerCase().contains(query) ||
+                return accidente.eventualidad.toLowerCase().contains(query) ||
                     nombreUsuario.contains(query);
               }).toList();
 
@@ -68,22 +81,6 @@ class AccidentesList extends HookConsumerWidget {
             child: Text(
               'No se encontraron resultados',
               style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-          );
-        }
-
-        if (accidentes.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.assignment_outlined, size: 80, color: Colors.black),
-                const SizedBox(height: 16),
-                Text(
-                  'No hay reportes de accidentes',
-                  style: TextStyle(fontSize: 18, color: Colors.black),
-                ),
-              ],
             ),
           );
         }
@@ -97,7 +94,7 @@ class AccidentesList extends HookConsumerWidget {
 
             // Obtener datos del usuario de forma segura
             String nombreUsuario = "Usuario desconocido";
-            String emailUsuario = "Sin correo";
+            String emailUsuario = "";
 
             try {
               final usuario = usuarios.firstWhere(
@@ -107,9 +104,14 @@ class AccidentesList extends HookConsumerWidget {
               emailUsuario = usuario.email;
             } catch (_) {}
 
-            // final fechaFormateada = DateFormat(
-            //   'dd/MM/yyyy HH:mm',
-            // ).format(accidente.fechaRegistro);
+            // Buscar nombre del proyecto
+            String nombreProyecto = "ID: ${accidente.proyectoId}";
+            if (listaProyectos.value.isNotEmpty) {
+              try {
+                final p = listaProyectos.value.firstWhere((p) => p['id'] == accidente.proyectoId);
+                nombreProyecto = p['Nombre'] ?? p['nombre'] ?? nombreProyecto;
+              } catch (_) {}
+            }
 
             return Card(
               color: Colors.white,
@@ -133,14 +135,14 @@ class AccidentesList extends HookConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Encabezado: Icono y titulo
+                      // Encabezado: Icono y título
                       Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: Colors.red.shade900,
+                            backgroundColor: Colors.red.shade700,
                             radius: 20,
                             child: const Icon(
-                              Icons.warning_amber,
+                              Icons.warning,
                               color: Colors.white,
                               size: 20,
                             ),
@@ -161,10 +163,11 @@ class AccidentesList extends HookConsumerWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  accidente.proyecto,
+                                  nombreProyecto,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.black,
+                                    color: Colors.red.shade800,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
@@ -184,16 +187,16 @@ class AccidentesList extends HookConsumerWidget {
                       ),
 
                       const SizedBox(height: 12),
-                      const Divider(height: 1, color: Colors.grey),
+                      const Divider(color: Colors.grey),
                       const SizedBox(height: 8),
 
-                      // Pie de tarjeta: Usuario que reporto
+                      // Pie de tarjeta: Usuario que reportó
                       Row(
                         children: [
                           const Icon(
                             Icons.person,
                             size: 16,
-                            color: Colors.black,
+                            color: Colors.black54,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -204,15 +207,14 @@ class AccidentesList extends HookConsumerWidget {
                                   'Nombre: $nombreUsuario',
                                   style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black,
+                                    color: Colors.black87,
                                   ),
                                 ),
-                                const SizedBox(height: 2),
                                 Text(
                                   emailUsuario,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 12,
-                                    color: Colors.black,
+                                    color: Colors.black54,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -231,25 +233,24 @@ class AccidentesList extends HookConsumerWidget {
       },
     );
   }
-}
 
-/// Widget para mostrar cuando no hay datos en la lista.
-Widget _buildEmptyState() {
-  return Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        Icon(Icons.assignment_outlined, size: 80, color: Colors.grey),
-        SizedBox(height: 16),
-        Text(
-          'No hay reportes de accidentes',
-          style: TextStyle(
-            fontSize: 18,
-            color: Colors.grey,
-            fontWeight: FontWeight.w500,
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.assignment_outlined, size: 80, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            'No hay reportes de accidentes',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

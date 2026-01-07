@@ -21,3 +21,13 @@ class GetContratistasPorProyectoUseCase {
     return await repository.getContratistasPorProyectos(proyectoId);
   }
 }
+
+/// Caso de uso para obtener la lista de todos los Contratistas.
+class GetAllContratistasUseCase {
+  final AccidenteRepository repository;
+  GetAllContratistasUseCase(this.repository);
+
+  Future<List<Map<String, dynamic>>> call() async {
+    return await repository.getAllContratistas();
+  }
+}

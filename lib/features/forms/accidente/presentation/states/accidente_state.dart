@@ -53,8 +53,8 @@ class AccidenteState {
 class AccidenteFormState {
 
   // campos del formulario
-  final String? proyecto;
-  final String? contratista;
+  final int? proyectoId;
+  final int? contratistaId;
   final String? estado;
   final DateTime? fecha;
 
@@ -65,8 +65,8 @@ class AccidenteFormState {
   final List<Map<String, dynamic>> listaContratistas;
 
   const AccidenteFormState({
-    this.proyecto,
-    this.contratista,
+    this.proyectoId,
+    this.contratistaId,
     this.estado,
     this.fecha,
     this.listaProyectos = const [],
@@ -76,16 +76,16 @@ class AccidenteFormState {
   /// Crea un copia del estado del formulario
   /// Util para actualizar un solo campo sin perder los demas.
   AccidenteFormState copyWith({
-    String? proyecto,
-    String? contratista,
+    int? proyectoId,
+    int? contratistaId,
     String? estado,
     DateTime? fecha,
     List<Map<String, dynamic>>? listaProyectos,
     List<Map<String, dynamic>>? listaContratistas,
   }) {
     return AccidenteFormState(
-      proyecto: proyecto ?? this.proyecto,
-      contratista: contratista ?? this.contratista,
+      proyectoId: proyectoId ?? this.proyectoId,
+      contratistaId: contratistaId ?? this.contratistaId,
       estado: estado ?? this.estado,
       fecha: fecha ?? this.fecha,
       listaProyectos: listaProyectos ?? this.listaProyectos,

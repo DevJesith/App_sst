@@ -1,34 +1,91 @@
 import 'package:app_sst/features/forms/accidente/presentation/providers/accidente_providers.dart';
 import 'package:app_sst/features/forms/accidente/presentation/screens/accidente_form_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/accidente.dart';
 
-/// Pantalla que muestra el detalle completo de un Accidente
-///
-/// Incluye la logica de negocio para permitir la edicion:
-/// Solo s epuede editar si el registro aun no ha sido sincronizado con la nube.
-class AccidenteDetalleScreen extends ConsumerWidget {
+class AccidenteDetalleScreen extends HookConsumerWidget {
   final Accidente accidente;
 
   const AccidenteDetalleScreen({super.key, required this.accidente});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Formateo de fecha para mostrarla amigable
+    // 1. Formateo de fecha
     final fechaFormateada = DateFormat(
       'dd/MM/yyyy HH:mm',
     ).format(accidente.fechaRegistro);
 
-    // Funcion para confirmar y eliminar
+    // 2. Estados locales para los nombres (Hooks)
+    final nombreProyecto = useState<String>('Cargando...');
+    final nombreContratista = useState<String>('Cargando...');
+
+    // 3. Efecto para cargar los nombres reales basados en los IDs
+    useEffect(() {
+      Future<void> cargarNombres() async {
+        try {
+          // Obtenemos los casos de uso
+          final getProyectos = ref.read(getProyectosUseCaseProvider);
+          final getAllContratistas = ref.read(
+            getAllContratistasUseCaseProvider,
+          );
+
+          // Ejecutamos las consultas en paralelo para mayor velocidad
+          final resultados = await Future.wait([
+            getProyectos(),
+            getAllContratistas(),
+          ]);
+
+          final listaProyectos = resultados[0];
+          final listaContratistas = resultados[1];
+
+          // --- BUSCAR NOMBRE DEL PROYECTO ---
+          try {
+            final proyectoEncontrado = listaProyectos.firstWhere(
+              (p) => p['id'] == accidente.proyectoId,
+            );
+            // Intentamos obtener 'Nombre' o 'nombre' por si acaso cambia la mayúscula en la BD
+            nombreProyecto.value =
+                proyectoEncontrado['Nombre'] ??
+                proyectoEncontrado['nombre'] ??
+                'Sin Nombre';
+          } catch (_) {
+            nombreProyecto.value = 'Desconocido (ID: ${accidente.proyectoId})';
+          }
+
+          // --- BUSCAR NOMBRE DEL CONTRATISTA ---
+          try {
+            final contratistaEncontrado = listaContratistas.firstWhere(
+              (c) => c['id'] == accidente.contratistaId,
+            );
+            nombreContratista.value =
+                contratistaEncontrado['Nombre'] ??
+                contratistaEncontrado['nombre'] ??
+                'Sin Nombre';
+          } catch (_) {
+            nombreContratista.value =
+                'Desconocido (ID: ${accidente.contratistaId})';
+          }
+        } catch (e) {
+          debugPrint("Error al cargar maestros: $e");
+          nombreProyecto.value = "Error de carga";
+          nombreContratista.value = "Error de carga";
+        }
+      }
+
+      cargarNombres();
+      return null;
+    }, const []); // Se ejecuta una sola vez al montar el widget
+
+    // 4. Logica para eliminar
     Future<void> confirmarEliminacion() async {
-      // 1. Mostrar el dialogo de confirmacion
       final confirmar = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('¿Eliminar reporte?'),
-          content: const Text('Esta accion no se puede deshacer.'),
+          content: const Text('Esta acción no se puede deshacer.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -43,10 +100,8 @@ class AccidenteDetalleScreen extends ConsumerWidget {
         ),
       );
 
-      // Si el usuario dijo que No o cerro el dialogo, no hacemos nada
       if (confirmar != true) return;
 
-      // 2. Mostrar indicadpr de carga
       if (context.mounted) {
         showDialog(
           context: context,
@@ -57,29 +112,15 @@ class AccidenteDetalleScreen extends ConsumerWidget {
       }
 
       try {
-        debugPrint(
-          "🗑️ Iniciando eliminación del accidente ID: ${accidente.id}",
-        );
+        if (accidente.id == null) throw Exception("El ID es nulo");
 
-        if (accidente.id == null) {
-          throw Exception("El ID del accidente es nulo");
-        }
-
-        // 3. Ejecutar eliminacion en la BD
         await ref
             .read(accidenteNotifierProvider.notifier)
             .eliminarAccidente(accidente.id!);
 
-        debugPrint("✅ Eliminación completada en BD");
-
         if (context.mounted) {
-          // 4. Cerrar el indicador de carga
-          Navigator.of(context).pop();
-
-          // 5. Cerrar la pantalla de detalle
-          Navigator.of(context).pop();
-
-          // 6. Mostrar mensaje de texto
+          Navigator.of(context).pop(); // Cerrar loading
+          Navigator.of(context).pop(); // Cerrar pantalla detalle
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Reporte eliminado correctamente'),
@@ -88,16 +129,10 @@ class AccidenteDetalleScreen extends ConsumerWidget {
           );
         }
       } catch (e) {
-        debugPrint("❌ Error al eliminar: $e");
-
-        // Manejo de errores
         if (context.mounted) {
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(); // Cerrar loading
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error al eliminar: $e'),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
           );
         }
       }
@@ -107,18 +142,16 @@ class AccidenteDetalleScreen extends ConsumerWidget {
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text('Detalle del Accidente'),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: Colors.red.shade700,
         foregroundColor: Colors.white,
         elevation: 2,
         actions: [
-          // Boton de edicion
-          // Solo mostramos el lapiz si el registro es local (sincronizado == 0)
+          // Solo permitimos editar/eliminar si NO está sincronizado
           if (accidente.sincronizado == 0) ...[
             IconButton(
               icon: const Icon(Icons.edit),
               tooltip: 'Editar reporte',
               onPressed: () {
-                // Navegar el formulario en modo edicion
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -138,12 +171,12 @@ class AccidenteDetalleScreen extends ConsumerWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // --- HEADER CON ESTADO ---
+            // --- HEADER ---
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.blue.shade700,
+                color: Colors.red.shade700,
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(30),
@@ -183,27 +216,28 @@ class AccidenteDetalleScreen extends ConsumerWidget {
               ),
             ),
 
-            // --- CONTENIDO DETALLADO ---
+            // --- CONTENIDO ---
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Tarjeta 1: Informacion General
+                  // Tarjeta 1: Información General
                   _buildInfoCard(
                     title: 'Información General',
                     icon: Icons.info_outline,
                     children: [
-                      _buildInfoRow('Proyecto', accidente.proyecto),
-                      _buildInfoRow('Contratista', accidente.contratista),
+                      // AQUI USAMOS LOS VALORES CARGADOS POR EL HOOK
+                      _buildInfoRow('Proyecto', nombreProyecto.value),
+                      _buildInfoRow('Contratista', nombreContratista.value),
                       _buildInfoRow('Mes', accidente.mes),
-                      _buildInfoRow('Fecha de Registro', fechaFormateada),
+                      _buildInfoRow('Fecha Registro', fechaFormateada),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Tarjeta 2: Descripcion
+                  // Tarjeta 2: Descripción
                   _buildInfoCard(
-                    title: 'Descripción del Accidente',
+                    title: 'Descripción',
                     icon: Icons.description_outlined,
                     children: [
                       Text(
@@ -233,17 +267,19 @@ class AccidenteDetalleScreen extends ConsumerWidget {
                     icon: Icons.timeline_outlined,
                     children: [
                       Text(
-                        accidente.avances,
+                        accidente.avances.isEmpty
+                            ? 'Sin avances registrados'
+                            : accidente.avances,
                         style: const TextStyle(fontSize: 16, height: 1.5),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Tarjeta 5: Estado de sincronizacion
+                  // Tarjeta 5: Sincronización
                   _buildInfoCard(
-                    title: 'Estado de Sincronización',
-                    icon: Icons.sync,
+                    title: 'Sincronización',
+                    icon: Icons.cloud_sync,
                     children: [
                       Row(
                         children: [
@@ -254,19 +290,18 @@ class AccidenteDetalleScreen extends ConsumerWidget {
                             color: accidente.sincronizado == 1
                                 ? Colors.green
                                 : Colors.orange,
-                            size: 20,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             accidente.sincronizado == 1
                                 ? 'Sincronizado'
-                                : 'Pendiente de sincronización',
+                                : 'Pendiente de envío',
                             style: TextStyle(
                               fontSize: 16,
+                              fontWeight: FontWeight.w500,
                               color: accidente.sincronizado == 1
                                   ? Colors.green
                                   : Colors.orange,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -299,7 +334,7 @@ class AccidenteDetalleScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.blue.shade700, size: 24),
+                Icon(icon, color: Colors.red.shade700, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   title,
@@ -310,7 +345,7 @@ class AccidenteDetalleScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const Divider(height: 24),
             ...children,
           ],
         ),
@@ -355,6 +390,7 @@ class AccidenteDetalleScreen extends ConsumerWidget {
       case 'en proceso':
         return Colors.blue;
       case 'completado':
+      case 'cerrado':
         return Colors.green;
       default:
         return Colors.grey;

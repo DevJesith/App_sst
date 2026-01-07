@@ -29,6 +29,25 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
     // Observar el estado de accidentes
     final accidenteState = ref.watch(accidenteNotifierProvider);
 
+    final getProyectos = ref.read(getProyectosUseCaseProvider);
+    final getContratistas = ref.read(getAllContratistasUseCaseProvider);
+
+    final listaProyectos = useState<List<Map<String, dynamic>>>([]);
+    final listaContratistas = useState<List<Map<String, dynamic>>>([]);
+
+    useEffect(() {
+      Future.microtask(() async {
+        try {
+          final proyectos = await getProyectos();
+          listaProyectos.value = proyectos;
+
+          final contratistas = await getContratistas();
+          listaContratistas.value = contratistas;
+        } catch (_) {}
+      });
+      return null;
+    }, []);
+
     // Filtrar solo los accidentes del usuario actual
     final misAccidentes = usuarioActual != null
         ? accidenteState.accidentes
@@ -40,7 +59,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text('Mis Formularios Enviados'),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: Colors.red.shade700,
         foregroundColor: Colors.white,
         elevation: 2,
       ),
@@ -88,7 +107,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade700,
+                    color: Colors.red.shade700,
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(30),
                       bottomRight: Radius.circular(30),
@@ -137,6 +156,30 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
                       final fechaFormateada = DateFormat(
                         'dd/MM/yyyy',
                       ).format(accidente.fechaRegistro);
+
+                      // Buscar nombre del proyecto usando el ID
+                      String nombreProyecto = "ID: ${accidente.proyectoId}";
+                      if (listaProyectos.value.isNotEmpty) {
+                        try {
+                          final p = listaProyectos.value.firstWhere(
+                            (p) => p['id'] == accidente.proyectoId,
+                          );
+                          nombreProyecto =
+                              p['Nombre'] ?? p['nombre'] ?? nombreProyecto;
+                        } catch (_) {}
+                      }
+
+                      String nombreContratista =
+                          "ID: ${accidente.contratistaId}";
+                      if (listaContratistas.value.isNotEmpty) {
+                        try {
+                          final c = listaContratistas.value.firstWhere(
+                            (c) => c['id'] == accidente.contratistaId,
+                          );
+                          nombreContratista =
+                              c['Nombre'] ?? c['nombre'] ?? nombreContratista;
+                        } catch (_) {}
+                      }
 
                       return Card(
                         elevation: 2,
@@ -239,7 +282,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        'Proyecto: ${accidente.proyecto}',
+                                        'Proyecto: $nombreProyecto',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black87,
@@ -261,7 +304,7 @@ class AccidentesEnviadosScreen extends HookConsumerWidget {
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        'Contratista: ${accidente.contratista}',
+                                        'Contratista: $nombreContratista',
                                         style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black87,

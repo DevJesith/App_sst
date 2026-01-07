@@ -73,6 +73,11 @@ final getContratistasUseCaseProvider =
       return GetContratistasPorProyectoUseCase(repo);
     });
 
+final getAllContratistasUseCaseProvider = Provider<GetAllContratistasUseCase>((ref) {
+  final repo = ref.watch(accidenteRepositoryProvider);
+  return GetAllContratistasUseCase(repo);
+});
+
 // ----------------------------------------------------------------------------------------
 // 3. CAPA DE PRESENTACION (STATE MANAGEMENT)
 // ----------------------------------------------------------------------------------------

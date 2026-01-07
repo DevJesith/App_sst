@@ -29,4 +29,7 @@ abstract class AccidenteRepository {
 
   /// Obtiene la lista de contratistas filtrada por el ID del proyecto
   Future<List<Map<String, dynamic>>> getContratistasPorProyectos(int proyectoId);
+
+  // Obtiene la lista de todos los contratistas
+  Future<List<Map<String, dynamic>>> getAllContratistas();
 }
