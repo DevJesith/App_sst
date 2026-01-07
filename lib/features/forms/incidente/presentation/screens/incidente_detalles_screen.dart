@@ -8,38 +8,62 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/incidente.dart';
 import '../providers/incidente_providers.dart';
 
-/// Pantalla que muestra todos los detalles de un incidente reportado.
 class IncidenteDetallesScreen extends HookConsumerWidget {
-  final Incidente incidente;
+  final Incidente incidente; 
 
   const IncidenteDetallesScreen({super.key, required this.incidente});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fechaFormateada = DateFormat('dd/MM/yyyy HH:mm').format(incidente.fechaRegistro);
 
-    // 1. Obtener el caso de uso para traer los proyectos
+    // 1. ESCUCHAR LA LISTA GLOBAL PARA DETECTAR CAMBIOS
+    final listaIncidentes = ref.watch(incidenteListProvider);
+
+    // Variable que usaremos en la UI. Por defecto es el original.
+    Incidente incidenteMostrado = incidente;
+
+    // Intentamos buscar la version más reciente en la lista usando el ID.
+    try {
+      // Si existe en la lista actualizada, lo usamos.
+      incidenteMostrado = listaIncidentes.firstWhere(
+        (e) => e.id == incidente.id,
+      );
+    } catch (_) {
+      // Si no se encuentra, nos quedamos con el original.
+    }
+
+    // 2. Formateo de fecha usando el incidente actualizado
+    final fechaFormateada = DateFormat(
+      'dd/MM/yyyy HH:mm',
+    ).format(incidenteMostrado.fechaRegistro);
+
+    // 3. Obtener el caso de uso para traer los proyectos
     final getProyectos = ref.read(getProyectosIncidenteUseCaseProvider);
 
-    // 2. Crear un estado local para guardar el nombre del proyecto
+    // 4. Estado local para guardar el nombre del proyecto
     final nombreProyecto = useState<String>('Cargando...');
 
-    // 3. Efecto para buscar el nombre del proyecto basado en el ID
+    // 5. Efecto para buscar el nombre del proyecto
     useEffect(() {
       Future.microtask(() async {
         try {
           final lista = await getProyectos();
           final proyectoEncontrado = lista.firstWhere(
-            (p) => p['id'] == incidente.proyectoId,
-            orElse: () => {'Nombre': 'Desconocido (ID: ${incidente.proyectoId})'},
+            (p) => p['id'] == incidenteMostrado.proyectoId,
+            orElse: () => {
+              'Nombre': 'Desconocido (ID: ${incidenteMostrado.proyectoId})',
+            },
           );
-          nombreProyecto.value = proyectoEncontrado['Nombre'] ?? proyectoEncontrado['nombre'] ?? 'Sin nombre';
+          nombreProyecto.value =
+              proyectoEncontrado['Nombre'] ??
+              proyectoEncontrado['nombre'] ??
+              'Sin nombre';
         } catch (e) {
           nombreProyecto.value = 'Error al cargar';
         }
       });
       return null;
-    }, []);
+    }, [incidenteMostrado]); // <--- Se ejecuta si cambia el incidente
 
     // --- LÓGICA DE ELIMINACIÓN ---
     Future<void> confirmarEliminacion() async {
@@ -49,28 +73,51 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
           title: const Text('¿Eliminar reporte?'),
           content: const Text('Esta acción no se puede deshacer.'),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-            TextButton(onPressed: () => Navigator.pop(context, true), style: TextButton.styleFrom(foregroundColor: Colors.red), child: const Text('Eliminar')),
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Eliminar'),
+            ),
           ],
         ),
       );
 
-      if (confirmar == true && context.mounted) {
-        showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
-        
-        try {
-          await ref.read(incidenteNotifierProvider.notifier).eliminarIncidente(incidente.id!);
-          
-          if (context.mounted) {
-            Navigator.pop(context); // Loading
-            Navigator.pop(context); // Pantalla
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Eliminado correctamente'), backgroundColor: Colors.green));
-          }
-        } catch (e) {
-          if (context.mounted) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
-          }
+      if (confirmar != true) return;
+
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const Center(child: CircularProgressIndicator()),
+        );
+      }
+
+      try {
+        // Usamos el ID del incidente mostrado (que debe ser igual al original, pero por seguridad)
+        await ref
+            .read(incidenteNotifierProvider.notifier)
+            .eliminarIncidente(incidenteMostrado.id!);
+
+        if (context.mounted) {
+          Navigator.pop(context); // Cerrar Loading
+          Navigator.pop(context); // Cerrar Pantalla Detalle
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Eliminado correctamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          );
         }
       }
     }
@@ -83,16 +130,24 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
         foregroundColor: Colors.white,
         elevation: 2,
         actions: [
-          if (incidente.sincronizado == 0) ...[
+          if (incidenteMostrado.sincronizado == 0) ...[
             IconButton(
               icon: const Icon(Icons.edit),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => IncidenteFormScreen(incidente: incidente))),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        IncidenteFormScreen(incidente: incidenteMostrado),
+                  ),
+                );
+              },
             ),
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: confirmarEliminacion,
             ),
-          ]
+          ],
         ],
       ),
       body: SingleChildScrollView(
@@ -113,16 +168,30 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    incidente.eventualidad,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                    incidenteMostrado.eventualidad,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     child: Text(
-                      incidente.estado,
-                      style: TextStyle(color: _getEstadoColor(incidente.estado), fontSize: 14, fontWeight: FontWeight.bold),
+                      incidenteMostrado.estado,
+                      style: TextStyle(
+                        color: _getEstadoColor(incidenteMostrado.estado),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -139,7 +208,7 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
                     icon: Icons.info_outline,
                     children: [
                       _buildInfoRow('Proyecto', nombreProyecto.value),
-                      _buildInfoRow('Mes', incidente.mes),
+                      _buildInfoRow('Mes', incidenteMostrado.mes),
                       _buildInfoRow('Fecha de Registro', fechaFormateada),
                     ],
                   ),
@@ -147,30 +216,64 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
                   _buildInfoCard(
                     title: 'Descripción del Incidente',
                     icon: Icons.description_outlined,
-                    children: [Text(incidente.descripcion, style: const TextStyle(fontSize: 16, height: 1.5))],
+                    children: [
+                      Text(
+                        incidenteMostrado.descripcion,
+                        style: const TextStyle(fontSize: 16, height: 1.5),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   _buildInfoCard(
                     title: 'Incapacidad',
                     icon: Icons.medical_services_outlined,
-                    children: [_buildInfoRow('Días de Incapacidad', '${incidente.diasIncapacidad} día${incidente.diasIncapacidad != 1 ? 's' : ''}')],
+                    children: [
+                      _buildInfoRow(
+                        'Días de Incapacidad',
+                        '${incidenteMostrado.diasIncapacidad} día${incidenteMostrado.diasIncapacidad != 1 ? 's' : ''}',
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   _buildInfoCard(
                     title: 'Avances',
                     icon: Icons.timeline_outlined,
-                    children: [Text(incidente.avances, style: const TextStyle(fontSize: 16, height: 1.5))],
+                    children: [
+                      Text(
+                        incidenteMostrado.avances,
+                        style: const TextStyle(fontSize: 16, height: 1.5),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   _buildInfoCard(
                     title: 'Estado de Sincronización',
-                    icon: Icons.sync,
+                    icon: Icons.cloud_sync,
                     children: [
                       Row(
                         children: [
-                          Icon(incidente.sincronizado == 1 ? Icons.check_circle : Icons.pending, color: incidente.sincronizado == 1 ? Colors.green : Colors.orange, size: 20),
+                          Icon(
+                            incidenteMostrado.sincronizado == 1
+                                ? Icons.check_circle
+                                : Icons.pending,
+                            color: incidenteMostrado.sincronizado == 1
+                                ? Colors.green
+                                : Colors.orange,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
-                          Text(incidente.sincronizado == 1 ? 'Sincronizado' : 'Pendiente de sincronización', style: TextStyle(fontSize: 16, color: incidente.sincronizado == 1 ? Colors.green : Colors.orange, fontWeight: FontWeight.w500)),
+                          Text(
+                            incidenteMostrado.sincronizado == 1
+                                ? 'Sincronizado'
+                                : 'Pendiente de sincronización',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: incidenteMostrado.sincronizado == 1
+                                  ? Colors.green
+                                  : Colors.orange,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -184,7 +287,11 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _buildInfoCard({required String title, required IconData icon, required List<Widget> children}) {
+  Widget _buildInfoCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -193,7 +300,19 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [Icon(icon, color: Colors.orange.shade700, size: 24), const SizedBox(width: 12), Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))]),
+            Row(
+              children: [
+                Icon(icon, color: Colors.orange.shade700, size: 24),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             ...children,
           ],
@@ -208,9 +327,25 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex: 2, child: Text(label, style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.w500))),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
           const SizedBox(width: 8),
-          Expanded(flex: 3, child: Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+          ),
         ],
       ),
     );
@@ -218,10 +353,14 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
 
   Color _getEstadoColor(String estado) {
     switch (estado.toLowerCase()) {
-      case 'pendiente': return Colors.orange;
-      case 'en proceso': return Colors.blue;
-      case 'completado': return Colors.green;
-      default: return Colors.grey;
+      case 'pendiente':
+        return Colors.orange;
+      case 'en proceso':
+        return Colors.blue;
+      case 'completado':
+        return Colors.green;
+      default:
+        return Colors.grey;
     }
   }
 }

@@ -4,7 +4,7 @@ import 'package:app_sst/features/forms/incidente/domain/entities/incidente.dart'
 import 'package:app_sst/features/forms/incidente/domain/repositories/incidente_repository.dart';
 
 /// Implementacion del repositorio.
-/// 
+///
 /// Actua como intermediario entre la capa de Dominio (Casos de uso) y la capa de Datos (DataSource).
 class IncidenteRepositoryImpl implements IncidenteRepository {
   final IncidenteLocalDatasource localDatasource;
@@ -12,7 +12,7 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
   IncidenteRepositoryImpl({required this.localDatasource});
 
   @override
-  Future<List<Incidente>> getIncidente() async{
+  Future<List<Incidente>> getIncidente() async {
     try {
       return await localDatasource.getIncidentes();
     } catch (e) {
@@ -42,15 +42,17 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
   Future<int> crearIncidente(Incidente incidente) async {
     try {
       final model = IncidenteModel(
-      eventualidad: incidente.eventualidad, 
-      proyectoId: incidente.proyectoId, 
-      mes: incidente.mes, 
-      descripcion: incidente.descripcion, 
-      diasIncapacidad: incidente.diasIncapacidad, 
-      avances: incidente.avances, 
-      estado: incidente.estado, 
-      fechaRegistro: incidente.fechaRegistro, 
-      usuarioId: incidente.usuarioId);
+        eventualidad: incidente.eventualidad,
+        proyectoId: incidente.proyectoId,
+        mes: incidente.mes,
+        descripcion: incidente.descripcion,
+        diasIncapacidad: incidente.diasIncapacidad,
+        avances: incidente.avances,
+        estado: incidente.estado,
+        fechaRegistro: incidente.fechaRegistro,
+        usuarioId: incidente.usuarioId,
+        sincronizado: incidente.sincronizado,
+      );
       return await localDatasource.crearIncidente(model);
     } catch (e) {
       throw Exception('Error añ crear incidentes: $e');
@@ -61,15 +63,18 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
   Future<int> actualizarIncidente(Incidente incidente) async {
     try {
       final model = IncidenteModel(
-      eventualidad: incidente.eventualidad, 
-      proyectoId: incidente.proyectoId, 
-      mes: incidente.mes, 
-      descripcion: incidente.descripcion, 
-      diasIncapacidad: incidente.diasIncapacidad, 
-      avances: incidente.avances, 
-      estado: incidente.estado, 
-      fechaRegistro: incidente.fechaRegistro, 
-      usuarioId: incidente.usuarioId);
+        id: incidente.id,
+        eventualidad: incidente.eventualidad,
+        proyectoId: incidente.proyectoId,
+        mes: incidente.mes,
+        descripcion: incidente.descripcion,
+        diasIncapacidad: incidente.diasIncapacidad,
+        avances: incidente.avances,
+        estado: incidente.estado,
+        fechaRegistro: incidente.fechaRegistro,
+        sincronizado: incidente.sincronizado,
+        usuarioId: incidente.usuarioId,
+      );
       return await localDatasource.actualizarIncidente(model);
     } catch (e) {
       throw Exception('Error al actualizar incidentes: $e');
@@ -88,6 +93,5 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
   @override
   Future<List<Map<String, dynamic>>> getProyectos() async {
     return await localDatasource.getProyectos();
-    
   }
 }

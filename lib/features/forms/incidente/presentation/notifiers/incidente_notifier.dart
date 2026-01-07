@@ -77,7 +77,7 @@ class IncidenteNotifier extends StateNotifier<IncidenteState> {
   /// Elimina un incidente por su ID.
   Future<bool> eliminarIncidente(int id) async {
     try {
-      await eliminarIncidente(id);
+      await eliminarIncidenteUsecases(id);
       await loadIncidentes();
       return true;
     } catch (e) {

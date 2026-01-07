@@ -86,7 +86,7 @@ class IncidenteModel extends Incidente {
       descripcion: descripcion ?? this.descripcion,
       diasIncapacidad: diasIncapacidad ?? this.diasIncapacidad,
       avances: avances ?? this.avances,
-      estado: estado ?? this.avances,
+      estado: estado ?? this.estado,
       fechaRegistro: fechaRegistro ?? this.fechaRegistro,
       sincronizado: sincronizado ?? this.sincronizado,
       usuarioId: usuarioId ?? this.usuarioId,
