@@ -218,7 +218,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
               children: [
                 /// Titulo del formulario
                 Text(
-                  accidente == null ? "Reportar Accidente" : "Editar Accidente",
+                  accidente == null ? "Accidente" : "Editar Accidente",
                   style: const TextStyle(
                     fontSize: 32,
                     color: Colors.black,

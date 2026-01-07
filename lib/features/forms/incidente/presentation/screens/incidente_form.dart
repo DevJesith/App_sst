@@ -138,8 +138,8 @@ class IncidenteFormScreen extends HookConsumerWidget {
                 title: const Text('Éxito'),
                 content: Text(
                   sincronizadoExitosamente
-                      ? 'Reporte guardado y sincronizado.'
-                      : 'Reporte guardado localmente.',
+                      ? 'Reporte creado y sincronizado con la nube.'
+                      : 'Reporte guardado localmente. Se subirá cuando tengas internet.',
                 ),
                 actions: [
                   TextButton(
