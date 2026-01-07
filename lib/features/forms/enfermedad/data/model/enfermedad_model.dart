@@ -39,7 +39,7 @@ class EnfermedadModel extends Enfermedad {
       id: map['id'] as int?,
       eventualidad: map['eventualidad'] as String? ?? '',
       proyectoId: map['Proyecto_id'] as int? ?? 0,
-      contratistaId: map['contratista_id'] as int? ?? 0,
+      contratistaId: map['Contratista_id'] as int? ?? 0,
       trabajadorId: map['Trabajador_id'] as int? ?? 0,
       mes: map['mes'] as String? ?? '',
       descripcion: map['descripcion'] as String? ?? '',

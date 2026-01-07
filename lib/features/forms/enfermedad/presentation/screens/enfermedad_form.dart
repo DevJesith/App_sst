@@ -106,13 +106,26 @@ class EnfermedadFormScreen extends HookConsumerWidget {
 
     //Inicializar valores si es edicion
     useEffect(() {
-      if (enfermedad != null) {
-        Future.microtask(() {
-          formNotifier.setProyectoId(enfermedad!.proyectoId);
+      Future.microtask(() async {
+        if (enfermedad != null) {
+          // PARA EDITAR
+
           formNotifier.setEstado(enfermedad!.estado);
           formNotifier.setFecha(enfermedad!.fechaRegistro);
-        });
-      }
+
+          formNotifier.setProyectoId(enfermedad!.proyectoId);
+
+          await Future.delayed(const Duration(milliseconds: 300));
+
+          formNotifier.setContratistaId(enfermedad!.contratistaId);
+
+          await Future.delayed(const Duration(milliseconds: 300));
+
+          formNotifier.setTrabajadorId(enfermedad!.trabajadorId);
+        } else {
+          formNotifier.reset();
+        }
+      });
       return null;
     }, []);
 
@@ -433,7 +446,6 @@ class EnfermedadFormScreen extends HookConsumerWidget {
                         ),
                 ),
                 const SizedBox(height: 30),
-
               ],
             ),
           ),

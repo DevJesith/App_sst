@@ -289,7 +289,7 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
     );
   }
 
-  // ... (Widgets auxiliares igual que antes)
+  // --- WIDGETS AUXILIARES ---
   Widget _buildInfoCard({
     required String title,
     required IconData icon,
