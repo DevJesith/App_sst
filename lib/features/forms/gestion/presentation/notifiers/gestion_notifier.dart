@@ -134,7 +134,7 @@ class GestionFormNotifier extends StateNotifier<GestionFormState> {
 
   /// Elimina una imagen por su indice.
   void eliminarImagen(int index) {
-    final nuevasImagenes = List<XFile>.from(state.imagenes)..remove(index);
+    final nuevasImagenes = List<XFile>.from(state.imagenes)..removeAt(index);
     state = state.copyWith(imagenes: nuevasImagenes);
   }
 

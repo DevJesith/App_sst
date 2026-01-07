@@ -122,9 +122,11 @@ class GestionFormScreen extends HookConsumerWidget {
       }
 
       if (formState.imagenes.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Debes subir al menos 1 foto de evidencia')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Debes subir al menos 1 foto de evidencia'),
+          ),
+        );
         return;
       }
 
@@ -148,15 +150,15 @@ class GestionFormScreen extends HookConsumerWidget {
       String foto2Path = '';
       String foto3Path = '';
 
-      if (formState.imagenes.isNotEmpty) {
+      if (formState.imagenes.length > 0) {
         foto1Path = await guardarImagenPermanente(formState.imagenes[0], 1);
       }
 
-      if (formState.imagenes.isNotEmpty) {
+      if (formState.imagenes.length > 1) {
         foto2Path = await guardarImagenPermanente(formState.imagenes[1], 2);
       }
 
-      if (formState.imagenes.isNotEmpty) {
+      if (formState.imagenes.length > 2) {
         foto3Path = await guardarImagenPermanente(formState.imagenes[2], 3);
       }
 
@@ -213,7 +215,7 @@ class GestionFormScreen extends HookConsumerWidget {
           extintorMaquinaController.clear();
           rutinariaMaquinaController.clear();
           gestionCumpleController.clear();
-          formNotifier.clearImagenes;
+          formNotifier.clearImagenes();
 
           // Mostrar dialogo de exito
           if (context.mounted) {
@@ -281,7 +283,7 @@ class GestionFormScreen extends HookConsumerWidget {
 
                 const SizedBox(height: 30),
 
-                // PROYECTO (Estilo Tuyo)
+                // PROYECTO 
                 ListaInputWigets(
                   nameInput: 'Proyecto',
                   label: 'Selecciona un proyecto',
@@ -412,11 +414,21 @@ class GestionFormScreen extends HookConsumerWidget {
                           Positioned(
                             top: 0,
                             right: 0,
-                            child: IconButton(
-                              icon: const Icon(Icons.cancel, color: Colors.red),
-                              onPressed: () {
+                            child: GestureDetector(
+                              onTap: () {
                                 formNotifier.eliminarImagen(index);
                               },
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.cancel,
+                                  color: Colors.red,
+                                  size: 24,
+                                ),
+                              ),
                             ),
                           ),
                           Positioned(
@@ -490,7 +502,6 @@ class GestionFormScreen extends HookConsumerWidget {
                         ),
                 ),
                 const SizedBox(height: 30),
-
               ],
             ),
           ),

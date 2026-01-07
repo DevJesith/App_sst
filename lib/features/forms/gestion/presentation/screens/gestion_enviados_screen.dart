@@ -49,7 +49,7 @@ class GestionesEnviadosScreen extends HookConsumerWidget {
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text('Mis Gestiones Enviadas'),
-        backgroundColor: Colors.green.shade700, // Color Verde
+        backgroundColor: Colors.purple.shade700, 
         foregroundColor: Colors.white,
         elevation: 2,
       ),
@@ -75,12 +75,12 @@ class GestionesEnviadosScreen extends HookConsumerWidget {
             )
           : Column(
               children: [
-                // --- HEADER ESTADÍSTICAS (Igual a Enfermedad) ---
+                // --- HEADER ESTADÍSTICAS ---
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade700, // Verde
+                    color: Colors.purple.shade700, // Verde
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(30),
                       bottomRight: Radius.circular(30),
@@ -164,7 +164,7 @@ class GestionesEnviadosScreen extends HookConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Fila Superior: Título (Proyecto) y Badge
+                                // Título (Proyecto) y Badge
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -189,7 +189,6 @@ class GestionesEnviadosScreen extends HookConsumerWidget {
                                         color: Colors.white, // Fondo blanco
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          // ✅ AQUÍ ESTÁ LA MAGIA DEL BORDE
                                           color: gestion.sincronizado == 1
                                               ? Colors
                                                     .green // Verde si está completo

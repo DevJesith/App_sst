@@ -3,7 +3,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
-
 import '../../domain/entities/gestion.dart';
 import '../providers/gestion_providers.dart';
 import 'gestion_form.dart';
@@ -15,32 +14,46 @@ class GestionDetalleScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    // --- LOGICA DE ACTUALIZACION EN TIEMPO REAL ---
+    final listaGestiones = ref.watch(
+      gestionesListProvider,
+    ); 
+
+    Gestion gestionMostrada = gestion;
+
+    try {
+      gestionMostrada = listaGestiones.firstWhere((e) => e.id == gestion.id);
+    } catch (_) {}
+    // ----------------------------------------------
+
     final fechaFormateada = DateFormat(
       'dd/MM/yyyy HH:mm',
-    ).format(gestion.fechaRegistro);
+    ).format(gestionMostrada.fechaRegistro);
 
-    // --- LÓGICA PARA OBTENER NOMBRE DEL PROYECTO ---
+    // --- LOGICA PARA OBTENER NOMBRE DEL PROYECTO ---
     final getProyectos = ref.read(getProyectosGestionUseCaseProvider);
     final nombreProyecto = useState('Cargando...');
 
+    // Dependencia [gestionMostrada]
     useEffect(() {
       Future.microtask(() async {
         try {
           final lista = await getProyectos();
           final p = lista.firstWhere(
-            (e) => e['id'] == gestion.proyectoId,
+            (e) => e['id'] == gestionMostrada.proyectoId,
             orElse: () => {},
           );
           nombreProyecto.value =
-              p['Nombre'] ?? p['nombre'] ?? 'ID: ${gestion.proyectoId}';
+              p['Nombre'] ?? p['nombre'] ?? 'ID: ${gestionMostrada.proyectoId}';
         } catch (_) {
           nombreProyecto.value = 'Error';
         }
       });
       return null;
-    }, []);
+    }, [gestionMostrada]); // <--- SE EJECUTA SI CAMBIA LA GESTION
 
-    // --- LÓGICA DE ELIMINACIÓN ---
+    // --- LOGICA DE ELIMINACION ---
     Future<void> confirmarEliminacion() async {
       final confirmar = await showDialog<bool>(
         context: context,
@@ -71,11 +84,11 @@ class GestionDetalleScreen extends HookConsumerWidget {
         try {
           await ref
               .read(gestionNotifierProvider.notifier)
-              .eliminarGestion(gestion.id!);
+              .eliminarGestion(gestionMostrada.id!);
 
           if (context.mounted) {
-            Navigator.pop(context); // Loading
-            Navigator.pop(context); // Pantalla
+            Navigator.pop(context);
+            Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Eliminado correctamente'),
@@ -98,82 +111,176 @@ class GestionDetalleScreen extends HookConsumerWidget {
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text('Detalle de Gestión'),
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: Colors.purple.shade700,
         foregroundColor: Colors.white,
+        elevation: 2,
         actions: [
-          if (gestion.sincronizado == 0) ...[
+          if (gestionMostrada.sincronizado == 0) ...[
             IconButton(
               icon: const Icon(Icons.edit),
+              tooltip: 'Editar gestión',
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => GestionFormScreen(gestion: gestion),
+                  // Pasamos el actualizado
+                  builder: (_) => GestionFormScreen(gestion: gestionMostrada),
                 ),
               ),
             ),
             IconButton(
               icon: const Icon(Icons.delete),
+              tooltip: 'Eliminar',
               onPressed: confirmarEliminacion,
             ),
           ],
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildCard('Información General', Icons.info, [
-              _row('Proyecto', nombreProyecto.value),
-              _row('EE', gestion.ee),
-              _row('Fecha', fechaFormateada),
-            ]),
-            const SizedBox(height: 16),
-            _buildCard('Seguridad', Icons.security, [
-              _row('EPP', gestion.epp),
-              _row('Locativa', gestion.locativa),
-            ]),
-            const SizedBox(height: 16),
-            _buildCard('Maquinaria', Icons.engineering, [
-              _row('Extintor', gestion.extintorMaquina),
-              _row('Rutinaria', gestion.rutinariaMaquina),
-            ]),
-            const SizedBox(height: 16),
-            _buildCard('Evidencias', Icons.photo_library, [
-              _buildPhotoSection(gestion),
-            ]),
-            const SizedBox(height: 16),
-            _buildCard('Estado', Icons.sync, [
-              Row(
+            // --- HEADER ---
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.purple.shade700,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    gestion.sincronizado == 1
-                        ? Icons.check_circle
-                        : Icons.pending,
-                    color: gestion.sincronizado == 1
-                        ? Colors.green
-                        : Colors.orange,
-                  ),
-                  const SizedBox(width: 8),
                   Text(
-                    gestion.sincronizado == 1 ? 'Sincronizado' : 'Pendiente',
-                    style: TextStyle(
-                      color: gestion.sincronizado == 1
-                          ? Colors.green
-                          : Colors.orange,
+                    nombreProyecto.value,
+                    style: const TextStyle(
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      gestionMostrada.ee,
+                      style: TextStyle(
+                        color: Colors.purple.shade700,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ]),
+            ),
+
+            // --- CONTENIDO ---
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildInfoCard(
+                    title: 'Información General',
+                    icon: Icons.info_outline,
+                    children: [
+                      _buildInfoRow('Proyecto', nombreProyecto.value),
+                      _buildInfoRow('EE', gestionMostrada.ee),
+                      _buildInfoRow('Fecha de Registro', fechaFormateada),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildInfoCard(
+                    title: 'Seguridad',
+                    icon: Icons.security_outlined,
+                    children: [
+                      _buildInfoRow('EPP', gestionMostrada.epp),
+                      _buildInfoRow('Locativa', gestionMostrada.locativa),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildInfoCard(
+                    title: 'Maquinaria',
+                    icon: Icons.engineering_outlined,
+                    children: [
+                      _buildInfoRow(
+                        'Extintor',
+                        gestionMostrada.extintorMaquina,
+                      ),
+                      _buildInfoRow(
+                        'Rutinaria',
+                        gestionMostrada.rutinariaMaquina,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildInfoCard(
+                    title: 'Evidencias Fotográficas',
+                    icon: Icons.photo_library_outlined,
+                    children: [_buildPhotoSection(gestionMostrada)],
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildInfoCard(
+                    title: 'Estado de Sincronización',
+                    icon: Icons.cloud_sync,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            gestionMostrada.sincronizado == 1
+                                ? Icons.check_circle
+                                : Icons.pending,
+                            color: gestionMostrada.sincronizado == 1
+                                ? Colors.green
+                                : Colors.orange,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            gestionMostrada.sincronizado == 1
+                                ? 'Sincronizado'
+                                : 'Pendiente de sincronización',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: gestionMostrada.sincronizado == 1
+                                  ? Colors.green
+                                  : Colors.orange,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCard(String title, IconData icon, List<Widget> children) {
+  // --- WIDGETS AUXILIARES ---
+  Widget _buildInfoCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
     return Card(
+      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -182,8 +289,8 @@ class GestionDetalleScreen extends HookConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.green.shade700),
-                const SizedBox(width: 8),
+                Icon(icon, color: Colors.purple.shade700, size: 24),
+                const SizedBox(width: 12),
                 Text(
                   title,
                   style: const TextStyle(
@@ -193,7 +300,7 @@ class GestionDetalleScreen extends HookConsumerWidget {
                 ),
               ],
             ),
-            const Divider(),
+            const SizedBox(height: 16),
             ...children,
           ],
         ),
@@ -201,20 +308,29 @@ class GestionDetalleScreen extends HookConsumerWidget {
     );
   }
 
-  Widget _row(String label, String value) {
+  Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             flex: 2,
-            child: Text(label, style: const TextStyle(color: Colors.grey)),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
+          const SizedBox(width: 8),
           Expanded(
             flex: 3,
             child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -229,24 +345,39 @@ class GestionDetalleScreen extends HookConsumerWidget {
       if (gestion.foto3.isNotEmpty) gestion.foto3,
     ];
 
-    if (fotos.isEmpty)
+    if (fotos.isEmpty) {
       return const Text(
         'No hay fotos adjuntas',
-        style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+        style: TextStyle(
+          fontSize: 16,
+          color: Colors.grey,
+          fontStyle: FontStyle.italic,
+          height: 1.5,
+        ),
       );
+    }
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      spacing: 12,
+      runSpacing: 12,
       children: fotos.map((path) {
         return ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: Image.file(
             File(path),
-            width: 80,
-            height: 80,
+            width: 100,
+            height: 100,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+            errorBuilder: (_, __, ___) => Container(
+              width: 100,
+              height: 100,
+              color: Colors.grey.shade200,
+              child: const Icon(
+                Icons.broken_image,
+                color: Colors.grey,
+                size: 40,
+              ),
+            ),
           ),
         );
       }).toList(),
