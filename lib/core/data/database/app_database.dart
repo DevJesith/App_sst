@@ -13,7 +13,7 @@ class AppDatabase {
 
   /// Obtiene la instancia de la base de datos. Si no existe, la inicializa
   Future<Database> get database async {
-    if (_db != null) return _db!;
+    if (_db != null && _db!.isOpen) return _db!;
     _db = await _initDB();
     return _db!;
   }

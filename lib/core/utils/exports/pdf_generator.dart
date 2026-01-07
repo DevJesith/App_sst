@@ -1,3 +1,4 @@
+import 'package:app_sst/core/data/database/app_database.dart';
 import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -32,8 +33,7 @@ class PdfGenerator {
       final pdf = pw.Document();
 
       // 2. Abrir la base de datos
-      final dbPath = await getDatabasesPath();
-      final db = await openDatabase(join(dbPath, 'appsst_final_v1.db'));
+      final db = await AppDatabase().database;
 
       // -------------------------------------------------
       // 3. EXTRACCION DE DATOS
@@ -42,8 +42,15 @@ class PdfGenerator {
       // Usuarios: Consulta simple
       final usuarios = await db.query('usuarios');
 
-      // Accidentes: Consulta simple
-      final accidentes = await db.query('Accidente');
+      // Accidentes: JOIN doble
+      final accidentes = await db.rawQuery('''
+        SELECT a.*, 
+               p.Nombre as nombre_proyecto, 
+               c.Nombre as nombre_contratista
+        FROM Accidente a
+        LEFT JOIN Proyecto p ON a.Proyecto_id = p.id
+        LEFT JOIN Contratista c ON a.Contratista_id = c.id 
+      ''');
 
       // Incidentes: Usamos LEFT JOIN para obtener el nombre del Proyecto
       // en lugar de mosrtar solo el ID numero (Proyecto_id).
@@ -221,8 +228,8 @@ class PdfGenerator {
             (e) => [
               e['id'].toString(),
               e['eventualidad'] ?? '',
-              e['proyecto'] ?? '',
-              e['contratista'] ?? '',
+              e['nombre_proyecto'] ?? '',
+              e['nombre_contratista'] ?? '',
               e['estado'] ?? '',
             ],
           )
