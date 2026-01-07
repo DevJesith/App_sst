@@ -7,32 +7,48 @@ import 'package:intl/intl.dart';
 import '../../domain/entities/accidente.dart';
 
 class AccidenteDetalleScreen extends HookConsumerWidget {
-  final Accidente accidente;
+  final Accidente accidente; 
 
   const AccidenteDetalleScreen({super.key, required this.accidente});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    // --- LOGICA DE ACTUALIZACION EN TIEMPO REAL ---
+    final listaAccidentes = ref.watch(
+      accidentesListProvider,
+    ); 
+
+    Accidente accidenteMostrado = accidente;
+
+    try {
+      accidenteMostrado = listaAccidentes.firstWhere(
+        (e) => e.id == accidente.id,
+      );
+    } catch (_) {
+      // Si falla, mantenemos el original
+    }
+    // ----------------------------------------------
+
     // 1. Formateo de fecha
     final fechaFormateada = DateFormat(
       'dd/MM/yyyy HH:mm',
-    ).format(accidente.fechaRegistro);
+    ).format(accidenteMostrado.fechaRegistro);
 
     // 2. Estados locales para los nombres (Hooks)
     final nombreProyecto = useState<String>('Cargando...');
     final nombreContratista = useState<String>('Cargando...');
 
-    // 3. Efecto para cargar los nombres reales basados en los IDs
+    // 3. Efecto para cargar los nombres reales
+    // IMPORTANTE: Dependencia [accidenteMostrado] para recargar si cambia el proyecto
     useEffect(() {
       Future<void> cargarNombres() async {
         try {
-          // Obtenemos los casos de uso
           final getProyectos = ref.read(getProyectosUseCaseProvider);
           final getAllContratistas = ref.read(
             getAllContratistasUseCaseProvider,
           );
 
-          // Ejecutamos las consultas en paralelo para mayor velocidad
           final resultados = await Future.wait([
             getProyectos(),
             getAllContratistas(),
@@ -44,21 +60,21 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
           // --- BUSCAR NOMBRE DEL PROYECTO ---
           try {
             final proyectoEncontrado = listaProyectos.firstWhere(
-              (p) => p['id'] == accidente.proyectoId,
+              (p) => p['id'] == accidenteMostrado.proyectoId,
             );
-            // Intentamos obtener 'Nombre' o 'nombre' por si acaso cambia la mayúscula en la BD
             nombreProyecto.value =
                 proyectoEncontrado['Nombre'] ??
                 proyectoEncontrado['nombre'] ??
                 'Sin Nombre';
           } catch (_) {
-            nombreProyecto.value = 'Desconocido (ID: ${accidente.proyectoId})';
+            nombreProyecto.value =
+                'Desconocido (ID: ${accidenteMostrado.proyectoId})';
           }
 
           // --- BUSCAR NOMBRE DEL CONTRATISTA ---
           try {
             final contratistaEncontrado = listaContratistas.firstWhere(
-              (c) => c['id'] == accidente.contratistaId,
+              (c) => c['id'] == accidenteMostrado.contratistaId,
             );
             nombreContratista.value =
                 contratistaEncontrado['Nombre'] ??
@@ -66,10 +82,9 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
                 'Sin Nombre';
           } catch (_) {
             nombreContratista.value =
-                'Desconocido (ID: ${accidente.contratistaId})';
+                'Desconocido (ID: ${accidenteMostrado.contratistaId})';
           }
         } catch (e) {
-          debugPrint("Error al cargar maestros: $e");
           nombreProyecto.value = "Error de carga";
           nombreContratista.value = "Error de carga";
         }
@@ -77,7 +92,7 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
 
       cargarNombres();
       return null;
-    }, const []); // Se ejecuta una sola vez al montar el widget
+    }, [accidenteMostrado]); // <--- SE EJECUTA SI CAMBIA EL ACCIDENTE
 
     // 4. Logica para eliminar
     Future<void> confirmarEliminacion() async {
@@ -112,11 +127,11 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
       }
 
       try {
-        if (accidente.id == null) throw Exception("El ID es nulo");
+        if (accidenteMostrado.id == null) throw Exception("El ID es nulo");
 
         await ref
             .read(accidenteNotifierProvider.notifier)
-            .eliminarAccidente(accidente.id!);
+            .eliminarAccidente(accidenteMostrado.id!);
 
         if (context.mounted) {
           Navigator.of(context).pop(); // Cerrar loading
@@ -130,7 +145,7 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
         }
       } catch (e) {
         if (context.mounted) {
-          Navigator.of(context).pop(); // Cerrar loading
+          Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
           );
@@ -146,8 +161,7 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
         foregroundColor: Colors.white,
         elevation: 2,
         actions: [
-          // Solo permitimos editar/eliminar si NO está sincronizado
-          if (accidente.sincronizado == 0) ...[
+          if (accidenteMostrado.sincronizado == 0) ...[
             IconButton(
               icon: const Icon(Icons.edit),
               tooltip: 'Editar reporte',
@@ -155,7 +169,9 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => AccidenteFormScreen(accidente: accidente),
+                    // Pasamos el actualizado
+                    builder: (_) =>
+                        AccidenteFormScreen(accidente: accidenteMostrado),
                   ),
                 );
               },
@@ -186,7 +202,7 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    accidente.eventualidad,
+                    accidenteMostrado.eventualidad,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -204,9 +220,9 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      accidente.estado,
+                      accidenteMostrado.estado,
                       style: TextStyle(
-                        color: _getEstadoColor(accidente.estado),
+                        color: _getEstadoColor(accidenteMostrado.estado),
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -221,62 +237,56 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Tarjeta 1: Información General
                   _buildInfoCard(
                     title: 'Información General',
                     icon: Icons.info_outline,
                     children: [
-                      // AQUI USAMOS LOS VALORES CARGADOS POR EL HOOK
                       _buildInfoRow('Proyecto', nombreProyecto.value),
                       _buildInfoRow('Contratista', nombreContratista.value),
-                      _buildInfoRow('Mes', accidente.mes),
+                      _buildInfoRow('Mes', accidenteMostrado.mes),
                       _buildInfoRow('Fecha Registro', fechaFormateada),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Tarjeta 2: Descripción
                   _buildInfoCard(
                     title: 'Descripción',
                     icon: Icons.description_outlined,
                     children: [
                       Text(
-                        accidente.descripcion,
+                        accidenteMostrado.descripcion,
                         style: const TextStyle(fontSize: 16, height: 1.5),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Tarjeta 3: Incapacidad
                   _buildInfoCard(
                     title: 'Incapacidad',
                     icon: Icons.medical_services_outlined,
                     children: [
                       _buildInfoRow(
                         'Días de Incapacidad',
-                        '${accidente.diasIncapacidad} día${accidente.diasIncapacidad != 1 ? 's' : ''}',
+                        '${accidenteMostrado.diasIncapacidad} día${accidenteMostrado.diasIncapacidad != 1 ? 's' : ''}',
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Tarjeta 4: Avances
                   _buildInfoCard(
                     title: 'Avances',
                     icon: Icons.timeline_outlined,
                     children: [
                       Text(
-                        accidente.avances.isEmpty
+                        accidenteMostrado.avances.isEmpty
                             ? 'Sin avances registrados'
-                            : accidente.avances,
+                            : accidenteMostrado.avances,
                         style: const TextStyle(fontSize: 16, height: 1.5),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Tarjeta 5: Sincronización
                   _buildInfoCard(
                     title: 'Sincronización',
                     icon: Icons.cloud_sync,
@@ -284,22 +294,22 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
                       Row(
                         children: [
                           Icon(
-                            accidente.sincronizado == 1
+                            accidenteMostrado.sincronizado == 1
                                 ? Icons.check_circle
                                 : Icons.pending,
-                            color: accidente.sincronizado == 1
+                            color: accidenteMostrado.sincronizado == 1
                                 ? Colors.green
                                 : Colors.orange,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            accidente.sincronizado == 1
+                            accidenteMostrado.sincronizado == 1
                                 ? 'Sincronizado'
-                                : 'Pendiente de envío',
+                                : 'Pendiente de sincronización',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: accidente.sincronizado == 1
+                              color: accidenteMostrado.sincronizado == 1
                                   ? Colors.green
                                   : Colors.orange,
                             ),
@@ -317,8 +327,7 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
     );
   }
 
-  // --- WIDGETS AUXILIARES ---
-
+  // ... (Widgets auxiliares y _getEstadoColor igual que antes)
   Widget _buildInfoCard({
     required String title,
     required IconData icon,
