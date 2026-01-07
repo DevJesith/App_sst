@@ -35,7 +35,7 @@ class CapacitacionesEnviadosScreen extends HookConsumerWidget {
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text('Mis Capacitaciones'),
-        backgroundColor: Colors.orange.shade700, // Color temático
+        backgroundColor: Colors.teal.shade700, 
         foregroundColor: Colors.white,
         elevation: 2,
       ),
@@ -61,12 +61,12 @@ class CapacitacionesEnviadosScreen extends HookConsumerWidget {
             )
           : Column(
               children: [
-                // --- HEADER ESTADÍSTICAS (Igual a Accidente) ---
+                // --- HEADER ESTADÍSTICAS---
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.orange.shade700,
+                    color: Colors.teal.shade700,
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(30),
                       bottomRight: Radius.circular(30),
@@ -146,7 +146,7 @@ class CapacitacionesEnviadosScreen extends HookConsumerWidget {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        capacitacion.descripcion, // Tema
+                                        capacitacion.descripcion, 
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -160,10 +160,9 @@ class CapacitacionesEnviadosScreen extends HookConsumerWidget {
                                         vertical: 6,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: Colors.white, // Fondo blanco
+                                        color: Colors.white, 
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          // ✅ AQUÍ ESTÁ LA MAGIA DEL BORDE
                                           color: capacitacion.sincronizado == 1
                                               ? Colors
                                                     .green // Verde si está completo

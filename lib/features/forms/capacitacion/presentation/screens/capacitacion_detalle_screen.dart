@@ -14,36 +14,69 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fechaFormateada = DateFormat('dd/MM/yyyy HH:mm').format(capacitacion.fechaRegistro);
 
-    // --- LÓGICA PARA TRAER NOMBRES REALES (PROYECTO/CONTRATISTA) ---
+    // --- LOGICA DE ACTUALIZACION EN TIEMPO REAL ---
+    final listaCapacitaciones = ref.watch(
+      capacitacionesListProvider,
+    ); 
+    Capacitacion capacitacionMostrada = capacitacion;
+
+    try {
+      capacitacionMostrada = listaCapacitaciones.firstWhere(
+        (e) => e.id == capacitacion.id,
+      );
+    } catch (_) {}
+    // ----------------------------------------------
+
+    final fechaFormateada = DateFormat(
+      'dd/MM/yyyy HH:mm',
+    ).format(capacitacionMostrada.fechaRegistro);
+
+    // --- LOGICA PARA TRAER NOMBRES REALES ---
     final getProyectos = ref.read(getProyectosCapacitacionUseCaseProvider);
-    final getContratistas = ref.read(getContratistasCapacitacionUseCaseProvider);
+    final getContratistas = ref.read(
+      getContratistasCapacitacionUseCaseProvider,
+    );
 
     final nombreProyecto = useState('Cargando...');
     final nombreContratista = useState('Cargando...');
 
+    // Dependencia [capacitacionMostrada]
     useEffect(() {
       Future.microtask(() async {
         try {
           // 1. Buscar Proyecto
           final proyectos = await getProyectos();
-          final p = proyectos.firstWhere((e) => e['id'] == capacitacion.idProyecto, orElse: () => {});
-          nombreProyecto.value = p['Nombre'] ?? p['nombre'] ?? 'ID: ${capacitacion.idProyecto}';
+          final p = proyectos.firstWhere(
+            (e) => e['id'] == capacitacionMostrada.idProyecto,
+            orElse: () => {},
+          );
+          nombreProyecto.value =
+              p['Nombre'] ??
+              p['nombre'] ??
+              'ID: ${capacitacionMostrada.idProyecto}';
 
           // 2. Buscar Contratista
-          final contratistas = await getContratistas(capacitacion.idProyecto);
-          final c = contratistas.firstWhere((e) => e['id'] == capacitacion.idContratista, orElse: () => {});
-          nombreContratista.value = c['Nombre'] ?? c['nombre'] ?? 'ID: ${capacitacion.idContratista}';
+          final contratistas = await getContratistas(
+            capacitacionMostrada.idProyecto,
+          );
+          final c = contratistas.firstWhere(
+            (e) => e['id'] == capacitacionMostrada.idContratista,
+            orElse: () => {},
+          );
+          nombreContratista.value =
+              c['Nombre'] ??
+              c['nombre'] ??
+              'ID: ${capacitacionMostrada.idContratista}';
         } catch (_) {
           nombreProyecto.value = 'No encontrado';
           nombreContratista.value = 'No encontrado';
         }
       });
       return null;
-    }, []);
+    }, [capacitacionMostrada]); // <--- SE EJECUTA SI CAMBIA LA CAPACITACION
 
-    // --- LÓGICA DE ELIMINAR (IGUAL A ACCIDENTE) ---
+    // --- LOGICA DE ELIMINAR ---
     Future<void> confirmarEliminacion() async {
       final confirmar = await showDialog<bool>(
         context: context,
@@ -51,8 +84,15 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
           title: const Text('¿Eliminar reporte?'),
           content: const Text('Esta acción no se puede deshacer.'),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-            TextButton(onPressed: () => Navigator.pop(context, true), style: TextButton.styleFrom(foregroundColor: Colors.red), child: const Text('Eliminar')),
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Eliminar'),
+            ),
           ],
         ),
       );
@@ -60,21 +100,34 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
       if (confirmar != true) return;
 
       if (context.mounted) {
-        showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const Center(child: CircularProgressIndicator()),
+        );
       }
 
       try {
-        await ref.read(capacitacionNotifierProvider.notifier).deleteCapacitacion(capacitacion.id!);
-        
+        await ref
+            .read(capacitacionNotifierProvider.notifier)
+            .deleteCapacitacion(capacitacionMostrada.id!);
+
         if (context.mounted) {
-          Navigator.pop(context); // Loading
-          Navigator.pop(context); // Pantalla
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Eliminado correctamente'), backgroundColor: Colors.green));
+          Navigator.pop(context);
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Eliminado correctamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
         }
       } catch (e) {
         if (context.mounted) {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          );
         }
       }
     }
@@ -83,31 +136,39 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text('Detalle Capacitación'),
-        backgroundColor: Colors.orange.shade700,
+        backgroundColor: Colors.teal.shade700,
         foregroundColor: Colors.white,
         elevation: 2,
         actions: [
-          if (capacitacion.sincronizado == 0) ...[
+          if (capacitacionMostrada.sincronizado == 0) ...[
             IconButton(
               icon: const Icon(Icons.edit),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CapacitacionFormScreen(capacitacion: capacitacion))),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  // Pasamos el actualizado
+                  builder: (_) => CapacitacionFormScreen(
+                    capacitacion: capacitacionMostrada,
+                  ),
+                ),
+              ),
             ),
             IconButton(
               icon: const Icon(Icons.delete),
               onPressed: confirmarEliminacion,
             ),
-          ]
+          ],
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // --- HEADER (Igual a Accidente) ---
+            // --- HEADER ---
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.orange.shade700,
+                color: Colors.teal.shade700,
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(30),
                   bottomRight: Radius.circular(30),
@@ -117,18 +178,33 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    capacitacion.descripcion, // Tema
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                    capacitacionMostrada.descripcion, 
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     child: Text(
-                      capacitacion.sincronizado == 1 ? "Sincronizado" : "Pendiente",
+                      capacitacionMostrada.sincronizado == 1
+                          ? "Sincronizado"
+                          : "Pendiente de sincronización",
                       style: TextStyle(
-                        color: capacitacion.sincronizado == 1 ? Colors.green : Colors.orange,
-                        fontSize: 14, fontWeight: FontWeight.bold
+                        color: capacitacionMostrada.sincronizado == 1
+                            ? Colors.green
+                            : Colors.orange,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -156,30 +232,47 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                     title: 'Detalles de la Sesión',
                     icon: Icons.class_outlined,
                     children: [
-                      _buildInfoRow('Responsable', capacitacion.responsable),
-                      _buildInfoRow('N° Capacitación', '${capacitacion.numeroCapacita}'),
-                      _buildInfoRow('Asistentes', '${capacitacion.numeroPersonas}'),
+                      _buildInfoRow(
+                        'Responsable',
+                        capacitacionMostrada.responsable,
+                      ),
+                      _buildInfoRow(
+                        'N° Capacitación',
+                        '${capacitacionMostrada.numeroCapacita}',
+                      ),
+                      _buildInfoRow(
+                        'Asistentes',
+                        '${capacitacionMostrada.numeroPersonas}',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
                   _buildInfoCard(
                     title: 'Estado de Sincronización',
-                    icon: Icons.sync,
+                    icon: Icons.cloud_sync,
                     children: [
                       Row(
                         children: [
                           Icon(
-                            capacitacion.sincronizado == 1 ? Icons.check_circle : Icons.pending,
-                            color: capacitacion.sincronizado == 1 ? Colors.green : Colors.orange,
+                            capacitacionMostrada.sincronizado == 1
+                                ? Icons.check_circle
+                                : Icons.pending,
+                            color: capacitacionMostrada.sincronizado == 1
+                                ? Colors.green
+                                : Colors.orange,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            capacitacion.sincronizado == 1 ? 'Sincronizado con la nube' : 'Pendiente de envío (Editable)',
+                            capacitacionMostrada.sincronizado == 1
+                                ? 'Sincronizado'
+                                : 'Pendiente de sincronización',
                             style: TextStyle(
                               fontSize: 16,
-                              color: capacitacion.sincronizado == 1 ? Colors.green : Colors.orange,
+                              color: capacitacionMostrada.sincronizado == 1
+                                  ? Colors.green
+                                  : Colors.orange,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -196,8 +289,12 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
     );
   }
 
-  // --- WIDGETS AUXILIARES (Copiados de Accidente) ---
-  Widget _buildInfoCard({required String title, required IconData icon, required List<Widget> children}) {
+  // ... (Widgets auxiliares igual que antes)
+  Widget _buildInfoCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -208,9 +305,15 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.orange.shade700, size: 24),
+                Icon(icon, color: Colors.teal.shade700, size: 24),
                 const SizedBox(width: 12),
-                Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -227,9 +330,25 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex: 2, child: Text(label, style: TextStyle(fontSize: 14, color: Colors.grey.shade600, fontWeight: FontWeight.w500))),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
           const SizedBox(width: 8),
-          Expanded(flex: 3, child: Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+          ),
         ],
       ),
     );
