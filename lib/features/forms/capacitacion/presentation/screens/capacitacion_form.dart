@@ -35,6 +35,9 @@ class CapacitacionFormScreen extends HookConsumerWidget {
     final responsableController = useTextEditingController(
       text: capacitacion?.responsable ?? '',
     );
+    final temaController = useTextEditingController(
+      text: capacitacion?.tema ?? '',
+    );
 
     // --- ESTADO DEL FORMULARIO ---
     final formState = ref.watch(capacitacionFormNotifierProvider);
@@ -103,6 +106,7 @@ class CapacitacionFormScreen extends HookConsumerWidget {
         numeroCapacita: int.tryParse(numeroCapacitaController.text) ?? 0,
         numeroPersonas: int.tryParse(numeroPersonasController.text) ?? 0,
         responsable: responsableController.text,
+        tema: temaController.text,
         fechaRegistro: DateTime.now(),
         usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1,
       );
@@ -241,6 +245,20 @@ class CapacitacionFormScreen extends HookConsumerWidget {
                 ),
                 const SizedBox(height: 20),
 
+                // Campo: Tema
+                inputReutilizables(
+                  controller: temaController,
+                  nameInput: 'Tema',
+                  maxLenght: 50,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Este campo es obligatorio';
+                    }
+                    return null;
+                  },
+                ), 
+                const SizedBox(height: 20),
+
                 // Campo: Descripción
                 inputReutilizables(
                   controller: descripcionController,
@@ -333,7 +351,6 @@ class CapacitacionFormScreen extends HookConsumerWidget {
                 ),
 
                 const SizedBox(height: 30),
-
               ],
             ),
           ),

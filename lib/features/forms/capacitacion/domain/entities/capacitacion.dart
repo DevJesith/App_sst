@@ -11,6 +11,7 @@ class Capacitacion {
   final int numeroCapacita;
   final int numeroPersonas;
   final String responsable;
+  final String tema;
   final DateTime fechaRegistro;
   final int sincronizado;
   final int usuarioId;
@@ -23,6 +24,7 @@ class Capacitacion {
     required this.numeroCapacita,
     required this.numeroPersonas,
     required this.responsable,
+    required this.tema,
     required this.fechaRegistro,
     this.sincronizado = 0,
     required this.usuarioId,

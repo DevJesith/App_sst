@@ -146,7 +146,7 @@ class CapacitacionesEnviadosScreen extends HookConsumerWidget {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        capacitacion.descripcion, 
+                                        capacitacion.tema, 
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,

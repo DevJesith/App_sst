@@ -244,8 +244,9 @@ class AppDatabase {
         Numero_capacita INTEGER,
         Numero_personas INTEGER,
         Responsable TEXT,
-        Proyecto_id INTEGER,      -- ID Relacional
-        Contratista_id INTEGER,   -- ID Relacional
+        Tema TEXT,
+        Proyecto_id INTEGER,     
+        Contratista_id INTEGER,   
         fecha_registro TEXT,      
         sincronizado INTEGER DEFAULT 0,
         Usuarios_id INTEGER,

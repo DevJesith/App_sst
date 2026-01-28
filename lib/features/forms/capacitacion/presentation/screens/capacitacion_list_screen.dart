@@ -142,6 +142,15 @@ class CapacitacionListScreen extends HookConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
+                                  cap.tema,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
                                   cap.descripcion,
                                   style: const TextStyle(
                                     fontSize: 16,

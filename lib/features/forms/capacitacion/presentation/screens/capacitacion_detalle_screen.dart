@@ -178,7 +178,7 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    capacitacionMostrada.descripcion, 
+                    capacitacionMostrada.tema, 
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -233,6 +233,14 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                     icon: Icons.class_outlined,
                     children: [
                       _buildInfoRow(
+                        'Tema',
+                        capacitacionMostrada.tema,
+                      ),
+                      _buildInfoRow(
+                        'Descripcion',
+                        capacitacionMostrada.descripcion,
+                      ),
+                      _buildInfoRow(
                         'Responsable',
                         capacitacionMostrada.responsable,
                       ),
@@ -241,7 +249,7 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                         '${capacitacionMostrada.numeroCapacita}',
                       ),
                       _buildInfoRow(
-                        'Asistentes',
+                        'N° Personas',
                         '${capacitacionMostrada.numeroPersonas}',
                       ),
                     ],
