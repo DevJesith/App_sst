@@ -44,7 +44,6 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
       final model = IncidenteModel(
         eventualidad: incidente.eventualidad,
         proyectoId: incidente.proyectoId,
-        mes: incidente.mes,
         descripcion: incidente.descripcion,
         diasIncapacidad: incidente.diasIncapacidad,
         avances: incidente.avances,
@@ -66,7 +65,6 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
         id: incidente.id,
         eventualidad: incidente.eventualidad,
         proyectoId: incidente.proyectoId,
-        mes: incidente.mes,
         descripcion: incidente.descripcion,
         diasIncapacidad: incidente.diasIncapacidad,
         avances: incidente.avances,

@@ -3,7 +3,6 @@ class Incidente {
   final int? id;
   final String eventualidad;
   final int proyectoId;
-  final String mes;
   final String descripcion;
   final int diasIncapacidad;
   final String avances;
@@ -16,7 +15,6 @@ class Incidente {
     this.id,
     required this.eventualidad,
     required this.proyectoId,
-    required this.mes,
     required this.descripcion,
     required this.diasIncapacidad,
     required this.avances,

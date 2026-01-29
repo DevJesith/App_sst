@@ -24,7 +24,6 @@ class IncidenteFormScreen extends HookConsumerWidget {
     final eventualidadController = useTextEditingController(
       text: incidente?.eventualidad ?? '',
     );
-    final mesController = useTextEditingController(text: incidente?.mes ?? '');
     final descripcionController = useTextEditingController(
       text: incidente?.descripcion ?? '',
     );
@@ -89,7 +88,6 @@ class IncidenteFormScreen extends HookConsumerWidget {
         id: incidente?.id, // Mantiene el ID si es edición
         eventualidad: eventualidadController.text,
         proyectoId: formState.proyectoId!,
-        mes: mesController.text,
         descripcion: descripcionController.text,
         diasIncapacidad: int.tryParse(diasIncapacidadController.text) ?? 0,
         avances: avancesController.text,
@@ -126,7 +124,6 @@ class IncidenteFormScreen extends HookConsumerWidget {
           // Limpiar todo
           formNotifier.reset();
           eventualidadController.clear();
-          mesController.clear();
           descripcionController.clear();
           diasIncapacidadController.clear();
           avancesController.clear();

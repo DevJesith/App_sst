@@ -208,7 +208,7 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
                     icon: Icons.info_outline,
                     children: [
                       _buildInfoRow('Proyecto', nombreProyecto.value),
-                      _buildInfoRow('Mes', incidenteMostrado.mes),
+                      // _buildInfoRow('Mes', incidenteMostrado.mes),
                       _buildInfoRow('Fecha de Registro', fechaFormateada),
                     ],
                   ),
