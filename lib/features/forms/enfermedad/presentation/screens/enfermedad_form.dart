@@ -28,8 +28,6 @@ class EnfermedadFormScreen extends HookConsumerWidget {
       text: enfermedad?.eventualidad ?? '',
     );
 
-    final mesController = useTextEditingController(text: enfermedad?.mes ?? '');
-
     final descripcionController = useTextEditingController(
       text: enfermedad?.descripcion ?? '',
     );
@@ -153,7 +151,6 @@ class EnfermedadFormScreen extends HookConsumerWidget {
         proyectoId: formState.proyectoId!,
         contratistaId: formState.contratistaId!,
         trabajadorId: formState.trabajadorId!,
-        mes: mesController.text,
         descripcion: descripcionController.text,
         diasIncapacidad: int.tryParse(diasIncapacidadController.text) ?? 0,
         avances: avancesController.text,
@@ -195,8 +192,6 @@ class EnfermedadFormScreen extends HookConsumerWidget {
           //Limpiar formulario
           formNotifier.reset();
           eventualidadController.clear();
-          // contratistaController.clear();
-          mesController.clear();
           descripcionController.clear();
           diasIncapacidadController.clear();
           avancesController.clear();

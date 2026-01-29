@@ -9,7 +9,6 @@ class Enfermedad {
   final int proyectoId;
   final int contratistaId;
   final int trabajadorId;
-  final String mes;
   final String descripcion;
   final int diasIncapacidad;
   final String avances;
@@ -24,7 +23,6 @@ class Enfermedad {
     required this.proyectoId,
     required this.contratistaId,
     required this.trabajadorId,
-    required this.mes,
     required this.descripcion,
     required this.diasIncapacidad,
     required this.avances,
