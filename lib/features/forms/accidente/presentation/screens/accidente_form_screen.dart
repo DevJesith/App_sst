@@ -31,7 +31,6 @@ class AccidenteFormScreen extends HookConsumerWidget {
     final eventualidadController = useTextEditingController(
       text: accidente?.eventualidad ?? '',
     );
-    final mesController = useTextEditingController(text: accidente?.mes ?? '');
     final descripcionController = useTextEditingController(
       text: accidente?.descripcion ?? '',
     );
@@ -116,7 +115,6 @@ class AccidenteFormScreen extends HookConsumerWidget {
         eventualidad: eventualidadController.text,
         proyectoId: formState.proyectoId!,
         contratistaId: formState.contratistaId!,
-        mes: mesController.text,
         descripcion: descripcionController.text,
         diasIncapacidad: int.tryParse(diasIncapacidadController.text) ?? 0,
         avances: avancesController.text,
@@ -165,7 +163,6 @@ class AccidenteFormScreen extends HookConsumerWidget {
           // Limpiar formulario
           formNotifier.reset();
           eventualidadController.clear();
-          mesController.clear();
           descripcionController.clear();
           diasIncapacidadController.clear();
           avancesController.clear();
@@ -275,19 +272,6 @@ class AccidenteFormScreen extends HookConsumerWidget {
                     formNotifier.setContratistaId(contratista['id'] as int);
                   },
                   validator: (value) => value == null ? 'Obligatorio' : null,
-                ),
-                const SizedBox(height: 20),
-
-                /// Campo: Mes
-                inputReutilizables(
-                  controller: mesController,
-                  nameInput: "Mes",
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Este campo es obligatorio';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 20),
 

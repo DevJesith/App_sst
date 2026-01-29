@@ -243,7 +243,7 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
                     children: [
                       _buildInfoRow('Proyecto', nombreProyecto.value),
                       _buildInfoRow('Contratista', nombreContratista.value),
-                      _buildInfoRow('Mes', accidenteMostrado.mes),
+                      // _buildInfoRow('Mes', accidenteMostrado.mes),
                       _buildInfoRow('Fecha Registro', fechaFormateada),
                     ],
                   ),

@@ -9,7 +9,6 @@ class Accidente {
   final String eventualidad;
   final int proyectoId;
   final int contratistaId;
-  final String mes;
   final String descripcion;
   final int diasIncapacidad;
   final String avances;
@@ -25,7 +24,6 @@ class Accidente {
     required this.eventualidad,
     required this.proyectoId,
     required this.contratistaId,
-    required this.mes,
     required this.descripcion,
     required this.diasIncapacidad,
     required this.avances,
