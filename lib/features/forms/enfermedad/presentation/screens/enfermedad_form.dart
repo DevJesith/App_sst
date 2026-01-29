@@ -8,6 +8,7 @@ import 'package:app_sst/shared/widgets/inputs_widgets.dart';
 import 'package:app_sst/shared/widgets/lista_input_wigets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -371,9 +372,19 @@ class EnfermedadFormScreen extends HookConsumerWidget {
                   controller: diasIncapacidadController,
                   nameInput: 'Dias de incapacidad',
                   keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Este campo es obligatorio';
+                    }
+                    if (int.tryParse(value) == null) {
+                      return "Debe ser un número";
+                    }
+                    final numero = int.tryParse(value);
+                    if ( numero == null || numero <= 0) {
+                      return 'Debe ser un numero mayor a 0';
                     }
                     return null;
                   },

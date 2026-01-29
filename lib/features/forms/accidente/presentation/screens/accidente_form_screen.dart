@@ -3,6 +3,7 @@ import 'package:app_sst/services/connectivity_service.dart';
 import 'package:app_sst/services/sync_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/widgets/fecha_input_widgets.dart';
@@ -309,12 +310,19 @@ class AccidenteFormScreen extends HookConsumerWidget {
                   controller: diasIncapacidadController,
                   nameInput: "Días de incapacidad",
                   keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Completa el campo";
                     }
                     if (int.tryParse(value) == null) {
                       return "Debe ser un número";
+                    }
+                    final numero = int.tryParse(value);
+                    if ( numero == null || numero <= 0) {
+                      return 'Debe ser un número mayor a 0';
                     }
                     return null;
                   },

@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Campo de texto generico y reutilizable para formularios.
-/// 
+///
 /// Encapsula un [TextFormField] con estilos predefinidos
 /// y permite configurar validaciones, iconos y tipo de teclado.
 /// ignore: camel_case_types
@@ -17,6 +18,7 @@ class inputReutilizables extends StatelessWidget {
   final int? maxLenght;
   final Widget? suffixIcon;
   final Widget? prefixIcon;
+  final List<TextInputFormatter>? inputFormatters;
 
   /// Indica si el campo es de solo lectura (no editable)
   /// Por defecto es 'false'.
@@ -34,7 +36,8 @@ class inputReutilizables extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.suffixIcon,
     this.prefixIcon,
-    this.readOnly = false
+    this.readOnly = false,
+    this.inputFormatters,
   }) : super(key: key);
 
   @override
@@ -63,6 +66,7 @@ class inputReutilizables extends StatelessWidget {
           maxLines: maxLines,
           maxLength: maxLenght,
           readOnly: readOnly,
+          inputFormatters: inputFormatters ?? [],
           decoration:
               decoration ??
               InputDecoration(

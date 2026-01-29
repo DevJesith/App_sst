@@ -315,7 +315,7 @@ class GestionFormScreen extends HookConsumerWidget {
 
                 inputReutilizables(
                   controller: eppController,
-                  nameInput: 'Epp',
+                  nameInput: 'EPP',
                   validator: (value) => value == null || value.isEmpty
                       ? 'Este campo es obligatorio'
                       : null,
