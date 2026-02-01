@@ -12,6 +12,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+/// Pantalla para llenar el formulario de incidente.
+/// Utiliza Riverpod para manejar estado y validación.
 class IncidenteFormScreen extends HookConsumerWidget {
   final Incidente? incidente;
 
@@ -21,7 +23,10 @@ class IncidenteFormScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
 
-    // Controladores de texto
+    // ----------------------------------------
+    // 1. CONTROLADORES DE TEXTO
+    // ----------------------------------------
+
     final eventualidadController = useTextEditingController(
       text: incidente?.eventualidad ?? '',
     );
@@ -35,18 +40,28 @@ class IncidenteFormScreen extends HookConsumerWidget {
       text: incidente?.avances ?? '',
     );
 
+    // ----------------------------------------
+    // 2. ESTADO Y PROVIDERS
+    // ----------------------------------------
+
     // Estado del formulario
     final formState = ref.watch(incidenteFormNotifierProvider);
     final formNotifier = ref.read(incidenteFormNotifierProvider.notifier);
+
+    // Estado de envio
     final isSubmitting = ref.watch(incidentesSubmittingProvider);
 
     final estado = ["Pendiente", "En proceso", "Completado"];
 
-    // Mapeo de nombres
+    // ----------------------------------------
+    // 3. MAPEO DE NOMBRES
+    // ----------------------------------------
+
     final nombresProyectos = formState.listaProyectos
         .map((e) => (e['Nombre'] ?? e['nombre']).toString())
         .toList();
 
+    // Buscar el nombre del proyecto seleccionado basado en su ID
     String? nombresProyectoSeleccionado;
     if (formState.proyectoId != null && formState.listaProyectos.isNotEmpty) {
       try {
@@ -57,11 +72,74 @@ class IncidenteFormScreen extends HookConsumerWidget {
       } catch (_) {}
     }
 
-    // --- INICIALIZACION / LIMPIEZA ---
+    // ----------------------------------------
+    // 4. LOGICA DE BARRA DE PROGRESO
+    //-----------------------------------------
+
+    // Estado local para el porcentaje (0.0 a 1.0)
+    final progreso = useState<double>(0.0);
+
+    /// Calcula que porcentaje del formulario ha sido diligenciado.
+    /// Se envuelve en [Future.microtask] para evitar errores de renderizado.
+    void calcularProgreso() {
+      Future.microtask(() {
+        // Total de campos
+        double totalCampos = 7.0;
+        int llenos = 0;
+
+        // Verificamos campos de texto
+        if (eventualidadController.text.isNotEmpty) llenos++;
+        if (descripcionController.text.isNotEmpty) llenos++;
+        if (diasIncapacidadController.text.isNotEmpty) llenos++;
+        if (avancesController.text.isNotEmpty) llenos++;
+
+        // Verificamos campos de seleccion
+        if (formState.proyectoId != null) llenos++;
+        if (formState.fecha != null) llenos++;
+        if (formState.estado != null) llenos++;
+
+        // Calculamos el procentaje y aseguramos que este entre 0 y 1
+        progreso.value = (llenos / totalCampos).clamp(0.0, 1.0);
+      });
+    }
+
+    // EFECTO 1: Escuchar cambios en los campos de texto
+    useEffect(() {
+      // Creamos una funcion oyente
+      void listener() => calcularProgreso();
+
+      // Le ponemos como tal "oido" a cada controlador
+      eventualidadController.addListener(listener);
+      descripcionController.addListener(listener);
+      diasIncapacidadController.addListener(listener);
+      avancesController.addListener(listener);
+
+      // Limpieza para quitar los listeners al salir para liberar memoria
+      return () {
+        eventualidadController.removeListener(listener);
+        descripcionController.removeListener(listener);
+        diasIncapacidadController.removeListener(listener);
+        avancesController.removeListener(listener);
+      };
+    }, [formState]);
+
+    // EFECTO 2: Escucha Dropdowns y Fecha (Riverpod)
+    // Este efecto se ejecuta cada vez que 'formState' cambia
+    useEffect(() {
+      calcularProgreso();
+      return null;
+    }, [formState]);
+
+    // ----------------------------------------
+    // 5. LOGICA DE CARGA DE DATOS
+    // ---------------------------------------
+
+    /// Inicializacion
+    /// - Cargar datos si es edicion o limpiar si es nuevo
     useEffect(() {
       Future.microtask(() {
         if (incidente != null) {
-          // MODO EDICION: Cargar datos
+          // MODO EDICION: Cargar datos existentes al estado
           formNotifier.setProyectoId(incidente!.proyectoId);
           formNotifier.setEstado(incidente!.estado);
           formNotifier.setFecha(incidente!.fechaRegistro);
@@ -73,9 +151,15 @@ class IncidenteFormScreen extends HookConsumerWidget {
       return null;
     }, []);
 
+    // ----------------------------------------
+    // 6. FUNCION DE ENVIO (SUBMIT)
+    // ----------------------------------------
+
     Future<void> submit() async {
+      // 1. Validar formulario visual
       if (!formKey.currentState!.validate()) return;
 
+      // 2. Validar campos de estado
       if (formState.proyectoId == null ||
           formState.estado == null ||
           formState.fecha == null) {
@@ -85,6 +169,21 @@ class IncidenteFormScreen extends HookConsumerWidget {
         return;
       }
 
+      // 3. Validar que el progreso este al 100%
+      if (progreso.value < 1.0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Falta completar el formulario (${(progreso.value * 100).toInt()}%)',
+            ),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return; // Ayuda a detener el envio
+      }
+
+      // Crear entidad Incidente
       final nuevoIncidente = Incidente(
         id: incidente?.id, // Mantiene el ID si es edición
         eventualidad: eventualidadController.text,
@@ -97,6 +196,7 @@ class IncidenteFormScreen extends HookConsumerWidget {
         usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1,
       );
 
+      // Llamar al notifier para guardar en BD
       final notifier = ref.read(incidenteNotifierProvider.notifier);
       final success = incidente == null
           ? await notifier.crearIncidente(nuevoIncidente)
@@ -104,6 +204,7 @@ class IncidenteFormScreen extends HookConsumerWidget {
 
       if (context.mounted) {
         if (success) {
+          // Logica de sincronizacion automatica
           bool sincronizadoExitosamente = false;
           final hayInternet = await ConnectivityService.tieneInternet();
 
@@ -122,7 +223,7 @@ class IncidenteFormScreen extends HookConsumerWidget {
             }
           }
 
-          // Limpiar todo
+          // Limpiar formulario tras exito
           formNotifier.reset();
           eventualidadController.clear();
           descripcionController.clear();
@@ -160,170 +261,235 @@ class IncidenteFormScreen extends HookConsumerWidget {
       }
     }
 
+    /// Determina el color de la barra y el texto segun el porcentaje
+    Color getColorProgreso(double valor) {
+      if (valor < 0.5) return Colors.red; // Menos de 50
+      if (valor < 1.0) return Colors.orange; // Menos de 100
+      return Colors.green; // 100
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: Text(incidente == null ? "Nuevo Incidente" : "Editar Incidente"),
         leadingWidth: 50,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: formKey,
-              child: Column(
-                children: [
-                  const Text(
-                    "Incidente",
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Campo: Eventualidad
-                  inputReutilizables(
-                    controller: eventualidadController,
-                    nameInput: "Eventualidad",
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Dropdown: Proyecto
-                  ListaInputWigets(
-                    nameInput: 'Proyecto',
-                    label: 'Selecciona un proyecto',
-                    items: nombresProyectos,
-                    value: nombresProyectoSeleccionado,
-                    onChanged: (nombre) {
-                      final proyecto = formState.listaProyectos.firstWhere(
-                        (p) => (p['Nombre'] ?? p['nombre']) == nombre,
-                      );
-                      formNotifier.setProyectoId(proyecto['id'] as int);
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Campo: Fecha
-                  FechaInputWidgets(
-                    nameInput: 'Fecha',
-                    fecha: formState.fecha,
-                    label: 'Selecciona la fecha',
-                    onchanged: formNotifier.setFecha,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Campo: Descripcion
-                  inputReutilizables(
-                    controller: descripcionController,
-                    nameInput: 'Descripcion',
-                    maxLenght: 300,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Campo: Dias incapacidad
-                  inputReutilizables(
-                    controller: diasIncapacidadController,
-                    nameInput: 'Dias de incapacidad',
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly
-                    ],
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      if (int.tryParse(value) == null) {
-                        return "Debe ser un número";
-                      }
-                      final numero = int.tryParse(value);
-                      if (numero == null || numero <= 0) {
-                        return 'Debe ser un numero mayor a 0';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Campo: Avances
-                  inputReutilizables(
-                    controller: avancesController,
-                    nameInput: 'Avances',
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Dropdown: Estado
-                  ListaInputWigets(
-                    label: 'Seleccionar un estado',
-                    nameInput: 'Estado',
-                    items: estado,
-                    value: formState.estado,
-                    onChanged: formNotifier.setEstado,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Este campo es obligatorio';
-                      }
-
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 30),
-
-                  ElevatedButton(
-                    onPressed: isSubmitting ? null : submit,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 100,
+      body: Column(
+        children: [
+          /// Barra de Progreso
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Fila de textos
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Completado",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
                       ),
-                      backgroundColor: CupertinoColors.activeBlue,
                     ),
-                    child: isSubmitting
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            "Enviar reporte",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                    Text(
+                      "${(progreso.value * 100).toInt()}%",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: getColorProgreso(progreso.value),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Barra visual
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progreso.value,
+                    minHeight: 6,
+                    backgroundColor: Colors.grey.shade100,
+                    color: getColorProgreso(progreso.value),
                   ),
-                  const SizedBox(height: 30),
-                ],
+                ),
+              ],
+            ),
+          ),
+          // Linea divisoria para separar del formulario
+          Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
+
+          /// Formulario
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Incidente",
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Campo: Eventualidad
+                      inputReutilizables(
+                        controller: eventualidadController,
+                        nameInput: "Eventualidad",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Dropdown: Proyecto
+                      ListaInputWigets(
+                        nameInput: 'Proyecto',
+                        label: 'Selecciona un proyecto',
+                        items: nombresProyectos,
+                        value: nombresProyectoSeleccionado,
+                        onChanged: (nombre) {
+                          final proyecto = formState.listaProyectos.firstWhere(
+                            (p) => (p['Nombre'] ?? p['nombre']) == nombre,
+                          );
+                          formNotifier.setProyectoId(proyecto['id'] as int);
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Campo: Fecha
+                      FechaInputWidgets(
+                        nameInput: 'Fecha',
+                        fecha: formState.fecha,
+                        label: 'Selecciona la fecha',
+                        onchanged: formNotifier.setFecha,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Campo: Descripcion
+                      inputReutilizables(
+                        controller: descripcionController,
+                        nameInput: 'Descripcion',
+                        maxLenght: 300,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Campo: Dias incapacidad
+                      inputReutilizables(
+                        controller: diasIncapacidadController,
+                        nameInput: 'Dias de incapacidad',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return "Debe ser un número";
+                          }
+                          final numero = int.tryParse(value);
+                          if (numero == null || numero <= 0) {
+                            return 'Debe ser un numero mayor a 0';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Campo: Avances
+                      inputReutilizables(
+                        controller: avancesController,
+                        nameInput: 'Avances',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Dropdown: Estado
+                      ListaInputWigets(
+                        label: 'Seleccionar un estado',
+                        nameInput: 'Estado',
+                        items: estado,
+                        value: formState.estado,
+                        onChanged: formNotifier.setEstado,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Este campo es obligatorio';
+                          }
+
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 30),
+
+                      ElevatedButton(
+                        onPressed: isSubmitting ? null : submit,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 100,
+                          ),
+                          backgroundColor: CupertinoColors.activeBlue,
+                        ),
+                        child: isSubmitting
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text(
+                                "Enviar reporte",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
