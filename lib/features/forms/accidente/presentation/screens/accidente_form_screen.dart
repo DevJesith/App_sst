@@ -58,7 +58,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
     // ----------------------------------------
     // 3. MAPEO DE NOMBRES
     // ----------------------------------------
-    
+
     // Convertimos los mapas de la BD a listas de Strings para el widget visual
     final listaProyectosNombres = formState.listaProyectos
         .map((e) => (e['Nombre'] ?? e['nombre']).toString())
@@ -174,7 +174,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
     // ----------------------------------------
     // 6. FUNCION DE ENVIO (SUBMIT)
     //----------------------------------------
-    
+
     /// Funcion para enviar el formulario
     Future<void> submit() async {
       if (!formKey.currentState!.validate()) return;
@@ -358,202 +358,206 @@ class AccidenteFormScreen extends HookConsumerWidget {
           Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
 
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    children: [
-                      /// Titulo del formulario
-                      Text(
-                        accidente == null ? "Accidente" : "Editar Accidente",
-                        style: const TextStyle(
-                          fontSize: 32,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 30),
-
-                      // --- CAMPOS DEL FORMULARIO ---
-
-                      /// Campo: Eventualidad
-                      inputReutilizables(
-                        controller: eventualidadController,
-                        nameInput: "Eventualidad",
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Este campo es obligatorio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      /// Dropdown: Proyecto
-                      ListaInputWigets(
-                        nameInput: 'Proyecto',
-                        label: 'Selecciona una opción',
-                        items: listaProyectosNombres,
-                        value: nombreProyectoSeleccionado,
-                        onChanged: (nombre) {
-                          final proyecto = formState.listaProyectos.firstWhere(
-                            (p) => (p['Nombre'] ?? p['nombre']) == nombre,
-                          );
-                          formNotifier.setProyectoId(proyecto['id'] as int);
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Este campo es obligatorio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      /// Campo: Contratista
-                      ListaInputWigets(
-                        nameInput: 'Contratista',
-                        label: listaContratistasNombres.isEmpty
-                            ? 'Selecciona un proyecto primero'
-                            : 'Selecciona el contratista',
-                        items:
-                            listaContratistasNombres, // Solo muestra los validos
-                        value:
-                            nombreContratistaSeleccionado, // Usamos el del estado, no el controller
-                        onChanged: (nombre) {
-                          final contratista = formState.listaContratistas
-                              .firstWhere(
-                                (c) => (c['Nombre'] ?? c['nombre']) == nombre,
-                              );
-                          formNotifier.setContratistaId(
-                            contratista['id'] as int,
-                          );
-                        },
-                        validator: (value) =>
-                            value == null ? 'Obligatorio' : null,
-                      ),
-                      const SizedBox(height: 20),
-
-                      /// Selector de fecha
-                      FechaInputWidgets(
-                        fecha: formState.fecha,
-                        nameInput: 'Fecha',
-                        label: 'Selecciona la fecha',
-                        onchanged: formNotifier.setFecha,
-                        validator: (value) {
-                          if (value == null) {
-                            return 'Este campo es obligatorio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      /// Campo: Descripcion
-                      inputReutilizables(
-                        controller: descripcionController,
-                        nameInput: "Descripción",
-                        maxLenght: 300,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Campo no definido";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      /// Campo: Dias de incapacidad
-                      inputReutilizables(
-                        controller: diasIncapacidadController,
-                        nameInput: "Días de incapacidad",
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Completa el campo";
-                          }
-                          if (int.tryParse(value) == null) {
-                            return "Debe ser un número";
-                          }
-                          final numero = int.tryParse(value);
-                          if (numero == null || numero <= 0) {
-                            return 'Debe ser un número mayor a 0';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      /// Campo: Avances
-                      inputReutilizables(
-                        controller: avancesController,
-                        nameInput: "Avances",
-                        maxLenght: 300,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Completa el campo";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      /// Dropdown: Estado
-                      ListaInputWigets(
-                        label: 'Selecciona una opción',
-                        nameInput: 'Estado',
-                        items: estados,
-                        value: formState.estado,
-                        onChanged: formNotifier.setEstado,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Este campo es obligatorio";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 30),
-
-                      // --- BOTON DE ENVIO ---
-                      ElevatedButton(
-                        onPressed: isSubmitting ? null : submit,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 100,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      children: [
+                        /// Titulo del formulario
+                        Text(
+                          accidente == null ? "Accidente" : "Editar Accidente",
+                          style: const TextStyle(
+                            fontSize: 32,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
                           ),
-                          backgroundColor: CupertinoColors.activeBlue,
-                          // shape: RoundedRectangleBorder(
-                          //   borderRadius: BorderRadius.circular(12),
-                          // ),
+                          textAlign: TextAlign.center,
                         ),
-                        child: isSubmitting
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                "Enviar reporte",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
+                        const SizedBox(height: 30),
 
-                      const SizedBox(height: 30),
-                    ],
+                        // --- CAMPOS DEL FORMULARIO ---
+
+                        /// Campo: Eventualidad
+                        inputReutilizables(
+                          controller: eventualidadController,
+                          nameInput: "Eventualidad",
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Este campo es obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        /// Dropdown: Proyecto
+                        ListaInputWigets(
+                          nameInput: 'Proyecto',
+                          label: 'Selecciona una opción',
+                          items: listaProyectosNombres,
+                          value: nombreProyectoSeleccionado,
+                          onChanged: (nombre) {
+                            final proyecto = formState.listaProyectos
+                                .firstWhere(
+                                  (p) => (p['Nombre'] ?? p['nombre']) == nombre,
+                                );
+                            formNotifier.setProyectoId(proyecto['id'] as int);
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Este campo es obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        /// Campo: Contratista
+                        ListaInputWigets(
+                          nameInput: 'Contratista',
+                          label: listaContratistasNombres.isEmpty
+                              ? 'Selecciona un proyecto primero'
+                              : 'Selecciona el contratista',
+                          items:
+                              listaContratistasNombres, // Solo muestra los validos
+                          value:
+                              nombreContratistaSeleccionado, // Usamos el del estado, no el controller
+                          onChanged: (nombre) {
+                            final contratista = formState.listaContratistas
+                                .firstWhere(
+                                  (c) => (c['Nombre'] ?? c['nombre']) == nombre,
+                                );
+                            formNotifier.setContratistaId(
+                              contratista['id'] as int,
+                            );
+                          },
+                          validator: (value) =>
+                              value == null ? 'Obligatorio' : null,
+                        ),
+                        const SizedBox(height: 20),
+
+                        /// Selector de fecha
+                        FechaInputWidgets(
+                          fecha: formState.fecha,
+                          nameInput: 'Fecha',
+                          label: 'Selecciona la fecha',
+                          onchanged: formNotifier.setFecha,
+                          validator: (value) {
+                            if (value == null) {
+                              return 'Este campo es obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        /// Campo: Descripcion
+                        inputReutilizables(
+                          controller: descripcionController,
+                          nameInput: "Descripción",
+                          maxLenght: 300,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Campo no definido";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        /// Campo: Dias de incapacidad
+                        inputReutilizables(
+                          controller: diasIncapacidadController,
+                          nameInput: "Días de incapacidad",
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Completa el campo";
+                            }
+                            if (int.tryParse(value) == null) {
+                              return "Debe ser un número";
+                            }
+                            final numero = int.tryParse(value);
+                            if (numero == null || numero <= 0) {
+                              return 'Debe ser un número mayor a 0';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        /// Campo: Avances
+                        inputReutilizables(
+                          controller: avancesController,
+                          nameInput: "Avances",
+                          maxLenght: 300,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Completa el campo";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        /// Dropdown: Estado
+                        ListaInputWigets(
+                          label: 'Selecciona una opción',
+                          nameInput: 'Estado',
+                          items: estados,
+                          value: formState.estado,
+                          onChanged: formNotifier.setEstado,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Este campo es obligatorio";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 30),
+
+                        // --- BOTON DE ENVIO ---
+                        ElevatedButton(
+                          onPressed: isSubmitting ? null : submit,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 100,
+                            ),
+                            backgroundColor: CupertinoColors.activeBlue,
+                            // shape: RoundedRectangleBorder(
+                            //   borderRadius: BorderRadius.circular(12),
+                            // ),
+                          ),
+                          child: isSubmitting
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  "Enviar reporte",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+
+                        const SizedBox(height: 30),
+                      ],
+                    ),
                   ),
                 ),
               ),

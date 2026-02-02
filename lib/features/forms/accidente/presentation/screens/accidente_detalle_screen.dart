@@ -184,144 +184,149 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
           ],
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // --- HEADER ---
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.red.shade700,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    accidenteMostrado.eventualidad,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                // --- HEADER ---
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade700,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      accidenteMostrado.estado,
-                      style: TextStyle(
-                        color: _getEstadoColor(accidenteMostrado.estado),
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // --- CONTENIDO ---
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildInfoCard(
-                    title: 'Información General',
-                    icon: Icons.info_outline,
-                    children: [
-                      _buildInfoRow('Proyecto', nombreProyecto.value),
-                      _buildInfoRow('Contratista', nombreContratista.value),
-                      // _buildInfoRow('Mes', accidenteMostrado.mes),
-                      _buildInfoRow('Fecha Registro', fechaFormateada),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Descripción',
-                    icon: Icons.description_outlined,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        accidenteMostrado.descripcion,
-                        style: const TextStyle(fontSize: 16, height: 1.5),
+                        accidenteMostrado.eventualidad,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Incapacidad',
-                    icon: Icons.medical_services_outlined,
-                    children: [
-                      _buildInfoRow(
-                        'Días de Incapacidad',
-                        '${accidenteMostrado.diasIncapacidad} día${accidenteMostrado.diasIncapacidad != 1 ? 's' : ''}',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Avances',
-                    icon: Icons.timeline_outlined,
-                    children: [
-                      Text(
-                        accidenteMostrado.avances.isEmpty
-                            ? 'Sin avances registrados'
-                            : accidenteMostrado.avances,
-                        style: const TextStyle(fontSize: 16, height: 1.5),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Sincronización',
-                    icon: Icons.cloud_sync,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            accidenteMostrado.sincronizado == 1
-                                ? Icons.check_circle
-                                : Icons.pending,
-                            color: accidenteMostrado.sincronizado == 1
-                                ? Colors.green
-                                : Colors.orange,
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          accidenteMostrado.estado,
+                          style: TextStyle(
+                            color: _getEstadoColor(accidenteMostrado.estado),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+          
+                // --- CONTENIDO ---
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _buildInfoCard(
+                        title: 'Información General',
+                        icon: Icons.info_outline,
+                        children: [
+                          _buildInfoRow('Proyecto', nombreProyecto.value),
+                          _buildInfoRow('Contratista', nombreContratista.value),
+                          // _buildInfoRow('Mes', accidenteMostrado.mes),
+                          _buildInfoRow('Fecha Registro', fechaFormateada),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Descripción',
+                        icon: Icons.description_outlined,
+                        children: [
                           Text(
-                            accidenteMostrado.sincronizado == 1
-                                ? 'Sincronizado'
-                                : 'Pendiente de sincronización',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: accidenteMostrado.sincronizado == 1
-                                  ? Colors.green
-                                  : Colors.orange,
-                            ),
+                            accidenteMostrado.descripcion,
+                            style: const TextStyle(fontSize: 16, height: 1.5),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Incapacidad',
+                        icon: Icons.medical_services_outlined,
+                        children: [
+                          _buildInfoRow(
+                            'Días de Incapacidad',
+                            '${accidenteMostrado.diasIncapacidad} día${accidenteMostrado.diasIncapacidad != 1 ? 's' : ''}',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Avances',
+                        icon: Icons.timeline_outlined,
+                        children: [
+                          Text(
+                            accidenteMostrado.avances.isEmpty
+                                ? 'Sin avances registrados'
+                                : accidenteMostrado.avances,
+                            style: const TextStyle(fontSize: 16, height: 1.5),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Sincronización',
+                        icon: Icons.cloud_sync,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                accidenteMostrado.sincronizado == 1
+                                    ? Icons.check_circle
+                                    : Icons.pending,
+                                color: accidenteMostrado.sincronizado == 1
+                                    ? Colors.green
+                                    : Colors.orange,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                accidenteMostrado.sincronizado == 1
+                                    ? 'Sincronizado'
+                                    : 'Pendiente de sincronización',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: accidenteMostrado.sincronizado == 1
+                                      ? Colors.green
+                                      : Colors.orange,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

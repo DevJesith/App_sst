@@ -86,149 +86,154 @@ class AccidentesList extends HookConsumerWidget {
         }
 
         // 4. Construccion de la lista
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: filteredAccidentes.length,
-          itemBuilder: (context, index) {
-            final accidente = filteredAccidentes[index];
-
-            // Obtener datos del usuario de forma segura
-            String nombreUsuario = "Usuario desconocido";
-            String emailUsuario = "";
-
-            try {
-              final usuario = usuarios.firstWhere(
-                (u) => u.id == accidente.usuarioId,
-              );
-              nombreUsuario = usuario.nombre;
-              emailUsuario = usuario.email;
-            } catch (_) {}
-
-            // Buscar nombre del proyecto
-            String nombreProyecto = "ID: ${accidente.proyectoId}";
-            if (listaProyectos.value.isNotEmpty) {
-              try {
-                final p = listaProyectos.value.firstWhere((p) => p['id'] == accidente.proyectoId);
-                nombreProyecto = p['Nombre'] ?? p['nombre'] ?? nombreProyecto;
-              } catch (_) {}
-            }
-
-            return Card(
-              color: Colors.white,
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          AccidenteDetalleScreen(accidente: accidente),
-                    ),
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: filteredAccidentes.length,
+              itemBuilder: (context, index) {
+                final accidente = filteredAccidentes[index];
+            
+                // Obtener datos del usuario de forma segura
+                String nombreUsuario = "Usuario desconocido";
+                String emailUsuario = "";
+            
+                try {
+                  final usuario = usuarios.firstWhere(
+                    (u) => u.id == accidente.usuarioId,
                   );
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Encabezado: Icono y título
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.red.shade700,
-                            radius: 20,
-                            child: const Icon(
-                              Icons.warning,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  accidente.eventualidad,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  nombreProyecto,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.red.shade800,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Fecha pequeña a la derecha
-                          Text(
-                            DateFormat(
-                              'dd/MM/yy',
-                            ).format(accidente.fechaRegistro),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-                      const Divider(color: Colors.grey),
-                      const SizedBox(height: 8),
-
-                      // Pie de tarjeta: Usuario que reportó
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.person,
-                            size: 16,
-                            color: Colors.black54,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Nombre: $nombreUsuario',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                Text(
-                                  emailUsuario,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black54,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  nombreUsuario = usuario.nombre;
+                  emailUsuario = usuario.email;
+                } catch (_) {}
+            
+                // Buscar nombre del proyecto
+                String nombreProyecto = "ID: ${accidente.proyectoId}";
+                if (listaProyectos.value.isNotEmpty) {
+                  try {
+                    final p = listaProyectos.value.firstWhere((p) => p['id'] == accidente.proyectoId);
+                    nombreProyecto = p['Nombre'] ?? p['nombre'] ?? nombreProyecto;
+                  } catch (_) {}
+                }
+            
+                return Card(
+                  color: Colors.white,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-              ),
-            );
-          },
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              AccidenteDetalleScreen(accidente: accidente),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Encabezado: Icono y título
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Colors.red.shade700,
+                                radius: 20,
+                                child: const Icon(
+                                  Icons.warning,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      accidente.eventualidad,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      nombreProyecto,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.red.shade800,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Fecha pequeña a la derecha
+                              Text(
+                                DateFormat(
+                                  'dd/MM/yy',
+                                ).format(accidente.fechaRegistro),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+            
+                          const SizedBox(height: 12),
+                          const Divider(color: Colors.grey),
+                          const SizedBox(height: 8),
+            
+                          // Pie de tarjeta: Usuario que reportó
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.person,
+                                size: 16,
+                                color: Colors.black54,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Nombre: $nombreUsuario',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    Text(
+                                      emailUsuario,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black54,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         );
       },
     );
