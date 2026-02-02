@@ -76,107 +76,112 @@ class EnfermedadesList extends HookConsumerWidget {
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: filteredEnfermedades.length,
-          itemBuilder: (context, index) {
-            final enfermedad = filteredEnfermedades[index];
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: filteredEnfermedades.length,
+              itemBuilder: (context, index) {
+                final enfermedad = filteredEnfermedades[index];
+                
+                // Buscar usuario
+                String nombreUsuario = "Usuario desconocido";
+                String emailUsuario = "";
+                try {
+                  final usuario = usuarios.firstWhere((u) => u.id == enfermedad.usuarioId);
+                  nombreUsuario = usuario.nombre;
+                  emailUsuario = usuario.email;
+                } catch (_) {}
             
-            // Buscar usuario
-            String nombreUsuario = "Usuario desconocido";
-            String emailUsuario = "";
-            try {
-              final usuario = usuarios.firstWhere((u) => u.id == enfermedad.usuarioId);
-              nombreUsuario = usuario.nombre;
-              emailUsuario = usuario.email;
-            } catch (_) {}
-
-            // Buscar nombre del proyecto
-            String nombreProyecto = "ID: ${enfermedad.proyectoId}";
-            if (listaProyectos.value.isNotEmpty) {
-              try {
-                final p = listaProyectos.value.firstWhere((p) => p['id'] == enfermedad.proyectoId);
-                nombreProyecto = p['Nombre'] ?? p['nombre'] ?? nombreProyecto;
-              } catch (_) {}
-            }
-
-            return Card(
-              color: Colors.white,
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => EnfermedadDetalleScreen(enfermedad: enfermedad),
+                // Buscar nombre del proyecto
+                String nombreProyecto = "ID: ${enfermedad.proyectoId}";
+                if (listaProyectos.value.isNotEmpty) {
+                  try {
+                    final p = listaProyectos.value.firstWhere((p) => p['id'] == enfermedad.proyectoId);
+                    nombreProyecto = p['Nombre'] ?? p['nombre'] ?? nombreProyecto;
+                  } catch (_) {}
+                }
+            
+                return Card(
+                  color: Colors.white,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EnfermedadDetalleScreen(enfermedad: enfermedad),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Encabezado
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Colors.blue.shade700,
+                                radius: 20,
+                                child: const Icon(Icons.medical_services, color: Colors.white, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      enfermedad.eventualidad,
+                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      nombreProyecto, // ✅ Mostramos el nombre del proyecto
+                                      style: TextStyle(fontSize: 12, color: Colors.blue.shade800, fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                DateFormat('dd/MM/yy').format(enfermedad.fechaRegistro),
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Divider(color: Colors.grey),
+                          const SizedBox(height: 8),
+            
+                          // Pie de tarjeta (Usuario)
+                          Row(
+                            children: [
+                              const Icon(Icons.person, size: 16, color: Colors.black54),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Nombre: $nombreUsuario', style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                                    Text(emailUsuario, style: const TextStyle(fontSize: 12, color: Colors.black54), overflow: TextOverflow.ellipsis),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Encabezado
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.blue.shade700,
-                            radius: 20,
-                            child: const Icon(Icons.medical_services, color: Colors.white, size: 20),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  enfermedad.eventualidad,
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  nombreProyecto, // ✅ Mostramos el nombre del proyecto
-                                  style: TextStyle(fontSize: 12, color: Colors.blue.shade800, fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            DateFormat('dd/MM/yy').format(enfermedad.fechaRegistro),
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      const Divider(color: Colors.grey),
-                      const SizedBox(height: 8),
-
-                      // Pie de tarjeta (Usuario)
-                      Row(
-                        children: [
-                          const Icon(Icons.person, size: 16, color: Colors.black54),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Nombre: $nombreUsuario', style: const TextStyle(fontSize: 14, color: Colors.black87)),
-                                Text(emailUsuario, style: const TextStyle(fontSize: 12, color: Colors.black54), overflow: TextOverflow.ellipsis),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ),
-                ),
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         );
       },
     );
