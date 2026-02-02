@@ -160,138 +160,143 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
           ],
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // --- HEADER ---
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.teal.shade700,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    capacitacionMostrada.tema, 
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                // --- HEADER ---
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.shade700,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      capacitacionMostrada.sincronizado == 1
-                          ? "Sincronizado"
-                          : "Pendiente de sincronización",
-                      style: TextStyle(
-                        color: capacitacionMostrada.sincronizado == 1
-                            ? Colors.green
-                            : Colors.orange,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // --- CONTENIDO ---
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildInfoCard(
-                    title: 'Información General',
-                    icon: Icons.info_outline,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildInfoRow('Proyecto', nombreProyecto.value),
-                      _buildInfoRow('Contratista', nombreContratista.value),
-                      _buildInfoRow('Fecha', fechaFormateada),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Detalles de la Sesión',
-                    icon: Icons.class_outlined,
-                    children: [
-                      _buildInfoRow(
-                        'Tema',
-                        capacitacionMostrada.tema,
+                      Text(
+                        capacitacionMostrada.tema, 
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                      _buildInfoRow(
-                        'Descripcion',
-                        capacitacionMostrada.descripcion,
-                      ),
-                      _buildInfoRow(
-                        'Responsable',
-                        capacitacionMostrada.responsable,
-                      ),
-                      _buildInfoRow(
-                        'N° Capacitación',
-                        '${capacitacionMostrada.numeroCapacita}',
-                      ),
-                      _buildInfoRow(
-                        'N° Personas',
-                        '${capacitacionMostrada.numeroPersonas}',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Estado de Sincronización',
-                    icon: Icons.cloud_sync,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            capacitacionMostrada.sincronizado == 1
-                                ? Icons.check_circle
-                                : Icons.pending,
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          capacitacionMostrada.sincronizado == 1
+                              ? "Sincronizado"
+                              : "Pendiente de sincronización",
+                          style: TextStyle(
                             color: capacitacionMostrada.sincronizado == 1
                                 ? Colors.green
                                 : Colors.orange,
-                            size: 20,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            capacitacionMostrada.sincronizado == 1
-                                ? 'Sincronizado'
-                                : 'Pendiente de sincronización',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: capacitacionMostrada.sincronizado == 1
-                                  ? Colors.green
-                                  : Colors.orange,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+          
+                // --- CONTENIDO ---
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _buildInfoCard(
+                        title: 'Información General',
+                        icon: Icons.info_outline,
+                        children: [
+                          _buildInfoRow('Proyecto', nombreProyecto.value),
+                          _buildInfoRow('Contratista', nombreContratista.value),
+                          _buildInfoRow('Fecha', fechaFormateada),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Detalles de la Sesión',
+                        icon: Icons.class_outlined,
+                        children: [
+                          _buildInfoRow(
+                            'Tema',
+                            capacitacionMostrada.tema,
+                          ),
+                          _buildInfoRow(
+                            'Descripcion',
+                            capacitacionMostrada.descripcion,
+                          ),
+                          _buildInfoRow(
+                            'Responsable',
+                            capacitacionMostrada.responsable,
+                          ),
+                          _buildInfoRow(
+                            'N° Capacitación',
+                            '${capacitacionMostrada.numeroCapacita}',
+                          ),
+                          _buildInfoRow(
+                            'N° Personas',
+                            '${capacitacionMostrada.numeroPersonas}',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Estado de Sincronización',
+                        icon: Icons.cloud_sync,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                capacitacionMostrada.sincronizado == 1
+                                    ? Icons.check_circle
+                                    : Icons.pending,
+                                color: capacitacionMostrada.sincronizado == 1
+                                    ? Colors.green
+                                    : Colors.orange,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                capacitacionMostrada.sincronizado == 1
+                                    ? 'Sincronizado'
+                                    : 'Pendiente de sincronización',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: capacitacionMostrada.sincronizado == 1
+                                      ? Colors.green
+                                      : Colors.orange,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
