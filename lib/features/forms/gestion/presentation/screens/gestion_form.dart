@@ -417,249 +417,253 @@ class GestionFormScreen extends HookConsumerWidget {
           Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
 
           Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    children: [
-                      /// Título del formulario
-                      Text(
-                        'Gestión de Inspección',
-                        style: TextStyle(
-                          fontSize: 30,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      children: [
+                        /// Título del formulario
+                        Text(
+                          'Gestión de Inspección',
+                          style: TextStyle(
+                            fontSize: 30,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(height: 30),
+                        const SizedBox(height: 30),
 
-                      // PROYECTO
-                      ListaInputWigets(
-                        nameInput: 'Proyecto',
-                        label: 'Selecciona un proyecto',
-                        items: nombresProyectos,
-                        value:
-                            nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
-                        onChanged: (nombre) {
-                          // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
-                          final proyecto = formState.listaProyectos.firstWhere(
-                            (p) => (p['Nombre'] ?? p['nombre']) == nombre,
-                          );
-                          // Mandar el ID al notifier
-                          formNotifier.setProyectos(proyecto['id'] as int);
-                        },
-                        validator: (value) =>
-                            value == null ? 'Requerido' : null,
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      inputReutilizables(
-                        controller: eeController,
-                        nameInput: 'EE',
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Este campo es obligatorio'
-                            : null,
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      inputReutilizables(
-                        controller: eppController,
-                        nameInput: 'EPP',
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Este campo es obligatorio'
-                            : null,
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      inputReutilizables(
-                        controller: locativaController,
-                        nameInput: 'Locativa',
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Este campo es obligatorio'
-                            : null,
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      inputReutilizables(
-                        controller: extintorMaquinaController,
-                        nameInput: 'Extintor Maquina',
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Este campo es obligatorio'
-                            : null,
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      inputReutilizables(
-                        controller: rutinariaMaquinaController,
-                        nameInput: 'Rutinaria Maquina',
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Este campo es obligatorio'
-                            : null,
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      inputReutilizables(
-                        controller: gestionCumpleController,
-                        nameInput: 'Gestion Cumple',
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Este campo es obligatorio'
-                            : null,
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      /// Sección de imágenes
-                      Text(
-                        'Foto de evidencia',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      Text(
-                        '${formState.imagenes.length}/3 fotos agregadas',
-                        style: TextStyle(
-                          color: formState.imagenes.length == 3
-                              ? Colors.green
-                              : Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Grid de fotos
-                      if (formState.imagenes.isNotEmpty)
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                              ),
-                          itemCount: formState.imagenes.length,
-                          itemBuilder: (context, index) {
-                            return Stack(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.file(
-                                      File(formState.imagenes[index].path),
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      formNotifier.eliminarImagen(index);
-                                    },
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.cancel,
-                                        color: Colors.red,
-                                        size: 24,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 5,
-                                  left: 5,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black54,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      'Foto ${index + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
+                        // PROYECTO
+                        ListaInputWigets(
+                          nameInput: 'Proyecto',
+                          label: 'Selecciona un proyecto',
+                          items: nombresProyectos,
+                          value:
+                              nombresProyectoSeleccionado, // Le pasamos el nombre, no el ID
+                          onChanged: (nombre) {
+                            // BUSCAR EL ID BASADO EN EL NOMBRE SELECCIONADO
+                            final proyecto = formState.listaProyectos
+                                .firstWhere(
+                                  (p) => (p['Nombre'] ?? p['nombre']) == nombre,
+                                );
+                            // Mandar el ID al notifier
+                            formNotifier.setProyectos(proyecto['id'] as int);
                           },
+                          validator: (value) =>
+                              value == null ? 'Requerido' : null,
                         ),
-                      const SizedBox(height: 20),
 
-                      // Botón para agregar fotos
-                      if (formState.imagenes.length < 3)
-                        OutlinedButton.icon(
-                          onPressed: showImageSourceDialog,
-                          icon: const Icon(Icons.add_a_photo),
-                          label: const Text('Agregar Foto'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 20,
+                        const SizedBox(height: 20),
+
+                        inputReutilizables(
+                          controller: eeController,
+                          nameInput: 'EE',
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Este campo es obligatorio'
+                              : null,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        inputReutilizables(
+                          controller: eppController,
+                          nameInput: 'EPP',
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Este campo es obligatorio'
+                              : null,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        inputReutilizables(
+                          controller: locativaController,
+                          nameInput: 'Locativa',
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Este campo es obligatorio'
+                              : null,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        inputReutilizables(
+                          controller: extintorMaquinaController,
+                          nameInput: 'Extintor Maquina',
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Este campo es obligatorio'
+                              : null,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        inputReutilizables(
+                          controller: rutinariaMaquinaController,
+                          nameInput: 'Rutinaria Maquina',
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Este campo es obligatorio'
+                              : null,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        inputReutilizables(
+                          controller: gestionCumpleController,
+                          nameInput: 'Gestion Cumple',
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Este campo es obligatorio'
+                              : null,
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// Sección de imágenes
+                        Text(
+                          'Foto de evidencia',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Text(
+                          '${formState.imagenes.length}/3 fotos agregadas',
+                          style: TextStyle(
+                            color: formState.imagenes.length == 3
+                                ? Colors.green
+                                : Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Grid de fotos
+                        if (formState.imagenes.isNotEmpty)
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                ),
+                            itemCount: formState.imagenes.length,
+                            itemBuilder: (context, index) {
+                              return Stack(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.file(
+                                        File(formState.imagenes[index].path),
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        formNotifier.eliminarImagen(index);
+                                      },
+                                      child: Container(
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.cancel,
+                                          color: Colors.red,
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 5,
+                                    left: 5,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black54,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        'Foto ${index + 1}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        const SizedBox(height: 20),
+
+                        // Botón para agregar fotos
+                        if (formState.imagenes.length < 3)
+                          OutlinedButton.icon(
+                            onPressed: showImageSourceDialog,
+                            icon: const Icon(Icons.add_a_photo),
+                            label: const Text('Agregar Foto'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 20,
+                              ),
                             ),
                           ),
-                        ),
-                      const SizedBox(height: 30),
+                        const SizedBox(height: 30),
 
-                      // Botón para enviar
-                      ElevatedButton(
-                        onPressed: isSubmitting ? null : submit,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 90,
+                        // Botón para enviar
+                        ElevatedButton(
+                          onPressed: isSubmitting ? null : submit,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                              horizontal: 90,
+                            ),
+                            backgroundColor: CupertinoColors.activeBlue,
                           ),
-                          backgroundColor: CupertinoColors.activeBlue,
+                          child: isSubmitting
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  "Enviar reporte",
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
-                        child: isSubmitting
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                "Enviar reporte",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                      const SizedBox(height: 30),
-                    ],
+                        const SizedBox(height: 30),
+                      ],
+                    ),
                   ),
                 ),
               ),

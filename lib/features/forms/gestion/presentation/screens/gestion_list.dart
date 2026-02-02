@@ -78,151 +78,156 @@ class GestionesList extends HookConsumerWidget {
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: filteredGestiones.length,
-          itemBuilder: (context, index) {
-            final gestion = filteredGestiones[index];
-
-            // Buscar usuario
-            String nombreUsuario = "Usuario desconocido";
-            String emailUsuario = "";
-            try {
-              final usuario = usuarios.firstWhere(
-                (u) => u.id == gestion.usuarioId,
-              );
-              nombreUsuario = usuario.nombre;
-              emailUsuario = usuario.email;
-            } catch (_) {}
-
-            // Buscar nombre del proyecto
-            String nombreProyecto = "ID: ${gestion.proyectoId}";
-            if (listaProyectos.value.isNotEmpty) {
-              try {
-                final proyectoObj = listaProyectos.value.firstWhere(
-                  (p) => p['id'] == gestion.proyectoId,
-                  orElse: () => {},
-                );
-                nombreProyecto =
-                    proyectoObj['Nombre'] ??
-                    proyectoObj['nombre'] ??
-                    'ID: ${gestion.proyectoId}';
-              } catch (_) {}
-            }
-
-            return Card(
-              color: Colors.white,
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => GestionDetalleScreen(gestion: gestion),
-                    ),
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: filteredGestiones.length,
+              itemBuilder: (context, index) {
+                final gestion = filteredGestiones[index];
+            
+                // Buscar usuario
+                String nombreUsuario = "Usuario desconocido";
+                String emailUsuario = "";
+                try {
+                  final usuario = usuarios.firstWhere(
+                    (u) => u.id == gestion.usuarioId,
                   );
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Encabezado
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.green.shade700,
-                            radius: 20,
-                            child: const Icon(
-                              Icons.fact_check,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  gestion.ee,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  nombreProyecto,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.green.shade800,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            DateFormat(
-                              'dd/MM/yy',
-                            ).format(gestion.fechaRegistro),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      const Divider(color: Colors.grey),
-                      const SizedBox(height: 8),
-
-                      // Pie de tarjeta (Usuario)
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.person,
-                            size: 16,
-                            color: Colors.black54,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Nombre: $nombreUsuario',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                Text(
-                                  emailUsuario,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.black54,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                  nombreUsuario = usuario.nombre;
+                  emailUsuario = usuario.email;
+                } catch (_) {}
+            
+                // Buscar nombre del proyecto
+                String nombreProyecto = "ID: ${gestion.proyectoId}";
+                if (listaProyectos.value.isNotEmpty) {
+                  try {
+                    final proyectoObj = listaProyectos.value.firstWhere(
+                      (p) => p['id'] == gestion.proyectoId,
+                      orElse: () => {},
+                    );
+                    nombreProyecto =
+                        proyectoObj['Nombre'] ??
+                        proyectoObj['nombre'] ??
+                        'ID: ${gestion.proyectoId}';
+                  } catch (_) {}
+                }
+            
+                return Card(
+                  color: Colors.white,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-              ),
-            );
-          },
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => GestionDetalleScreen(gestion: gestion),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Encabezado
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Colors.green.shade700,
+                                radius: 20,
+                                child: const Icon(
+                                  Icons.fact_check,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      gestion.ee,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      nombreProyecto,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.green.shade800,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                DateFormat(
+                                  'dd/MM/yy',
+                                ).format(gestion.fechaRegistro),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Divider(color: Colors.grey),
+                          const SizedBox(height: 8),
+            
+                          // Pie de tarjeta (Usuario)
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.person,
+                                size: 16,
+                                color: Colors.black54,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Nombre: $nombreUsuario',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    Text(
+                                      emailUsuario,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black54,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         );
       },
     );

@@ -135,139 +135,144 @@ class GestionDetalleScreen extends HookConsumerWidget {
           ],
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // --- HEADER ---
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.purple.shade700,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    nombreProyecto.value,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                // --- HEADER ---
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade700,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      gestionMostrada.ee,
-                      style: TextStyle(
-                        color: Colors.purple.shade700,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        nombreProyecto.value,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // --- CONTENIDO ---
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildInfoCard(
-                    title: 'Información General',
-                    icon: Icons.info_outline,
-                    children: [
-                      _buildInfoRow('Proyecto', nombreProyecto.value),
-                      _buildInfoRow('EE', gestionMostrada.ee),
-                      _buildInfoRow('Fecha de Registro', fechaFormateada),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Seguridad',
-                    icon: Icons.security_outlined,
-                    children: [
-                      _buildInfoRow('EPP', gestionMostrada.epp),
-                      _buildInfoRow('Locativa', gestionMostrada.locativa),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Maquinaria',
-                    icon: Icons.engineering_outlined,
-                    children: [
-                      _buildInfoRow(
-                        'Extintor',
-                        gestionMostrada.extintorMaquina,
-                      ),
-                      _buildInfoRow(
-                        'Rutinaria',
-                        gestionMostrada.rutinariaMaquina,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Evidencias Fotográficas',
-                    icon: Icons.photo_library_outlined,
-                    children: [_buildPhotoSection(gestionMostrada)],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildInfoCard(
-                    title: 'Estado de Sincronización',
-                    icon: Icons.cloud_sync,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            gestionMostrada.sincronizado == 1
-                                ? Icons.check_circle
-                                : Icons.pending,
-                            color: gestionMostrada.sincronizado == 1
-                                ? Colors.green
-                                : Colors.orange,
-                            size: 20,
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          gestionMostrada.ee,
+                          style: TextStyle(
+                            color: Colors.purple.shade700,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            gestionMostrada.sincronizado == 1
-                                ? 'Sincronizado'
-                                : 'Pendiente de sincronización',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: gestionMostrada.sincronizado == 1
-                                  ? Colors.green
-                                  : Colors.orange,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+          
+                // --- CONTENIDO ---
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _buildInfoCard(
+                        title: 'Información General',
+                        icon: Icons.info_outline,
+                        children: [
+                          _buildInfoRow('Proyecto', nombreProyecto.value),
+                          _buildInfoRow('EE', gestionMostrada.ee),
+                          _buildInfoRow('Fecha de Registro', fechaFormateada),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Seguridad',
+                        icon: Icons.security_outlined,
+                        children: [
+                          _buildInfoRow('EPP', gestionMostrada.epp),
+                          _buildInfoRow('Locativa', gestionMostrada.locativa),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Maquinaria',
+                        icon: Icons.engineering_outlined,
+                        children: [
+                          _buildInfoRow(
+                            'Extintor',
+                            gestionMostrada.extintorMaquina,
+                          ),
+                          _buildInfoRow(
+                            'Rutinaria',
+                            gestionMostrada.rutinariaMaquina,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Evidencias Fotográficas',
+                        icon: Icons.photo_library_outlined,
+                        children: [_buildPhotoSection(gestionMostrada)],
+                      ),
+                      const SizedBox(height: 16),
+          
+                      _buildInfoCard(
+                        title: 'Estado de Sincronización',
+                        icon: Icons.cloud_sync,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                gestionMostrada.sincronizado == 1
+                                    ? Icons.check_circle
+                                    : Icons.pending,
+                                color: gestionMostrada.sincronizado == 1
+                                    ? Colors.green
+                                    : Colors.orange,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                gestionMostrada.sincronizado == 1
+                                    ? 'Sincronizado'
+                                    : 'Pendiente de sincronización',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: gestionMostrada.sincronizado == 1
+                                      ? Colors.green
+                                      : Colors.orange,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
