@@ -156,7 +156,7 @@ class PerfilScreen extends HookConsumerWidget {
                               controller: apellidoController,
                               nameInput: 'Apellidos',
                               validator: (v) => v!.isEmpty ? 'Requerido' : null,
-                              prefixIcon: const Icon(Icons.percent_outlined),
+                              prefixIcon: const Icon(Icons.badge_outlined),
                             ),
                             const SizedBox(height: 20),
 

@@ -144,7 +144,7 @@ class RegistroScreen extends HookConsumerWidget {
           padding: const EdgeInsets.all(24),
           child: Container(
             padding: const EdgeInsets.all(24),
-            constraints: const BoxConstraints(maxWidth: 500),
+            constraints: const BoxConstraints(maxWidth: 600),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),

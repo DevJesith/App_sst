@@ -46,261 +46,266 @@ class UsuariosRegistradosScreen extends HookConsumerWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // --- BARRA DE BUSQUEDA ---
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: searchController,
-              style: const TextStyle(color: Colors.black),
-              decoration: InputDecoration(
-                hintText: 'Buscar por nombre o correo',
-                hintStyle: const TextStyle(color: Colors.black),
-                prefixIcon: const Icon(Icons.search, color: Colors.black),
-                filled: true,
-                fillColor: Colors.white12,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.black, width: 5.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.black, width: 1.8),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.black, width: 2.0),
-                ),
-              ),
-              onChanged: (value) {
-                // Actualizamos el estado para filtrar la lista en tiempo real
-                searchQuery.value = value;
-              },
-            ),
-          ),
-
-          // --- LISTA DE USUARIOS ---
-          Expanded(
-            child: usuariosAsync.when(
-              //Estado: Cargando
-              loading: () => const Center(child: CircularProgressIndicator()),
-
-              // Estado: Error
-              error: (error, stack) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 80,
-                      color: Colors.red.shade300,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            children: [
+              // --- BARRA DE BUSQUEDA ---
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  controller: searchController,
+                  style: const TextStyle(color: Colors.black),
+                  decoration: InputDecoration(
+                    hintText: 'Buscar por nombre o correo',
+                    hintStyle: const TextStyle(color: Colors.black),
+                    prefixIcon: const Icon(Icons.search, color: Colors.black),
+                    filled: true,
+                    fillColor: Colors.white12,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.black, width: 5.0),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error al cargar usuarios',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.red.shade300,
-                      ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.black, width: 1.8),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      error.toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.black, width: 2.0),
                     ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        ref.invalidate(obtenerTodosUsuariosProvider);
-                      },
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reintentar'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade700,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ],
+                  ),
+                  onChanged: (value) {
+                    // Actualizamos el estado para filtrar la lista en tiempo real
+                    searchQuery.value = value;
+                  },
                 ),
               ),
-
-              // Estado: Datos cargados exitosamente
-              data: (usuarios) {
-                if (usuarios.isEmpty) {
-                  return Center(
+          
+              // --- LISTA DE USUARIOS ---
+              Expanded(
+                child: usuariosAsync.when(
+                  //Estado: Cargando
+                  loading: () => const Center(child: CircularProgressIndicator()),
+          
+                  // Estado: Error
+                  error: (error, stack) => Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.people_outline,
+                          Icons.error_outline,
                           size: 80,
-                          color: Colors.black,
+                          color: Colors.red.shade300,
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No hay usuarios registrados',
-                          style: TextStyle(fontSize: 18, color: Colors.black),
+                          'Error al cargar usuarios',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.red.shade300,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          error.toString(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            ref.invalidate(obtenerTodosUsuariosProvider);
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reintentar'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade700,
+                            foregroundColor: Colors.white,
+                          ),
                         ),
                       ],
                     ),
-                  );
-                }
-
-                // Logica de filtrado
-                final filteredUsuarios = searchQuery.value.isEmpty
-                    ? usuarios
-                    : usuarios.where((usuario) {
-                        final query = searchQuery.value.toLowerCase();
-                        return usuario.nombre.toLowerCase().contains(query) ||
-                            usuario.email.toLowerCase().contains(query);
-                      }).toList();
-
-                if (filteredUsuarios.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No se encontraron resultados',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade400,
-                      ),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: filteredUsuarios.length,
-                  itemBuilder: (context, index) {
-                    final usuario = filteredUsuarios[index];
-
-                    return Card(
-                      color: Colors.white,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
+                  ),
+          
+                  // Estado: Datos cargados exitosamente
+                  data: (usuarios) {
+                    if (usuarios.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Avatar con inicial
-                            CircleAvatar(
-                              backgroundColor: Colors.blue.shade700,
-                              radius: 28,
-                              child: Text(
-                                usuario.nombre.isNotEmpty
-                                    ? usuario.nombre[0].toUpperCase()
-                                    : 'U',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                ),
-                              ),
+                            Icon(
+                              Icons.people_outline,
+                              size: 80,
+                              color: Colors.black,
                             ),
-                            const SizedBox(width: 16),
-
-                            // Informacion del usuario
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    usuario.nombre.isNotEmpty
-                                        ? usuario.nombre
-                                        : 'Sin nombre',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.email_outlined,
-                                        size: 14,
-                                        color: Colors.black54,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Expanded(
-                                        child: Text(
-                                          usuario.email,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black54,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.badge_outlined,
-                                        size: 14,
-                                        color: Colors.black54,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'ID: ${usuario.id}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black54,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Badge de estado (Activo)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green.shade300,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.check_circle_outline,
-                                    color: Colors.green.shade900,
-                                    size: 14,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Activo',
-                                    style: TextStyle(
-                                      color: Colors.green.shade900,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No hay usuarios registrados',
+                              style: TextStyle(fontSize: 18, color: Colors.black),
                             ),
                           ],
                         ),
-                      ),
+                      );
+                    }
+          
+                    // Logica de filtrado
+                    final filteredUsuarios = searchQuery.value.isEmpty
+                        ? usuarios
+                        : usuarios.where((usuario) {
+                            final query = searchQuery.value.toLowerCase();
+                            return usuario.nombre.toLowerCase().contains(query) ||
+                                usuario.email.toLowerCase().contains(query);
+                          }).toList();
+          
+                    if (filteredUsuarios.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No se encontraron resultados',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      );
+                    }
+          
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filteredUsuarios.length,
+                      itemBuilder: (context, index) {
+                        final usuario = filteredUsuarios[index];
+          
+                        return Card(
+                          color: Colors.white,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                // Avatar con inicial
+                                CircleAvatar(
+                                  backgroundColor: Colors.blue.shade700,
+                                  radius: 28,
+                                  child: Text(
+                                    usuario.nombre.isNotEmpty
+                                        ? usuario.nombre[0].toUpperCase()
+                                        : 'U',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+          
+                                // Informacion del usuario
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        usuario.nombre.isNotEmpty
+                                            ? usuario.nombre
+                                            : 'Sin nombre',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.email_outlined,
+                                            size: 14,
+                                            color: Colors.black54,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              usuario.email,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.black54,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.badge_outlined,
+                                            size: 14,
+                                            color: Colors.black54,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'ID: ${usuario.id}',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+          
+                                // Badge de estado (Activo)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade300,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.check_circle_outline,
+                                        color: Colors.green.shade900,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Activo',
+                                        style: TextStyle(
+                                          color: Colors.green.shade900,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

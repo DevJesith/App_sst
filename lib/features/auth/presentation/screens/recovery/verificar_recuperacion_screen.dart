@@ -49,80 +49,83 @@ class VerificarRecuperacionScreen extends HookConsumerWidget {
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Icon(Icons.security, size: 80, color: Colors.orange),
-              const SizedBox(height: 20),
-              const Text(
-                'Ingresa el código',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 15),
-              Text(
-                'Hemos enviado un código a:',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[800], fontSize: 18),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                usuario.email,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              children: [
+                const Icon(Icons.security, size: 80, color: Colors.orange),
+                const SizedBox(height: 20),
+                const Text(
+                  'Ingresa el código',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 30),
-
-              PinCodeTextField(
-                appContext: context,
-                length: 6,
-                controller: codigoController,
-                keyboardType: TextInputType.number,
-                animationType: AnimationType.fade,
-                pinTheme: PinTheme(
-                  shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(8),
-                  fieldHeight: 50,
-                  fieldWidth: 40,
-                  activeFillColor: const Color.fromARGB(255, 255, 255, 255),
-                  inactiveFillColor: const Color.fromARGB(255, 240, 240, 240),
-                  selectedFillColor: Colors.orange.shade50,
-                  activeColor: Colors.orange,
-                  selectedColor: Colors.orange,
-                  inactiveColor: Colors.grey.shade400,
+                const SizedBox(height: 15),
+                Text(
+                  'Hemos enviado un código a:',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[800], fontSize: 18),
                 ),
-                cursorColor: Colors.black,
-                animationDuration: const Duration(milliseconds: 300),
-                enableActiveFill: true,
-                onChanged: (_) {},
-                onCompleted: (_) => verificarCodigo(),
-              ),
-
-              const SizedBox(height: 30),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: verificarCodigo,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.orange,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 8),
+                Text(
+                  usuario.email,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+            
+                PinCodeTextField(
+                  appContext: context,
+                  length: 6,
+                  controller: codigoController,
+                  keyboardType: TextInputType.number,
+                  animationType: AnimationType.fade,
+                  pinTheme: PinTheme(
+                    shape: PinCodeFieldShape.box,
+                    borderRadius: BorderRadius.circular(8),
+                    fieldHeight: 50,
+                    fieldWidth: 45,
+                    activeFillColor: const Color.fromARGB(255, 255, 255, 255),
+                    inactiveFillColor: const Color.fromARGB(255, 240, 240, 240),
+                    selectedFillColor: Colors.orange.shade50,
+                    activeColor: Colors.orange,
+                    selectedColor: Colors.orange,
+                    inactiveColor: Colors.grey.shade400,
+                  ),
+                  cursorColor: Colors.black,
+                  animationDuration: const Duration(milliseconds: 300),
+                  enableActiveFill: true,
+                  onChanged: (_) {},
+                  onCompleted: (_) => verificarCodigo(),
+                ),
+            
+                const SizedBox(height: 30),
+            
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: verificarCodigo,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.orange,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Verificar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    'Verificar',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

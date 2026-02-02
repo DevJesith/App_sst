@@ -47,110 +47,115 @@ class AdminDashboard extends HookConsumerWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- ENCABEZADO ---
-            Text(
-              'Bienvenido, Administrador',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Gestiona usuarios y formularios desde aquí',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // --- SECCION: GESTION ---
-            Text(
-              'Gestión',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Navegacion a Usuarios
-            _DashboardCard(
-              title: 'Usuarios Registrados',
-              subtitle: 'Ver todos los usuarios del sistema',
-              icon: Icons.people,
-              color: Colors.blue.shade700,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const UsuariosRegistradosScreen(),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- ENCABEZADO ---
+                Text(
+                  'Bienvenido, Administrador',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Navegacion a Formularios
-            _DashboardCard(
-              title: 'Formularios Recibidos',
-              subtitle: 'Ver todos los reportes enviados',
-              icon: Icons.assignment,
-              color: Colors.purple.shade700,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const FormulariosRecibidosScreen(),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Gestiona usuarios y formularios desde aquí',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade600,
                   ),
-                );
-              },
+                ),
+                const SizedBox(height: 32),
+            
+                // --- SECCION: GESTION ---
+                Text(
+                  'Gestión',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 16),
+            
+                // Navegacion a Usuarios
+                _DashboardCard(
+                  title: 'Usuarios Registrados',
+                  subtitle: 'Ver todos los usuarios del sistema',
+                  icon: Icons.people,
+                  color: Colors.blue.shade700,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UsuariosRegistradosScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+            
+                // Navegacion a Formularios
+                _DashboardCard(
+                  title: 'Formularios Recibidos',
+                  subtitle: 'Ver todos los reportes enviados',
+                  icon: Icons.assignment,
+                  color: Colors.purple.shade700,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const FormulariosRecibidosScreen(),
+                      ),
+                    );
+                  },
+                ),
+            
+                const SizedBox(height: 32),
+            
+                // --- SECCION: EXPORTACION ---
+                Text(
+                  'Exportación de Datos',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 16),
+            
+                // Accion: Exportar BD
+                _DashboardCard(
+                  title: 'Exportar Base de Datos',
+                  subtitle: 'Descargar archivo .db para respaldo',
+                  icon: Icons.download,
+                  color: Colors.green.shade700,
+                  onTap: () async {
+                    await ExportUtils.exportDatabase(context);
+                  },
+                ),
+                const SizedBox(height: 16),
+            
+                // Accion: Generar reporte
+                _DashboardCard(
+                  title: 'Generar Reporte PDF',
+                  subtitle: 'Crear PDF con información de la BD',
+                  icon: Icons.picture_as_pdf,
+                  color: Colors.orange.shade700,
+                  onTap: () async {
+            
+                    // Llama a la utilidad refectorizada con JOINs
+                    await ExportUtils.generateDatabasePDF(context);
+                  },
+                ),
+              ],
             ),
-
-            const SizedBox(height: 32),
-
-            // --- SECCION: EXPORTACION ---
-            Text(
-              'Exportación de Datos',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Accion: Exportar BD
-            _DashboardCard(
-              title: 'Exportar Base de Datos',
-              subtitle: 'Descargar archivo .db para respaldo',
-              icon: Icons.download,
-              color: Colors.green.shade700,
-              onTap: () async {
-                await ExportUtils.exportDatabase(context);
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Accion: Generar reporte
-            _DashboardCard(
-              title: 'Generar Reporte PDF',
-              subtitle: 'Crear PDF con información de la BD',
-              icon: Icons.picture_as_pdf,
-              color: Colors.orange.shade700,
-              onTap: () async {
-
-                // Llama a la utilidad refectorizada con JOINs
-                await ExportUtils.generateDatabasePDF(context);
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );

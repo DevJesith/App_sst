@@ -72,64 +72,69 @@ class FormulariosRecibidosScreen extends HookConsumerWidget {
             ),
           ),
         ),
-        body: Column(
-          children: [
-            // --- BARRA DE BUSQUEDA ---
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                controller: searchController,
-                style: const TextStyle(color: Colors.black87),
-                decoration: InputDecoration(
-                  hintText: 'Buscar por nombre o correo',
-                  hintStyle: TextStyle(color: Colors.grey.shade600),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              children: [
+                // --- BARRA DE BUSQUEDA ---
+                Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(16),
+                  child: TextField(
+                    controller: searchController,
+                    style: const TextStyle(color: Colors.black87),
+                    decoration: InputDecoration(
+                      hintText: 'Buscar por nombre o correo',
+                      hintStyle: TextStyle(color: Colors.grey.shade600),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (value) {
+                      //Actualizamos el estado para que los hijos se reconstruyan con el filtro
+                      searchQuery.value = value;
+                    },
                   ),
                 ),
-                onChanged: (value) {
-                  //Actualizamos el estado para que los hijos se reconstruyan con el filtro
-                  searchQuery.value = value;
-                },
-              ),
+            
+                // Contenido de las tabs
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      //1. Accidentes
+                      AccidentesList(searchQuery: searchQuery.value),
+            
+                      // 2. Incidentes
+                      IncidenteList(searchQuery: searchQuery.value),
+            
+                      // 3. Gestion
+                      GestionesList(searchQuery: searchQuery.value),
+            
+                      // 4. Enfermedad
+                      EnfermedadesList(searchQuery: searchController.text),
+            
+                      // 5. Capacitacion
+                      CapacitacionListScreen(searchQuery: searchController.text)
+                    ],
+                  ),
+                ),
+              ],
             ),
-
-            // Contenido de las tabs
-            Expanded(
-              child: TabBarView(
-                children: [
-                  //1. Accidentes
-                  AccidentesList(searchQuery: searchQuery.value),
-
-                  // 2. Incidentes
-                  IncidenteList(searchQuery: searchQuery.value),
-
-                  // 3. Gestion
-                  GestionesList(searchQuery: searchQuery.value),
-
-                  // 4. Enfermedad
-                  EnfermedadesList(searchQuery: searchController.text),
-
-                  // 5. Capacitacion
-                  CapacitacionListScreen(searchQuery: searchController.text)
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
