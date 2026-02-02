@@ -325,165 +325,163 @@ class IncidenteFormScreen extends HookConsumerWidget {
 
           /// Formulario
           Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    children: [
-                      const Text(
-                        "Incidente",
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Campo: Eventualidad
-                      inputReutilizables(
-                        controller: eventualidadController,
-                        nameInput: "Eventualidad",
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Este campo es obligatorio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Dropdown: Proyecto
-                      ListaInputWigets(
-                        nameInput: 'Proyecto',
-                        label: 'Selecciona un proyecto',
-                        items: nombresProyectos,
-                        value: nombresProyectoSeleccionado,
-                        onChanged: (nombre) {
-                          final proyecto = formState.listaProyectos.firstWhere(
-                            (p) => (p['Nombre'] ?? p['nombre']) == nombre,
-                          );
-                          formNotifier.setProyectoId(proyecto['id'] as int);
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Este campo es obligatorio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Campo: Fecha
-                      FechaInputWidgets(
-                        nameInput: 'Fecha',
-                        fecha: formState.fecha,
-                        label: 'Selecciona la fecha',
-                        onchanged: formNotifier.setFecha,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Este campo es obligatorio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Campo: Descripcion
-                      inputReutilizables(
-                        controller: descripcionController,
-                        nameInput: 'Descripcion',
-                        maxLenght: 300,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Este campo es obligatorio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Campo: Dias incapacidad
-                      inputReutilizables(
-                        controller: diasIncapacidadController,
-                        nameInput: 'Dias de incapacidad',
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Este campo es obligatorio';
-                          }
-                          if (int.tryParse(value) == null) {
-                            return "Debe ser un número";
-                          }
-                          final numero = int.tryParse(value);
-                          if (numero == null || numero <= 0) {
-                            return 'Debe ser un numero mayor a 0';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Campo: Avances
-                      inputReutilizables(
-                        controller: avancesController,
-                        nameInput: 'Avances',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Este campo es obligatorio';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Dropdown: Estado
-                      ListaInputWigets(
-                        label: 'Seleccionar un estado',
-                        nameInput: 'Estado',
-                        items: estado,
-                        value: formState.estado,
-                        onChanged: formNotifier.setEstado,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Este campo es obligatorio';
-                          }
-
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 30),
-
-                      ElevatedButton(
-                        onPressed: isSubmitting ? null : submit,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 100,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      children: [
+                        const Text(
+                          "Incidente",
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w600,
                           ),
-                          backgroundColor: CupertinoColors.activeBlue,
+                          textAlign: TextAlign.center,
                         ),
-                        child: isSubmitting
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : const Text(
-                                "Enviar reporte",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                        const SizedBox(height: 20),
+                
+                        // Campo: Eventualidad
+                        inputReutilizables(
+                          controller: eventualidadController,
+                          nameInput: "Eventualidad",
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Este campo es obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                
+                        // Dropdown: Proyecto
+                        ListaInputWigets(
+                          nameInput: 'Proyecto',
+                          label: 'Selecciona un proyecto',
+                          items: nombresProyectos,
+                          value: nombresProyectoSeleccionado,
+                          onChanged: (nombre) {
+                            final proyecto = formState.listaProyectos.firstWhere(
+                              (p) => (p['Nombre'] ?? p['nombre']) == nombre,
+                            );
+                            formNotifier.setProyectoId(proyecto['id'] as int);
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Este campo es obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                
+                        // Campo: Fecha
+                        FechaInputWidgets(
+                          nameInput: 'Fecha',
+                          fecha: formState.fecha,
+                          label: 'Selecciona la fecha',
+                          onchanged: formNotifier.setFecha,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Este campo es obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                
+                        // Campo: Descripcion
+                        inputReutilizables(
+                          controller: descripcionController,
+                          nameInput: 'Descripcion',
+                          maxLenght: 300,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Este campo es obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                
+                        // Campo: Dias incapacidad
+                        inputReutilizables(
+                          controller: diasIncapacidadController,
+                          nameInput: 'Dias de incapacidad',
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Este campo es obligatorio';
+                            }
+                            if (int.tryParse(value) == null) {
+                              return "Debe ser un número";
+                            }
+                            final numero = int.tryParse(value);
+                            if (numero == null || numero <= 0) {
+                              return 'Debe ser un numero mayor a 0';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                
+                        // Campo: Avances
+                        inputReutilizables(
+                          controller: avancesController,
+                          nameInput: 'Avances',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Este campo es obligatorio';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                
+                        // Dropdown: Estado
+                        ListaInputWigets(
+                          label: 'Seleccionar un estado',
+                          nameInput: 'Estado',
+                          items: estado,
+                          value: formState.estado,
+                          onChanged: formNotifier.setEstado,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Este campo es obligatorio';
+                            }
+                
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 30),
+                
+                        ElevatedButton(
+                          onPressed: isSubmitting ? null : submit,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 100,
+                            ),
+                            backgroundColor: CupertinoColors.activeBlue,
+                          ),
+                          child: isSubmitting
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  "Enviar reporte",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                      ),
-                      const SizedBox(height: 30),
-                    ],
+                        ),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
                   ),
                 ),
               ),
