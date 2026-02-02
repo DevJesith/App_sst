@@ -37,14 +37,13 @@ Una aplicacion movil desarrollada con Flutter para la recoleccion y gestion de d
     *   **`android/`**: Configuracion especifica de Android.
     *   **`ios/`**: Configuracion especifica de iOS.
 
-## Tecnologoias Utilizadas
+## Tecnologias Utilizadas
 
 *   **Lenguaje**: Dart
 *   **Framework**: Flutter
 *   **Gestion de Estado**: Riverpod + Hooks
 *   **Base de Datos Local**: SQLite (sqflite)
-*   **Base de Datos Nube (Backend)**: PostgreSQL
-*   **API Backend**: Python (Flask)
+<!-- *   **API Backend**: Python (Flask)  -->
 *   **Servicio de Email**: EmailJS
 *   **Notificaciones**: flutter_local_notificacions
 *   **Permisos**: permission_handler
