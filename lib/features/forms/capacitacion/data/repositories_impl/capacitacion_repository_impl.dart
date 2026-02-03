@@ -50,6 +50,7 @@ class CapacitacionRepositoryImpl implements CapacitacionRepository {
         responsable: capacitacion.responsable,
         tema: capacitacion.tema,
         fechaRegistro: capacitacion.fechaRegistro,
+        fechaCreacion: capacitacion.fechaCreacion,
         sincronizado: capacitacion.sincronizado,
         usuarioId: capacitacion.usuarioId,
       );
@@ -72,6 +73,7 @@ class CapacitacionRepositoryImpl implements CapacitacionRepository {
         responsable: capacitacion.responsable,
         tema: capacitacion.tema,
         fechaRegistro: capacitacion.fechaRegistro,
+        fechaCreacion: capacitacion.fechaCreacion,
         sincronizado: capacitacion.sincronizado,
         usuarioId: capacitacion.usuarioId,
       );

@@ -43,12 +43,14 @@ class CapacitacionState {
 class CapacitacionFormState {
   final int? idProyecto;
   final int? idContratista;
+  final DateTime? fecha;
   final List<Map<String, dynamic>> listaProyectos;
   final List<Map<String, dynamic>> listaContratistas;
 
   const CapacitacionFormState({
     this.idProyecto,
     this.idContratista,
+    this.fecha,
     this.listaProyectos = const [],
     this.listaContratistas = const []
   });
@@ -56,12 +58,14 @@ class CapacitacionFormState {
   CapacitacionFormState copyWith({
     int? idProyecto,
     int? idContratista,
+    DateTime? fecha,
     List<Map<String, dynamic>>? listaProyectos,
     List<Map<String, dynamic>>? listaContratistas,
   }) {
     return CapacitacionFormState(
       idProyecto: idProyecto ?? this.idProyecto,
       idContratista: idContratista ?? this.idContratista,
+      fecha: fecha ?? this.fecha,
       listaProyectos: listaProyectos ?? this.listaProyectos,
       listaContratistas: listaContratistas ?? this.listaContratistas,
     );

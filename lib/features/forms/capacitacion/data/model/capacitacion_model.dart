@@ -13,6 +13,7 @@ class CapacitacionModel extends Capacitacion {
     required String responsable,
     required String tema,
     required DateTime fechaRegistro,
+    required DateTime fechaCreacion,
     int sincronizado = 0,
     required int usuarioId,
   }) : super(
@@ -25,6 +26,7 @@ class CapacitacionModel extends Capacitacion {
           responsable: responsable,
           tema: tema,
           fechaRegistro: fechaRegistro,
+          fechaCreacion: fechaCreacion,
           sincronizado: sincronizado,
           usuarioId: usuarioId,
         );
@@ -41,9 +43,8 @@ class CapacitacionModel extends Capacitacion {
       numeroPersonas: map['Numero_personas'] as int? ?? 0,
       responsable: map['Responsable'] as String? ?? '',
       tema: map['Tema'] as String? ?? '',
-      fechaRegistro: map['fecha_registro'] != null 
-          ? DateTime.parse(map['fecha_registro'] as String) 
-          : DateTime.now(),
+      fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
+      fechaCreacion: DateTime.parse(map['fecha_creacion'] as String),
       sincronizado: map['sincronizado'] as int? ?? 0,
       usuarioId: map['Usuarios_id'] as int? ?? 0,
     );
@@ -61,6 +62,7 @@ class CapacitacionModel extends Capacitacion {
       'Responsable': responsable,
       'Tema': tema,
       'fecha_registro': fechaRegistro.toIso8601String(),
+      'fecha_creacion': fechaCreacion.toIso8601String(),
       'sincronizado': sincronizado,
       'usuarios_id': usuarioId,
     };
@@ -76,6 +78,7 @@ class CapacitacionModel extends Capacitacion {
     String? responsable,
     String? tema,
     DateTime? fechaRegistro,
+    DateTime? fechaCreacion,
     int? sincronizado,
     int? usuarioId,
   }) {
@@ -89,6 +92,7 @@ class CapacitacionModel extends Capacitacion {
       responsable: responsable ?? this.responsable,
       tema: tema ?? this.tema,
       fechaRegistro: fechaRegistro ?? this.fechaRegistro,
+      fechaCreacion: fechaCreacion ?? this.fechaCreacion,
       sincronizado: sincronizado ?? this.sincronizado,
       usuarioId: usuarioId ?? this.usuarioId,
     );

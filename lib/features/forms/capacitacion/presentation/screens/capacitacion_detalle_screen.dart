@@ -29,8 +29,12 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
     // ----------------------------------------------
 
     final fechaFormateada = DateFormat(
-      'dd/MM/yyyy HH:mm',
+      'dd/MM/yyyy',
     ).format(capacitacionMostrada.fechaRegistro);
+
+    final fechaFormateadaCreacion = DateFormat(
+      'dd/MM/yyyy HH:mm',
+    ).format(capacitacionMostrada.fechaCreacion);
 
     // --- LOGICA PARA TRAER NOMBRES REALES ---
     final getProyectos = ref.read(getProyectosCapacitacionUseCaseProvider);
@@ -226,7 +230,8 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                         children: [
                           _buildInfoRow('Proyecto', nombreProyecto.value),
                           _buildInfoRow('Contratista', nombreContratista.value),
-                          _buildInfoRow('Fecha', fechaFormateada),
+                          _buildInfoRow('Fecha de suceso', fechaFormateada),
+                          _buildInfoRow('Fecha de creacion', fechaFormateadaCreacion),
                         ],
                       ),
                       const SizedBox(height: 16),
