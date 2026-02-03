@@ -39,8 +39,12 @@ class IncidenteModel extends Incidente {
       diasIncapacidad: map['dias_incapacidad'] as int? ?? 0,
       avances: map['avances'] as String? ?? '',
       estado: map['estado'] as String? ?? '',
-      fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
-      fechaCreacion: DateTime.parse(map['fecha_creacion'] as String),
+      fechaRegistro: map['fecha_registro'] != null
+          ? DateTime.parse(map['fecha_registro'] as String)
+          : DateTime.now(),
+      fechaCreacion: map['fecha_creacion'] != null
+          ? DateTime.parse(map['fecha_creacion'] as String)
+          : DateTime.now(),
       sincronizado: map['sincronizado'] as int? ?? 0,
       usuarioId: map['Usuarios_id'] as int? ?? 0,
     );

@@ -192,7 +192,6 @@ class IncidentesEnviadosScreen extends HookConsumerWidget {
                                             color: Colors.white, // Fondo blanco
                                             borderRadius: BorderRadius.circular(12),
                                             border: Border.all(
-                                              // ✅ AQUÍ ESTÁ LA MAGIA DEL BORDE
                                               color: incidente.sincronizado == 1
                                                   ? Colors
                                                         .green // Verde si está completo

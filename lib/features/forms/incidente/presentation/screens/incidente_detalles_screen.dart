@@ -38,7 +38,7 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
     ).format(incidenteMostrado.fechaRegistro);
 
     final fechaFormateadaCreacion = DateFormat(
-      'dd/MM/yyyy',
+      'dd/MM/yyyy HH:mm',
     ).format(incidenteMostrado.fechaCreacion);
 
     // 3. Obtener el caso de uso para traer los proyectos
