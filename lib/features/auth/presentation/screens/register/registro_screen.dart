@@ -176,15 +176,15 @@ class RegistroScreen extends HookConsumerWidget {
                   // Nombre
                   inputReutilizables(
                     controller: nombreController,
-                    nameInput: 'Nombre completo',
+                    nameInput: 'Nombre',
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Ingresa tu nombre(s)';
+                        return 'Completa el campo';
                       }
                       return null;
                     },
                     decoration: InputDecoration(
-                      hintText: 'Pepito Peréz',
+                      hintText: 'Ingresa tu nombre(s)',
                       prefixIcon: const Icon(Icons.person),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
@@ -208,15 +208,15 @@ class RegistroScreen extends HookConsumerWidget {
                   // Apellido
                   inputReutilizables(
                     controller: apellidoController,
-                    nameInput: 'Apellido completo',
+                    nameInput: 'Apellido',
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Ingresa tu apellido(s)';
+                        return 'Completa el campo';
                       }
                       return null;
                     },
                     decoration: InputDecoration(
-                      hintText: 'Hernandez Rodriguez',
+                      hintText: 'Ingresa tu apellido(s)',
                       prefixIcon: const Icon(Icons.badge),
                       enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
@@ -243,7 +243,7 @@ class RegistroScreen extends HookConsumerWidget {
                     nameInput: 'Correo electrónico',
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Ingresa tu correo';
+                        return 'Completa el campo';
                       }
                       final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                       if (!emailRegex.hasMatch(value.trim())) {
