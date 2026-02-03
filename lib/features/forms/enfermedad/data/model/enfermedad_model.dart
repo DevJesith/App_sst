@@ -14,6 +14,7 @@ class EnfermedadModel extends Enfermedad {
     required String avances,
     required String estado,
     required DateTime fechaRegistro,
+    required DateTime fechaCreacion,
     int sincronizado = 0,
     required int usuarioId,
   }) : super(
@@ -27,6 +28,7 @@ class EnfermedadModel extends Enfermedad {
          avances: avances,
          estado: estado,
          fechaRegistro: fechaRegistro,
+         fechaCreacion: fechaCreacion,
          sincronizado: sincronizado,
          usuarioId: usuarioId,
        );
@@ -43,9 +45,8 @@ class EnfermedadModel extends Enfermedad {
       diasIncapacidad: map['dias_incapacidad'] as int? ?? 0,
       avances: map['avances'] as String? ?? '',
       estado: map['estado'] as String? ?? '',
-      fechaRegistro: map['fecha_registro'] != null 
-          ? DateTime.parse(map['fecha_registro'] as String) 
-          : DateTime.now(),
+      fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
+      fechaCreacion: DateTime.parse(map['fecha_registro'] as String),
       sincronizado: map['sincronizado'] as int? ?? 0,
       usuarioId: map['Usuarios_id'] as int? ?? 0,
     );
@@ -64,6 +65,7 @@ class EnfermedadModel extends Enfermedad {
       'avances': avances,
       'estado': estado,
       'fecha_registro': fechaRegistro.toIso8601String(),
+      'fecha_creacion': fechaCreacion.toIso8601String(),
       'sincronizado': sincronizado,
       'Usuarios_id': usuarioId,
     };
@@ -81,6 +83,7 @@ class EnfermedadModel extends Enfermedad {
     String? avances,
     String? estado,
     DateTime? fechaRegistro,
+    DateTime? fechaCreacion,
     int? sincronizado,
     int? usuarioId,
   }) {
@@ -95,6 +98,7 @@ class EnfermedadModel extends Enfermedad {
       avances: avances ?? this.avances,
       estado: estado ?? this.estado,
       fechaRegistro: fechaRegistro ?? this.fechaRegistro,
+      fechaCreacion: fechaCreacion ?? this.fechaCreacion,
       sincronizado: sincronizado ?? this.sincronizado,
       usuarioId: usuarioId ?? this.usuarioId,
     );

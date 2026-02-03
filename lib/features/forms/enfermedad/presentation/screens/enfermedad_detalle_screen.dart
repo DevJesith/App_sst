@@ -30,8 +30,12 @@ class EnfermedadDetalleScreen extends HookConsumerWidget {
     // ----------------------------------------------
 
     final fechaFormateada = DateFormat(
-      'dd/MM/yyyy HH:mm',
+      'dd/MM/yyyy',
     ).format(enfermedadMostrada.fechaRegistro);
+
+    final fechaFormateadaCreacion = DateFormat(
+      'dd/MM/yyyy',
+    ).format(enfermedadMostrada.fechaCreacion);
 
     // --- LÓGICA PARA OBTENER NOMBRES REALES ---
     final getProyectos = ref.read(getProyectosEnfermedadUseCaseProvider);
@@ -253,7 +257,8 @@ class EnfermedadDetalleScreen extends HookConsumerWidget {
                           _buildInfoRow('Proyecto', nombreProyecto.value),
                           _buildInfoRow('Contratista', nombreContratista.value),
                           _buildInfoRow('Trabajador', nombreTrabajador.value),
-                          _buildInfoRow('Fecha de Registro', fechaFormateada),
+                          _buildInfoRow('Fecha de suceso', fechaFormateada),
+                          _buildInfoRow('Fecha de creacion', fechaFormateadaCreacion),
                         ],
                       ),
                       const SizedBox(height: 16),

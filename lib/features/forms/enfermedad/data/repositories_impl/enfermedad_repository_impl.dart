@@ -51,6 +51,7 @@ class EnfermedadRepositoryImpl implements EnfermedadRepository {
       avances: enfermedad.avances, 
       estado: enfermedad.estado, 
       fechaRegistro: enfermedad.fechaRegistro, 
+      fechaCreacion: enfermedad.fechaCreacion, 
       usuarioId: enfermedad.usuarioId
       );
       return await localDatasource.crearEnfermedad(model);
@@ -73,6 +74,7 @@ class EnfermedadRepositoryImpl implements EnfermedadRepository {
       avances: enfermedad.avances, 
       estado: enfermedad.estado, 
       fechaRegistro: enfermedad.fechaRegistro, 
+      fechaCreacion: enfermedad.fechaCreacion, 
       usuarioId: enfermedad.usuarioId
       );
       return await localDatasource.actualizarEnfermedad(model);
