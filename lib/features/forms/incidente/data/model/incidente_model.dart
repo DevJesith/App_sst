@@ -61,6 +61,7 @@ class IncidenteModel extends Incidente {
       'avances': avances,
       'estado': estado,
       'fecha_registro': fechaRegistro.toIso8601String(),
+      'fecha_creacion': fechaCreacion.toIso8601String(),
       'sincronizado': sincronizado,
       'Usuarios_id': usuarioId,
     };

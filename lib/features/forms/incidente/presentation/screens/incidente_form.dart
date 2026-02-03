@@ -213,6 +213,7 @@ class IncidenteFormScreen extends HookConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Conexión detectada. Sincronizando...'),
+                duration: Duration(seconds: 1),
                 backgroundColor: Colors.blue,
               ),
             );

@@ -8,7 +8,7 @@ import 'package:app_sst/features/forms/incidente/presentation/states/incidente_s
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// Notifier encargado de la gestion de la lsita de incidentes (CRUD).
-/// 
+///
 /// Maneja los estados de carga, exito y error al interactuar con la base de datos.
 class IncidenteNotifier extends StateNotifier<IncidenteState> {
   final CrearIncidenteUsecases crearIncidenteUsecases;
@@ -93,36 +93,22 @@ class IncidenteNotifier extends StateNotifier<IncidenteState> {
 }
 
 /// Notifier para el estado del formulario
-/// 
-/// Maneja: 
+///
+/// Maneja:
 /// 1. La carga de la lista de proyectos
 /// 2. La seleccion del proyecto y otros campos.
 class IncidenteFormNotifier extends StateNotifier<IncidenteFormState> {
-
   final GetProyectosIncidenteUseCase getProyectosUseCase;
 
-  IncidenteFormNotifier({
-    required this.getProyectosUseCase
-  }) : super(const IncidenteFormState()){
+  IncidenteFormNotifier({required this.getProyectosUseCase})
+    : super(const IncidenteFormState()) {
     _cargarProyectos();
   }
 
   /// Carga la lista de proyectos disponibles desde la BD.
   Future<void> _cargarProyectos() async {
-    try {
-      print("🔄 INCIDENTE: Iniciando carga de proyectos...");
-      final proyectos = await getProyectosUseCase();
-      
-      print("✅ INCIDENTE: Proyectos encontrados: ${proyectos.length}");
-      
-      if (proyectos.isEmpty) {
-        print("⚠️ INCIDENTE: La lista de proyectos llegó vacía de la BD.");
-      }
-
-      state = state.copyWith(listaProyectos: proyectos);
-    } catch (e) {
-      print("❌ INCIDENTE ERROR: No se pudieron cargar los proyectos: $e");
-    }
+    final proyectos = await getProyectosUseCase();
+    state = state.copyWith(listaProyectos: proyectos);
   }
 
   /// Metodo publico para forzar la recarga de proyectos si falla la inicial.

@@ -34,7 +34,7 @@ class EnfermedadDetalleScreen extends HookConsumerWidget {
     ).format(enfermedadMostrada.fechaRegistro);
 
     final fechaFormateadaCreacion = DateFormat(
-      'dd/MM/yyyy',
+      'dd/MM/yyyy HH:mm',
     ).format(enfermedadMostrada.fechaCreacion);
 
     // --- LÓGICA PARA OBTENER NOMBRES REALES ---
