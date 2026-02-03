@@ -28,8 +28,12 @@ class GestionDetalleScreen extends HookConsumerWidget {
     // ----------------------------------------------
 
     final fechaFormateada = DateFormat(
-      'dd/MM/yyyy HH:mm',
+      'dd/MM/yyyy',
     ).format(gestionMostrada.fechaRegistro);
+
+    final fechaFormateadaCreacion = DateFormat(
+      'dd/MM/yyyy',
+    ).format(gestionMostrada.fechaCreacion);
 
     // --- LOGICA PARA OBTENER NOMBRE DEL PROYECTO ---
     final getProyectos = ref.read(getProyectosGestionUseCaseProvider);
@@ -197,7 +201,8 @@ class GestionDetalleScreen extends HookConsumerWidget {
                         children: [
                           _buildInfoRow('Proyecto', nombreProyecto.value),
                           _buildInfoRow('EE', gestionMostrada.ee),
-                          _buildInfoRow('Fecha de Registro', fechaFormateada),
+                          _buildInfoRow('Fecha de suceso', fechaFormateada),
+                          _buildInfoRow('Fecha de creacion', fechaFormateadaCreacion),
                         ],
                       ),
                       const SizedBox(height: 16),

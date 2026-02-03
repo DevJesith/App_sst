@@ -49,23 +49,28 @@ class GestionFormState {
   /// ID del proyecto seleccionado.
   final int? proyectoId;
 
+  final DateTime? fecha;
+
   /// Lista de proyectos cargados desde la BD para el Dropdown.
   final List<Map<String, dynamic>> listaProyectos;
 
   const GestionFormState({
     this.imagenes = const [],
     this.proyectoId,
+    this.fecha,
     this.listaProyectos = const []
   });
 
   GestionFormState copyWith ({
     List<XFile>? imagenes,
     int? proyectoId,
+    DateTime? fecha,
     List<Map<String, dynamic>>? listaProyectos,
   }){
     return GestionFormState(
       imagenes: imagenes ?? this.imagenes,
       proyectoId: proyectoId ?? this.proyectoId,
+      fecha: fecha ?? this.fecha,
       listaProyectos: listaProyectos ?? this.listaProyectos
     );
   }
