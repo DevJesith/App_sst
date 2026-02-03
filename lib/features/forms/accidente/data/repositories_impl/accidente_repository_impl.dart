@@ -51,6 +51,7 @@ class AccidenteRepositoryImpl implements AccidenteRepository {
         avances: accidente.avances,
         estado: accidente.estado,
         fechaRegistro: accidente.fechaRegistro,
+        fechaCreacion: accidente.fechaCreacion,
         sincronizado: accidente.sincronizado,
         usuarioId: accidente.usuarioId,
       );
@@ -73,6 +74,7 @@ class AccidenteRepositoryImpl implements AccidenteRepository {
         avances: accidente.avances,
         estado: accidente.estado,
         fechaRegistro: accidente.fechaRegistro,
+        fechaCreacion: accidente.fechaCreacion,
         usuarioId: accidente.usuarioId,
       );
       return await localDatasource.actualizarAccidente(model);

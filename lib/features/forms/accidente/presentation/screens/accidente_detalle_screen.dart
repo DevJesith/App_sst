@@ -32,8 +32,12 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
 
     // 1. Formateo de fecha
     final fechaFormateada = DateFormat(
-      'dd/MM/yyyy HH:mm',
+      'dd/MM/yyyy',
     ).format(accidenteMostrado.fechaRegistro);
+
+    final fechaFormateadaCreacion = DateFormat(
+      'dd/MM/yyyy HH:mm',
+    ).format(accidenteMostrado.fechaCreacion);
 
     // 2. Estados locales para los nombres (Hooks)
     final nombreProyecto = useState<String>('Cargando...');
@@ -246,8 +250,8 @@ class AccidenteDetalleScreen extends HookConsumerWidget {
                         children: [
                           _buildInfoRow('Proyecto', nombreProyecto.value),
                           _buildInfoRow('Contratista', nombreContratista.value),
-                          // _buildInfoRow('Mes', accidenteMostrado.mes),
-                          _buildInfoRow('Fecha Registro', fechaFormateada),
+                          _buildInfoRow('Fecha de suceso', fechaFormateada),
+                          _buildInfoRow('Fecha de creación', fechaFormateadaCreacion),
                         ],
                       ),
                       const SizedBox(height: 16),

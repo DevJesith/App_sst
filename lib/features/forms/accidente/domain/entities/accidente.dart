@@ -14,6 +14,7 @@ class Accidente {
   final String avances;
   final String estado;
   final DateTime fechaRegistro;
+  final DateTime fechaCreacion;
 
   /// Indica si el registro ya fue subido a la nube (1) o esta pendiente (0)
   final int sincronizado;
@@ -29,6 +30,7 @@ class Accidente {
     required this.avances,
     required this.estado,
     required this.fechaRegistro,
+    required this.fechaCreacion,
     this.sincronizado = 0,
     required this.usuarioId,
   });

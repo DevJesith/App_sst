@@ -215,6 +215,7 @@ class AccidenteFormScreen extends HookConsumerWidget {
         avances: avancesController.text,
         estado: formState.estado!,
         fechaRegistro: formState.fecha!,
+        fechaCreacion: DateTime.now(),
         usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1,
       );
 
