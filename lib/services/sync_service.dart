@@ -2,10 +2,10 @@ import 'package:app_sst/core/data/database/app_database.dart';
 import 'package:app_sst/services/connectivity_service.dart';
 
 /// Servicio encargado de la sincronizacion de datos.
-/// 
-/// Esta version implemnta una **SIMULACION** del proceso de sincronizacion
+///
+/// Esta version implementa una **SIMULACION** del proceso de sincronizacion
 /// para hacer pruebas de demostracion.
-/// 
+///
 /// En un entorno de produccion, este servicio se conectaria con una API REST
 /// para realizar el intercambio real de datos.
 class SyncService {
@@ -13,13 +13,12 @@ class SyncService {
 
   /// Ejecuta el proceso de sincronizacion simulado.
   /// 1. Verifica si hay internet
-  /// 1. Simula un retardo de red (2 segundos).
-  /// 2. Busca registros locales con estado sincronizado = 0.
-  /// 3. Actualiza el estado a sincronizado = 1 (verde).
-  /// 4. Retorna un reporte con la cantidad de registros procesados.
+  /// 2. Simula un retardo de red (2 segundos).
+  /// 3. Busca registros locales con estado sincronizado = 0.
+  /// 4. Actualiza el estado a sincronizado = 1 (verde).
+  /// 5. Retorna un reporte con la cantidad de registros procesados.
   Future<Map<String, int>> sincronizarTodo() async {
-
-    // 1. Freno de emergencia: Si no hay internte, no hacemos nada.
+    // 1. Freno de emergencia: Si no hay internet, no hacemos nada.
     final hayInternet = await ConnectivityService.tieneInternet();
     if (!hayInternet) {
       return {
@@ -27,13 +26,13 @@ class SyncService {
         'accidentes': 0,
         'incidentes': 0,
         'gestiones': 0,
-        'capacitaciones': 0, 
-        'enfermedades': 0, 
+        'capacitaciones': 0,
+        'enfermedades': 0,
       };
     }
 
     final db = await _appDatabase.database;
-    
+
     // 2. Simular tiempo de espera de red para realismo (UX)
     await Future.delayed(const Duration(seconds: 2));
 
@@ -46,11 +45,7 @@ class SyncService {
 
       if (pendientes.isNotEmpty) {
         // Los marcamos como subidos (sincronizado = 1)
-        await db.update(
-          tabla, 
-          {'sincronizado': 1}, 
-          where: 'sincronizado = 0'
-        );
+        await db.update(tabla, {'sincronizado': 1}, where: 'sincronizado = 0');
         return pendientes.length;
       }
       return 0;
