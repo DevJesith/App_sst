@@ -279,7 +279,6 @@ class GestionFormScreen extends HookConsumerWidget {
         foto1: foto1Path,
         foto2: foto2Path,
         foto3: foto3Path,
-        fechaRegistro: formState.fecha!,
         fechaCreacion: DateTime.now(),
         usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1,
       );

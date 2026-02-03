@@ -52,7 +52,6 @@ class GestionRepositoryImpl implements GestionRepository {
       foto1: gestion.foto1, 
       foto2: gestion.foto2, 
       foto3: gestion.foto3, 
-      fechaRegistro: gestion.fechaRegistro, 
       fechaCreacion: gestion.fechaCreacion, 
       sincronizado: gestion.sincronizado,
       usuarioId: gestion.usuarioId
@@ -77,8 +76,7 @@ class GestionRepositoryImpl implements GestionRepository {
       gestionCumple: gestion.gestionCumple, 
       foto1: gestion.foto1, 
       foto2: gestion.foto2, 
-      foto3: gestion.foto3, 
-      fechaRegistro: gestion.fechaRegistro, 
+      foto3: gestion.foto3,  
       fechaCreacion: gestion.fechaCreacion, 
       sincronizado: gestion.sincronizado,
       usuarioId: gestion.usuarioId

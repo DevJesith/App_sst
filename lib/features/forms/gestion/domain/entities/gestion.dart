@@ -15,7 +15,6 @@ class Gestion {
   final String foto1;
   final String foto2;
   final String foto3;
-  final DateTime fechaRegistro;
   final DateTime fechaCreacion;
   final int sincronizado;
   final int usuarioId;
@@ -32,7 +31,6 @@ class Gestion {
     required this.foto1,
     required this.foto2,
     required this.foto3,
-    required this.fechaRegistro,
     required this.fechaCreacion,
     this.sincronizado = 0,
     required this.usuarioId,

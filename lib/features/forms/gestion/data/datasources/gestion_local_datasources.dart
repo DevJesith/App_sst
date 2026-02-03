@@ -27,7 +27,7 @@ class GestionLocalDataSourceImpl implements GestionLocalDatasources {
     final db = await database.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'Gestion_inspeccion',
-      orderBy: 'fecha_registro DESC',
+      orderBy: 'fecha_creacion DESC',
     );
 
     return List.generate(maps.length, (i) {
@@ -55,7 +55,7 @@ class GestionLocalDataSourceImpl implements GestionLocalDatasources {
       'Gestion_inspeccion',
       where: 'Usuarios_id = ?',
       whereArgs: [usuarioId],
-      orderBy: 'fecha_registro DESC',
+      orderBy: 'fecha_creacion DESC',
     );
 
     return List.generate(maps.length, (i) {

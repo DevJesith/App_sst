@@ -175,7 +175,7 @@ class GestionesList extends HookConsumerWidget {
                               Text(
                                 DateFormat(
                                   'dd/MM/yy',
-                                ).format(gestion.fechaRegistro),
+                                ).format(gestion.fechaCreacion),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,

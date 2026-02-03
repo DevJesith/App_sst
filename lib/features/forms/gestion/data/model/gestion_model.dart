@@ -15,7 +15,6 @@ class GestionModel extends Gestion {
     required String foto1,
     required String foto2,
     required String foto3,
-    required DateTime fechaRegistro,
     required DateTime fechaCreacion,
     int sincronizado = 0,
     required int usuarioId,
@@ -31,7 +30,6 @@ class GestionModel extends Gestion {
          foto1: foto1,
          foto2: foto2,
          foto3: foto3,
-         fechaRegistro: fechaRegistro,
          fechaCreacion: fechaCreacion,
          sincronizado: sincronizado,
          usuarioId: usuarioId,
@@ -51,8 +49,9 @@ class GestionModel extends Gestion {
       foto1: map['foto1'] as String? ?? '',
       foto2: map['foto2'] as String? ?? '',
       foto3: map['foto3'] as String? ?? '',
-      fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
-      fechaCreacion: DateTime.parse(map['fecha_creacion'] as String),
+      fechaCreacion: map['fecha_creacion'] != null
+          ? DateTime.parse(map['fecha_creacion'] as String)
+          : DateTime.now(),
       sincronizado: map['sincronizado'] as int? ?? 0,
       usuarioId: map['Usuarios_id'] as int? ?? 0,
     );
@@ -72,7 +71,6 @@ class GestionModel extends Gestion {
       'foto1': foto1,
       'foto2': foto2,
       'foto3': foto3,
-      'fecha_registro': fechaRegistro.toIso8601String(),
       'fecha_creacion': fechaCreacion.toIso8601String(),
       'sincronizado': sincronizado,
       'Usuarios_id': usuarioId,
@@ -91,7 +89,6 @@ class GestionModel extends Gestion {
     String? foto1,
     String? foto2,
     String? foto3,
-    DateTime? fechaRegistro,
     DateTime? fechaCreacion,
     int? sincronizado,
     int? usuarioId,
@@ -108,7 +105,6 @@ class GestionModel extends Gestion {
       foto1: foto1 ?? this.foto1,
       foto2: foto2 ?? this.foto2,
       foto3: foto3 ?? this.foto3,
-      fechaRegistro: fechaRegistro ?? this.fechaRegistro,
       fechaCreacion: fechaCreacion ?? this.fechaCreacion,
       usuarioId: usuarioId ?? this.usuarioId,
     );

@@ -130,8 +130,8 @@ class GestionesEnviadosScreen extends HookConsumerWidget {
                         itemBuilder: (context, index) {
                           final gestion = misGestiones[index];
                           final fecha = DateFormat(
-                            'dd/MM/yyyy',
-                          ).format(gestion.fechaRegistro);
+                            'dd/MM/yyyy HH:mm',
+                          ).format(gestion.fechaCreacion);
           
                           // Buscar nombre del proyecto
                           String nombreProyecto = "ID: ${gestion.proyectoId}";
