@@ -34,8 +34,12 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
 
     // 2. Formateo de fecha usando el incidente actualizado
     final fechaFormateada = DateFormat(
-      'dd/MM/yyyy HH:mm',
+      'dd/MM/yyyy',
     ).format(incidenteMostrado.fechaRegistro);
+
+    final fechaFormateadaCreacion = DateFormat(
+      'dd/MM/yyyy',
+    ).format(incidenteMostrado.fechaCreacion);
 
     // 3. Obtener el caso de uso para traer los proyectos
     final getProyectos = ref.read(getProyectosIncidenteUseCaseProvider);
@@ -211,8 +215,8 @@ class IncidenteDetallesScreen extends HookConsumerWidget {
                         icon: Icons.info_outline,
                         children: [
                           _buildInfoRow('Proyecto', nombreProyecto.value),
-                          // _buildInfoRow('Mes', incidenteMostrado.mes),
-                          _buildInfoRow('Fecha de Registro', fechaFormateada),
+                          _buildInfoRow('Fecha de suceso', fechaFormateada),
+                          _buildInfoRow('Fecha de creacion', fechaFormateadaCreacion),
                         ],
                       ),
                       const SizedBox(height: 16),

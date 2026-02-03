@@ -8,6 +8,7 @@ class Incidente {
   final String avances;
   final String estado;
   final DateTime fechaRegistro;
+  final DateTime fechaCreacion;
   final int sincronizado;
   final int usuarioId;
   
@@ -20,6 +21,7 @@ class Incidente {
     required this.avances,
     required this.estado,
     required this.fechaRegistro,
+    required this.fechaCreacion,
     this.sincronizado = 0,
     required this.usuarioId
   });

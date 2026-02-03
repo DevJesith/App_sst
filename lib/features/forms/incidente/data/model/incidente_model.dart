@@ -12,6 +12,7 @@ class IncidenteModel extends Incidente {
     required String avances,
     required String estado,
     required DateTime fechaRegistro,
+    required DateTime fechaCreacion,
     int sincronizado = 0,
     required int usuarioId,
   }) : super(
@@ -23,6 +24,7 @@ class IncidenteModel extends Incidente {
          avances: avances,
          estado: estado,
          fechaRegistro: fechaRegistro,
+         fechaCreacion: fechaCreacion,
          sincronizado: sincronizado,
          usuarioId: usuarioId,
        );
@@ -37,9 +39,8 @@ class IncidenteModel extends Incidente {
       diasIncapacidad: map['dias_incapacidad'] as int? ?? 0,
       avances: map['avances'] as String? ?? '',
       estado: map['estado'] as String? ?? '',
-      fechaRegistro: map['fecha_registro'] != null 
-          ? DateTime.parse(map['fecha_registro'] as String) 
-          : DateTime.now(),
+      fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
+      fechaCreacion: DateTime.parse(map['fecha_creacion'] as String),
       sincronizado: map['sincronizado'] as int? ?? 0,
       usuarioId: map['Usuarios_id'] as int? ?? 0,
     );
@@ -71,6 +72,7 @@ class IncidenteModel extends Incidente {
     String? avances,
     String? estado,
     DateTime? fechaRegistro,
+    DateTime? fechaCreacion,
     int? sincronizado,
     int? usuarioId,
   }) {
@@ -83,6 +85,7 @@ class IncidenteModel extends Incidente {
       avances: avances ?? this.avances,
       estado: estado ?? this.estado,
       fechaRegistro: fechaRegistro ?? this.fechaRegistro,
+      fechaCreacion: fechaCreacion ?? this.fechaCreacion,
       sincronizado: sincronizado ?? this.sincronizado,
       usuarioId: usuarioId ?? this.usuarioId,
     );

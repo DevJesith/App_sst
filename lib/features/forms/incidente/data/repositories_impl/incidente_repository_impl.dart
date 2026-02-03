@@ -49,6 +49,7 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
         avances: incidente.avances,
         estado: incidente.estado,
         fechaRegistro: incidente.fechaRegistro,
+        fechaCreacion: incidente.fechaCreacion,
         usuarioId: incidente.usuarioId,
         sincronizado: incidente.sincronizado,
       );
@@ -70,6 +71,7 @@ class IncidenteRepositoryImpl implements IncidenteRepository {
         avances: incidente.avances,
         estado: incidente.estado,
         fechaRegistro: incidente.fechaRegistro,
+        fechaCreacion: incidente.fechaCreacion,
         sincronizado: incidente.sincronizado,
         usuarioId: incidente.usuarioId,
       );
