@@ -198,7 +198,6 @@ class CapacitacionFormScreen extends HookConsumerWidget {
         numeroPersonas: int.tryParse(numeroPersonasController.text) ?? 0,
         responsable: responsableController.text,
         tema: temaController.text,
-        fechaRegistro: formState.fecha!,
         fechaCreacion: DateTime.now(),
         usuarioId: ref.read(usuarioAutenticadoProvider)?.id ?? 1,
       );

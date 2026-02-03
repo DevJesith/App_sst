@@ -1,6 +1,6 @@
 import '../../domain/entities/capacitacion.dart';
 
-/// Modelo de datos para la tabla 
+/// Modelo de datos para la tabla
 /// Extiende la entidad de dominio y agrega metodos de serializacion.
 class CapacitacionModel extends Capacitacion {
   const CapacitacionModel({
@@ -12,24 +12,22 @@ class CapacitacionModel extends Capacitacion {
     required int numeroPersonas,
     required String responsable,
     required String tema,
-    required DateTime fechaRegistro,
     required DateTime fechaCreacion,
     int sincronizado = 0,
     required int usuarioId,
   }) : super(
-          id: id,
-          idProyecto: idProyecto,
-          idContratista: idContratista,
-          descripcion: descripcion,
-          numeroCapacita: numeroCapacita,
-          numeroPersonas: numeroPersonas,
-          responsable: responsable,
-          tema: tema,
-          fechaRegistro: fechaRegistro,
-          fechaCreacion: fechaCreacion,
-          sincronizado: sincronizado,
-          usuarioId: usuarioId,
-        );
+         id: id,
+         idProyecto: idProyecto,
+         idContratista: idContratista,
+         descripcion: descripcion,
+         numeroCapacita: numeroCapacita,
+         numeroPersonas: numeroPersonas,
+         responsable: responsable,
+         tema: tema,
+         fechaCreacion: fechaCreacion,
+         sincronizado: sincronizado,
+         usuarioId: usuarioId,
+       );
 
   /// Crea una instancia desde un Mapa BD.
   factory CapacitacionModel.fromMap(Map<String, dynamic> map) {
@@ -43,8 +41,9 @@ class CapacitacionModel extends Capacitacion {
       numeroPersonas: map['Numero_personas'] as int? ?? 0,
       responsable: map['Responsable'] as String? ?? '',
       tema: map['Tema'] as String? ?? '',
-      fechaRegistro: DateTime.parse(map['fecha_registro'] as String),
-      fechaCreacion: DateTime.parse(map['fecha_creacion'] as String),
+      fechaCreacion: map['fecha_creacion'] != null
+          ? DateTime.parse(map['fecha_creacion'] as String)
+          : DateTime.now(),
       sincronizado: map['sincronizado'] as int? ?? 0,
       usuarioId: map['Usuarios_id'] as int? ?? 0,
     );
@@ -61,7 +60,6 @@ class CapacitacionModel extends Capacitacion {
       'Numero_personas': numeroPersonas,
       'Responsable': responsable,
       'Tema': tema,
-      'fecha_registro': fechaRegistro.toIso8601String(),
       'fecha_creacion': fechaCreacion.toIso8601String(),
       'sincronizado': sincronizado,
       'usuarios_id': usuarioId,
@@ -77,7 +75,6 @@ class CapacitacionModel extends Capacitacion {
     int? numeroPersonas,
     String? responsable,
     String? tema,
-    DateTime? fechaRegistro,
     DateTime? fechaCreacion,
     int? sincronizado,
     int? usuarioId,
@@ -91,7 +88,6 @@ class CapacitacionModel extends Capacitacion {
       numeroPersonas: numeroPersonas ?? this.numeroPersonas,
       responsable: responsable ?? this.responsable,
       tema: tema ?? this.tema,
-      fechaRegistro: fechaRegistro ?? this.fechaRegistro,
       fechaCreacion: fechaCreacion ?? this.fechaCreacion,
       sincronizado: sincronizado ?? this.sincronizado,
       usuarioId: usuarioId ?? this.usuarioId,

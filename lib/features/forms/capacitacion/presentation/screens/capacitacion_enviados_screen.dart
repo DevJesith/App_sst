@@ -116,8 +116,8 @@ class CapacitacionesEnviadosScreen extends HookConsumerWidget {
                         itemBuilder: (context, index) {
                           final capacitacion = misCapacitaciones[index];
                           final fecha = DateFormat(
-                            'dd/MM/yyyy',
-                          ).format(capacitacion.fechaRegistro);
+                            'dd/MM/yyyy HH:mm',
+                          ).format(capacitacion.fechaCreacion);
           
                           return Card(
                             elevation: 2,

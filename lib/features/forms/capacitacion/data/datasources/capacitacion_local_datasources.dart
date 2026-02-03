@@ -28,7 +28,7 @@ class CapacitacionLocalDataSourceImpl implements CapacitacionLocalDataSource {
     final db = await database.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'Capacitacion',
-      orderBy: 'fecha_registro DESC',
+      orderBy: 'fecha_creacion DESC',
     );
     
     return List.generate(maps.length, (i) {
@@ -56,7 +56,7 @@ class CapacitacionLocalDataSourceImpl implements CapacitacionLocalDataSource {
       'Capacitacion',
       where: 'usuarios_id = ?',
       whereArgs: [usuarioId],
-      orderBy: 'fecha_registro DESC',
+      orderBy: 'fecha_creacion DESC',
     );
     
     return List.generate(maps.length, (i) {

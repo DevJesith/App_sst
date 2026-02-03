@@ -175,7 +175,7 @@ class CapacitacionListScreen extends HookConsumerWidget {
                                 ),
                               ),
                               Text(
-                                DateFormat('dd/MM/yy').format(cap.fechaRegistro),
+                                DateFormat('dd/MM/yy HH:mm').format(cap.fechaCreacion),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,

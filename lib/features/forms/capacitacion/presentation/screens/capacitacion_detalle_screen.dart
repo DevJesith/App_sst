@@ -14,11 +14,8 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     // --- LOGICA DE ACTUALIZACION EN TIEMPO REAL ---
-    final listaCapacitaciones = ref.watch(
-      capacitacionesListProvider,
-    ); 
+    final listaCapacitaciones = ref.watch(capacitacionesListProvider);
     Capacitacion capacitacionMostrada = capacitacion;
 
     try {
@@ -27,10 +24,6 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
       );
     } catch (_) {}
     // ----------------------------------------------
-
-    final fechaFormateada = DateFormat(
-      'dd/MM/yyyy',
-    ).format(capacitacionMostrada.fechaRegistro);
 
     final fechaFormateadaCreacion = DateFormat(
       'dd/MM/yyyy HH:mm',
@@ -169,6 +162,7 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
           constraints: const BoxConstraints(maxWidth: 600),
           child: SingleChildScrollView(
             child: Column(
+              
               children: [
                 // --- HEADER ---
                 Container(
@@ -185,7 +179,7 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        capacitacionMostrada.tema, 
+                        capacitacionMostrada.tema,
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -218,7 +212,9 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                     ],
                   ),
                 ),
-          
+
+                const SizedBox(height: 36,),
+
                 // --- CONTENIDO ---
                 Padding(
                   padding: const EdgeInsets.all(16),
@@ -230,20 +226,19 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                         children: [
                           _buildInfoRow('Proyecto', nombreProyecto.value),
                           _buildInfoRow('Contratista', nombreContratista.value),
-                          _buildInfoRow('Fecha de suceso', fechaFormateada),
-                          _buildInfoRow('Fecha de creacion', fechaFormateadaCreacion),
+                          _buildInfoRow(
+                            'Fecha de creacion',
+                            fechaFormateadaCreacion,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
-          
+
                       _buildInfoCard(
                         title: 'Detalles de la Sesión',
                         icon: Icons.class_outlined,
                         children: [
-                          _buildInfoRow(
-                            'Tema',
-                            capacitacionMostrada.tema,
-                          ),
+                          _buildInfoRow('Tema', capacitacionMostrada.tema),
                           _buildInfoRow(
                             'Descripcion',
                             capacitacionMostrada.descripcion,
@@ -263,7 +258,7 @@ class CapacitacionDetalleScreen extends HookConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-          
+
                       _buildInfoCard(
                         title: 'Estado de Sincronización',
                         icon: Icons.cloud_sync,
