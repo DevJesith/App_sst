@@ -15,70 +15,74 @@ class HomeScreens extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // //Funcion para manejar la sincronizacion manualmente
+    // Future<void> ejecutarSincronizacion() async {
+    //   showDialog(
+    //     context: context,
+    //     barrierDismissible: false,
+    //     builder: (context) => const Center(
+    //       child: Card(
+    //         child: Padding(
+    //           padding: EdgeInsets.all(20.0),
+    //           child: Column(
+    //             mainAxisSize: MainAxisSize.min,
+    //             children: [
+    //               CircularProgressIndicator(),
+    //               SizedBox(height: 16),
+    //               Text("Sincronizando con la nube..."),
+    //               Text(
+    //                 "(Simulacion)",
+    //                 style: TextStyle(fontSize: 10, color: Colors.grey),
+    //               ),
+    //             ],
+    //           ),
+    //         ),
+    //       ),
+    //     ),
+    //   );
 
-      //Funcion para manejar la sincronizacion
-      Future<void> ejecutarSincronizacion() async {
-        
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) =>  const Center(
-            child: Card(
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16,),
-                    Text("Sincronizando con la nube..."),
-                    Text("(Simulacion)", style: TextStyle(fontSize: 10, color: Colors.grey),)
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
+    //   try {
+    //     //Llamar al servicio simulado
+    //     final resultado = await SyncService().sincronizarTodo();
 
-        try {
-          
-          //Llamar al servicio simulado
-          final resultado = await SyncService().sincronizarTodo();
+    //     if (context.mounted) {
+    //       Navigator.pop(context);
 
-          if (context.mounted) {
-            Navigator.pop(context);
-
-            //Mostrar resultado
-            showDialog(
-              context: context,
-              builder: (_) => AlertDialog(
-                title: const Text("✅ Sincronización Exitosa"),
-                content: Text(
-                "Se han subido ${resultado['total']} registros al servidor.\n\n"
-                "• Accidentes: ${resultado['accidentes']}\n"
-                "• Incidentes: ${resultado['incidentes']}\n"
-                "• Gestiones: ${resultado['gestiones']}\n"
-                "• Capacitaciones: ${resultado['capacitaciones']}\n"
-                "• Enfermedades: ${resultado['enfermedades']}"
-                ),
-                actions: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Aceptar'))
-                ],
-              )
-            );
-          }
-        } catch (e) {
-          if (context.mounted) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Error al sincronizar: $e"))
-            );
-          }
-        }
-      }
+    //       //Mostrar resultado
+    //       showDialog(
+    //         context: context,
+    //         builder: (_) => AlertDialog(
+    //           title: const Text("✅ Sincronización Exitosa"),
+    //           content: Text(
+    //             "Se han subido ${resultado['total']} registros al servidor.\n\n"
+    //             "• Accidentes: ${resultado['accidentes']}\n"
+    //             "• Incidentes: ${resultado['incidentes']}\n"
+    //             "• Gestiones: ${resultado['gestiones']}\n"
+    //             "• Capacitaciones: ${resultado['capacitaciones']}\n"
+    //             "• Enfermedades: ${resultado['enfermedades']}",
+    //           ),
+    //           actions: [
+    //             TextButton(
+    //               onPressed: () => Navigator.pop(context),
+    //               child: const Text('Aceptar'),
+    //             ),
+    //           ],
+    //         ),
+    //       );
+    //     }
+    //   } catch (e) {
+    //     if (context.mounted) {
+    //       Navigator.pop(context);
+    //       ScaffoldMessenger.of(
+    //         context,
+    //       ).showSnackBar(SnackBar(content: Text("Error al sincronizar: $e")));
+    //     }
+    //   }
+    // }
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+
       /// AppBar con título y notificación
       appBar: AppBar(
         title: const Text(
@@ -91,14 +95,14 @@ class HomeScreens extends HookConsumerWidget {
         leadingWidth: 30,
         backgroundColor: const Color.fromARGB(255, 221, 221, 221),
 
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.cloud_upload),
-            tooltip: "Sincronizar datos",
-            onPressed: ejecutarSincronizacion,
-          ),
-          const SizedBox(width: 10,)
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.cloud_upload),
+        //     tooltip: "Sincronizar datos",
+        //     onPressed: ejecutarSincronizacion,
+        //   ),
+        //   const SizedBox(width: 10),
+        // ],
       ),
 
       /// Layout adaptable según ancho de pantalla
@@ -113,6 +117,7 @@ class HomeScreens extends HookConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     constraints: const BoxConstraints(maxWidth: 400),
+
                     /// Título de sección
                     child: Text(
                       "Formularios Iniciales De Riesgo",
@@ -127,7 +132,7 @@ class HomeScreens extends HookConsumerWidget {
 
                   const SizedBox(height: 20),
 
-/// Grid de formularios
+                  /// Grid de formularios
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: GridView.count(
@@ -173,7 +178,7 @@ class HomeScreens extends HookConsumerWidget {
                             width: 80,
                           ),
                           typeForm: "Incidente",
-                          borderColor: Colors.orange ,
+                          borderColor: Colors.orange,
                         ),
 
                         /// Tarjeta: Enfermedad Laboral
@@ -182,7 +187,7 @@ class HomeScreens extends HookConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const EnfermedadFormScreen (),
+                                builder: (_) => const EnfermedadFormScreen(),
                               ),
                             );
                           },

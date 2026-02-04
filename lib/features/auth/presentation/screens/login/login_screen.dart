@@ -12,7 +12,7 @@ import '../recovery/recuperar_contrasena_screen.dart';
 import '../user/welcome_screen.dart';
 
 /// Pantalla de inicio de sesion
-/// 
+///
 /// Permite a los usuarios autenticarse con su correo y contraseña.
 /// Tambien maneja el acceso especial para el Administrador
 class LoginScreen extends HookConsumerWidget {
@@ -65,16 +65,11 @@ class LoginScreen extends HookConsumerWidget {
 
         // 2. Verificar credenciales del usuario normal en la BD
         final usuario = await ref.read(
-          loginProvider({
-            'email': email,
-            'contrasena': contrasena,
-          }).future,
+          loginProvider({'email': email, 'contrasena': contrasena}).future,
         );
 
         if (context.mounted) {
           if (usuario != null) {
-
-
             // Guardar sesion permanentemente
             await StorageService.guardarSesion(usuario.id!);
 
@@ -141,7 +136,6 @@ class LoginScreen extends HookConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-
                       /// --- ENCABEZADO ---
                       const Icon(
                         Icons.login,
@@ -165,10 +159,7 @@ class LoginScreen extends HookConsumerWidget {
                       /// Subtítulo
                       const Text(
                         'Ingresa tu correo y contraseña',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 30),
@@ -252,7 +243,8 @@ class LoginScreen extends HookConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const RecuperarContrasenaScreen(),
+                                builder: (_) =>
+                                    const RecuperarContrasenaScreen(),
                               ),
                             );
                           },
@@ -297,38 +289,6 @@ class LoginScreen extends HookConsumerWidget {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // --- INFORMACION ADMIN ---
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.blue.shade200,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: Colors.blue.shade700,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Admin: admin@sst.com / admin123',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.blue.shade700,
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ],
