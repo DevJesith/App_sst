@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:app_sst/config.dart';
 import 'package:http/http.dart' as http;
 
 /// Servicio encargado del envio de emails transaccionales.
@@ -8,10 +9,10 @@ import 'package:http/http.dart' as http;
 /// de un servidor backend propio para el correo.
 class EmailService {
   // Credenciales de EmailsJs
-  static const String _serviceId = 'service_f6o7yqn';
-  static const String _templateIdRegistro = 'template_ll24ur3';
-  static const String _templateIdRecuperacion = 'template_ou5wq2i';
-  static const String _publicKey = 'CZf5kMGFPXOWI16KK';
+  static const String _serviceId = AppConfig.serviceId;
+  static const String _templateIdRegistro = AppConfig.templateIdRegistro;
+  static const String _templateIdRecuperacion = AppConfig.templateIdRecuperacion;
+  static const String _publicKey = AppConfig.publicKey;
 
   /// Genera un codigo numerico aleatorio de 6 digitos.
   static String generarCodigo() {
