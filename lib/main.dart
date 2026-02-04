@@ -1,4 +1,4 @@
-import 'package:app_sst/core/data/database/drop_clean_database.dart';
+// import 'package:app_sst/core/data/database/drop_clean_database.dart';
 import 'package:app_sst/features/auth/presentation/screens/startup/check_auth_screen.dart';
 import 'package:app_sst/services/connectivity_manager.dart';
 import 'package:app_sst/services/notification_service.dart';

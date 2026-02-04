@@ -1,4 +1,4 @@
-import 'package:app_sst/services/sync_service.dart';
+// import 'package:app_sst/services/sync_service.dart';
 import 'package:app_sst/shared/widgets/card_form_widgets.dart';
 import 'package:app_sst/features/forms/accidente/presentation/screens/accidente_form_screen.dart';
 import 'package:app_sst/features/forms/capacitacion/presentation/screens/capacitacion_form.dart';
