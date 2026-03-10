@@ -1,10 +1,14 @@
 import 'package:app_sst/features/auth/presentation/providers/auth_provider.dart';
+import 'package:app_sst/features/notifications/presentation/providers/notification_providers.dart';
+import 'package:app_sst/features/notifications/presentation/screens/notificaciones_screen.dart';
+import 'package:app_sst/services/connectivity_manager.dart';
 import 'package:app_sst/shared/widgets/perfil_widget.dart';
 import 'package:app_sst/features/auth/domain/entities/usuarios.dart';
 import 'package:app_sst/features/forms/gestion/presentation/screens/gestion_form.dart';
 import 'package:app_sst/features/home/presentation/home_screens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// Pantalla de bienvenida
@@ -16,7 +20,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 /// 3. Menu lateral (Drawer) con informacion del perfil
 class WelcomeScreen extends HookConsumerWidget {
   /// El usuario autenticado que ha iniciado sesion.
-  final Usuarios usuario;
+  final Usuarios usuario ;
   const WelcomeScreen({super.key, required this.usuario});
 
   @override
@@ -24,6 +28,17 @@ class WelcomeScreen extends HookConsumerWidget {
     final usuarioState = ref.watch(usuarioAutenticadoProvider);
 
     final usuarioActual = usuarioState ?? usuario;
+
+    useEffect(() {
+      ConnectivityManager().onSyncCompleted = () {
+        ref.read(notificationNotifierProvider.notifier).cargar();
+      };
+
+      return () {
+        ConnectivityManager().onSyncCompleted = null;
+      };
+    }, []);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
 
@@ -38,6 +53,67 @@ class WelcomeScreen extends HookConsumerWidget {
             icon: Icon(Icons.menu, color: Colors.black87),
           ),
         ),
+        actions: [
+          Consumer(
+            builder: (context, ref, child) {
+              final notificaciones = ref.watch(notificationNotifierProvider);
+              final noLeidas = notificaciones.where((n) => !n.leido).length;
+
+              return Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      ref
+                          .read(notificationNotifierProvider.notifier)
+                          .marcarLeidas();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const NotificacionesScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.notifications_outlined,
+                      color: Colors.black87,
+                      size: 30,
+                    ),
+                  ),
+                  if (noLeidas > 0)
+                    Positioned(
+                      right: 8,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Color(0xFFF5F7FA), width: 2.5),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 22,
+                          minHeight: 22,
+                        ),
+                        child: Text(
+                          noLeidas > 99 ? '99+' : '$noLeidas',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            height: 1
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(width: 10),
+        ],
       ),
 
       /// Menu lateral con la informacion del usuario actual
@@ -85,7 +161,7 @@ class WelcomeScreen extends HookConsumerWidget {
 
                     /// 2. SALUDO PERSONALIZADO
                     Text(
-                      "¡Hola, ${usuario.nombre.split(' ')[0]}! ",
+                      "¡Hola, ${usuarioActual.nombre.split(' ')[0]}! ",
                       style: TextStyle(
                         fontSize: 28,
                         color: Colors.blue[800],
@@ -156,7 +232,12 @@ class WelcomeScreen extends HookConsumerWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          backgroundColor: const Color.fromARGB(255, 0, 168, 42),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            0,
+                            168,
+                            42,
+                          ),
                         ),
                         child: const Text(
                           'Gestión de Formularios',

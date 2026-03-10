@@ -31,9 +31,10 @@ class AppDatabase {
     await db.execute('''
       CREATE TABLE usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        documento TEXT NOT NULL UNIQUE,
         nombre TEXT NOT NULL,
         apellido TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL,
         contrasena TEXT NOT NULL
       )
     ''');
@@ -278,6 +279,35 @@ class AppDatabase {
       )
     ''');
 
+    // --- NOTIFICACIONES ---
+    await db.execute('''
+      CREATE TABLE Notificaciones(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        titulo TEXT,
+        cuerpo TEXT,
+        fecha TEXT,
+        leido INTEGER DEFAULT 0,
+        Usuarios_id INTEGER,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+      )
+    ''');
+
+    // --- SOLICITUD CAMBIO CORREO ---
+    await db.execute('''
+      CREATE TABLE Solicitud_Cambio_Correo(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        documento TEXT,
+        correo_viejo TEXT,
+        correo_nuevo TEXT,
+        motivo TEXT,
+        telefono_contacto TEXT,
+        fecha_solicitud TEXT,
+        estado TEXT DEFAULT 'Pendiente',
+        Usuarios_id INTEGER,
+        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+      )
+    ''');
+
     // ✅ INSERTAR DATOS DE PRUEBA (SIMULACIÓN)
     await _seedData(db);
   }
@@ -357,6 +387,7 @@ class AppDatabase {
 
   /// Inserta un nuevo usuario en la base de datos local.
   Future<int> insertarUsuario(
+    String documento,
     String nombre,
     String apellido,
     String email,
@@ -364,6 +395,7 @@ class AppDatabase {
   ) async {
     final db = await database;
     return await db.insert('usuarios', {
+      'documento': documento,
       'nombre': nombre,
       'apellido': apellido,
       'email': email,
