@@ -1,3 +1,6 @@
+import 'package:app_sst/features/notifications/presentation/screens/notificaciones_screen.dart';
+import 'package:app_sst/main.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Service encargado de gestionar las notificaciones locales del dispositivo.
@@ -37,7 +40,13 @@ class NotificationService {
           iOS: initializationSettingsDarwin,
         );
 
-    await _notificationsPlugin.initialize(initializationSettings);
+    await _notificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        // Esto se ejecuta cuando el usuario toca la notificacion
+        _onNotificationTapped();
+      },
+    );
 
     // Solicitar permisos explicitos en Android 13+
     await _notificationsPlugin
@@ -45,6 +54,15 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.requestNotificationsPermission();
+  }
+
+  void _onNotificationTapped() {
+    // Usamos la llave global para nevegar sin necesidad de un BuildContext
+    if (navigatorKey.currentState != null) {
+      navigatorKey.currentState!.push(
+        MaterialPageRoute(builder: (_) => const NotificacionesScreen()),
+      );
+    }
   }
 
   /// Muestra una notificacion inmediata en la barra de estado.
