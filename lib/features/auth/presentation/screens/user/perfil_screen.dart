@@ -17,6 +17,9 @@ class PerfilScreen extends HookConsumerWidget {
     final usuarioActual = ref.watch(usuarioAutenticadoProvider);
 
     // Controladores
+    final documentoController = useTextEditingController(
+      text: usuarioActual?.documento ?? '',
+    );
     final nombreController = useTextEditingController(
       text: usuarioActual?.nombre ?? '',
     );
@@ -41,6 +44,7 @@ class PerfilScreen extends HookConsumerWidget {
         //1. Crear usuario actualizado (Mantenemos ID, Email y Contraseña)
         final usuarioEditado = Usuarios(
           id: usuarioActual.id,
+          documento: documentoController.text.trim(),
           nombre: nombreController.text.trim(),
           apellido: apellidoController.text.trim(),
           email: usuarioActual.email,
@@ -142,6 +146,30 @@ class PerfilScreen extends HookConsumerWidget {
                           children: [
                             const SizedBox(height: 10),
 
+                            // Documento (Solo lectura)
+                            Opacity(
+                              opacity: 0.7,
+                              child: inputReutilizables(
+                                controller: documentoController,
+                                nameInput: 'Numero de documento',
+                                readOnly: true,
+                                prefixIcon: const Icon(Icons.badge),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 8, left: 12),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  '* El numero de documento no se puede modificar',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
+
                             // Nombre
                             inputReutilizables(
                               controller: nombreController,
@@ -160,28 +188,11 @@ class PerfilScreen extends HookConsumerWidget {
                             ),
                             const SizedBox(height: 20),
 
-                            // Email (Solo lectura)
-                            Opacity(
-                              opacity: 0.7,
-                              child: inputReutilizables(
-                                controller: emailController,
-                                nameInput: 'Correo electronico',
-                                readOnly: true,
-                                prefixIcon: const Icon(Icons.email_outlined),
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.only(top: 8, left: 12),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  '* El correo no se puede modificar',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
+                            inputReutilizables(
+                              controller: emailController,
+                              nameInput: 'Correo electronico',
+                              validator: (v) => v!.isEmpty ? 'Requerido' : null,
+                              prefixIcon: const Icon(Icons.badge_outlined),
                             ),
 
                             const SizedBox(height: 40),
