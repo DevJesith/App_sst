@@ -292,12 +292,13 @@ class AppDatabase {
       )
     ''');
 
-    // --- SOLICITUD CAMBIO CORREO ---
+    // --- PQRS ---
     await db.execute('''
       CREATE TABLE Pqrs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       tipo TEXT NOT NULL,
       nombre_solicitante TEXT NOT NULL,
+      telefono_contacto TEXT NOT NULL,
       correo_contacto TEXT NOT NULL,
       descripcion TEXT NOT NULL,
       fecha_creacion TEXT NOT NULL,

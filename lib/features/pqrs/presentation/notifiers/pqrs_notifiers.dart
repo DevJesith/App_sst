@@ -4,6 +4,10 @@ import 'package:app_sst/features/pqrs/domain/usecases/get_pqrs_usecase.dart';
 import 'package:app_sst/features/pqrs/domain/usecases/resolver_pqrs_usecases.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+
+/// Gestor de estado (StateNotifier) para la lista de PQRS.
+/// Se encarga de interactuar con los casos de uso para cargar, crear y resolver PQRS, 
+/// y de notificar a la UI sobre los cambios en el estado.
 class PqrsNotifiers extends StateNotifier<List<Pqrs>> {
   final CrearPqrsUsecases crearPqrs;
   final GetPqrsUsecase obtenerPqrs;
