@@ -19,6 +19,7 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
   Future<int> registrarUsuario(Usuarios usuarios) async {
     try {
       return await db.insertarUsuario(
+        usuarios.documento,
         usuarios.nombre,
         usuarios.apellido,
         usuarios.email,
@@ -54,6 +55,7 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
       // Convertimos la entidad a modelo para obtener el Mapa
       final usuarioModel = UsuarioModel(
         id: usuario.id,
+        documento: usuario.documento,
         nombre: usuario.nombre,
         apellido: usuario.apellido,
         email: usuario.email,

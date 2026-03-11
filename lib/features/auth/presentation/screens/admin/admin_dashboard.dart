@@ -1,5 +1,4 @@
 import 'package:app_sst/features/auth/presentation/screens/admin/admin_pqrs_screen.dart';
-import 'package:app_sst/features/auth/presentation/screens/admin/admin_solicitudes_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../core/utils/exports/export_utils.dart';

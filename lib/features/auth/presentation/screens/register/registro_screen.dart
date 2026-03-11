@@ -34,6 +34,7 @@ class RegistroScreen extends HookConsumerWidget {
     final formKey = useMemoized(() => GlobalKey<FormState>());
 
     // Controladores
+    final documentoController = useTextEditingController();
     final nombreController = useTextEditingController();
     final apellidoController = useTextEditingController();
     final emailController = useTextEditingController();
@@ -108,6 +109,7 @@ class RegistroScreen extends HookConsumerWidget {
 
         // 3. Crear objeto usuario temporal
         final usuarioTemporal = Usuarios(
+          documento: documentoController.text.trim(),
           nombre: nombreController.text.trim(),
           apellido: apellidoController.text.trim(),
           email: email,
@@ -172,6 +174,39 @@ class RegistroScreen extends HookConsumerWidget {
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 30),
+
+                  // Documento
+                  inputReutilizables(
+                    controller: documentoController,
+                    nameInput: 'Numero de Documento',
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Completa el campo';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: '123456789',
+                      prefixIcon: const Icon(Icons.badge),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.inactiveGray,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: CupertinoColors.activeBlue,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
 
                   // Nombre
                   inputReutilizables(

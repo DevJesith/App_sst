@@ -7,12 +7,14 @@ import '../../domain/entities/usuarios.dart';
 class UsuarioModel extends Usuarios {
   UsuarioModel({
     int? id,
+    required String documento,
     required String nombre,
     required String apellido,
     required String email,
     required String contrasena,
   }) : super(
           id: id,
+          documento: documento,
           nombre: nombre,
           apellido: apellido,
           email: email,
@@ -25,6 +27,7 @@ class UsuarioModel extends Usuarios {
   factory UsuarioModel.fromMap(Map<String, dynamic> map) {
     return UsuarioModel(
       id: map['id'] as int?,
+      documento: map['documento'] as String,
       nombre: map['nombre'] as String,
       apellido: map['apellido'] as String,
       email: map['email'] as String,
@@ -37,6 +40,7 @@ class UsuarioModel extends Usuarios {
   /// Util para operaciones `INSERT` o `UPDATE` en SQLite.
   Map<String, dynamic> toMap() {
     final Map<String, dynamic> map = {
+      'documento': documento,
       'nombre': nombre,
       'apellido': apellido,
       'email': email,
