@@ -1,3 +1,5 @@
+import 'package:app_sst/features/auth/presentation/screens/admin/admin_pqrs_screen.dart';
+import 'package:app_sst/features/auth/presentation/screens/admin/admin_solicitudes_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../core/utils/exports/export_utils.dart';
@@ -153,6 +155,25 @@ class AdminDashboard extends HookConsumerWidget {
                     await ExportUtils.generateDatabasePDF(context);
                   },
                 ),
+
+                const SizedBox(height: 16),
+
+                _DashboardCard(
+                  title: 'Gestion de PQRS',
+                  subtitle: 'Atender peticiones y quejas de usuarios',
+                  icon: Icons.feedback,
+                  color: Colors.teal.shade700,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminPqrsScreen (),
+                      ),
+                    );
+                  },
+                ),
+
+
               ],
             ),
           ),

@@ -294,17 +294,14 @@ class AppDatabase {
 
     // --- SOLICITUD CAMBIO CORREO ---
     await db.execute('''
-      CREATE TABLE Solicitud_Cambio_Correo(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        documento TEXT,
-        correo_viejo TEXT,
-        correo_nuevo TEXT,
-        motivo TEXT,
-        telefono_contacto TEXT,
-        fecha_solicitud TEXT,
-        estado TEXT DEFAULT 'Pendiente',
-        Usuarios_id INTEGER,
-        FOREIGN KEY (Usuarios_id) REFERENCES usuarios(id)
+      CREATE TABLE Pqrs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tipo TEXT NOT NULL,
+      nombre_solicitante TEXT NOT NULL,
+      correo_contacto TEXT NOT NULL,
+      descripcion TEXT NOT NULL,
+      fecha_creacion TEXT NOT NULL,
+      estado TEXT DEFAULT 'Pendiente'
       )
     ''');
 

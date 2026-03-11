@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:app_sst/features/auth/presentation/screens/recovery/reporte_correo_screen.dart';
+import 'package:app_sst/features/pqrs/presentation/screens/pqrs_form_screen.dart';
 import 'package:app_sst/services/storage_service.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/cupertino.dart';
@@ -253,6 +255,32 @@ class LoginScreen extends HookConsumerWidget {
                             style: TextStyle(
                               color: CupertinoColors.activeBlue,
                               fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // const SizedBox(height: 20),
+
+                      /// Recuperar correo
+                      Align(
+                        alignment: Alignment.center,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const PqrsFormScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            '¿Tienes una Petición, Queja o Reclamo? (PQRS)',
+                            style: TextStyle(
+                              color: Colors.blueGrey,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold
                             ),
                           ),
                         ),
