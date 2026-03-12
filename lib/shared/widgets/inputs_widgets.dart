@@ -19,6 +19,8 @@ class inputReutilizables extends StatelessWidget {
   final Widget? suffixIcon;
   final Widget? prefixIcon;
   final List<TextInputFormatter>? inputFormatters;
+  final TextAlign? textAlign;
+  final TextAlignVertical? textAlignVertical;
 
   /// Indica si el campo es de solo lectura (no editable)
   /// Por defecto es 'false'.
@@ -38,6 +40,8 @@ class inputReutilizables extends StatelessWidget {
     this.prefixIcon,
     this.readOnly = false,
     this.inputFormatters,
+    this.textAlign,
+    this.textAlignVertical
   }) : super(key: key);
 
   @override
@@ -67,6 +71,8 @@ class inputReutilizables extends StatelessWidget {
           maxLength: maxLenght,
           readOnly: readOnly,
           inputFormatters: inputFormatters ?? [],
+          textAlign: textAlign ?? TextAlign.start,
+          textAlignVertical: textAlignVertical,
           decoration:
               decoration ??
               InputDecoration(
