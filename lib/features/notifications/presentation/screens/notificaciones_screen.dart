@@ -5,19 +5,32 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
+/// Widget que muestra el listado del historial de notificaciones.
+///
+/// Incluye:
+/// * Visualización de alertas marcadas como leídas y no leídas (por colores).
+/// * Opción en la barra superior (AppBar) para eliminar todo el historial.
+/// * Parseo automático del texto del cuerpo para renderizar viñetas.
+/// 
+/// Utiliza `HookConsumerWidget` (Hooks Riverpod) para escuchar el estado 
+/// en tiempo real y reaccionar al ciclo de vida.
 class NotificacionesScreen extends HookConsumerWidget {
   const NotificacionesScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 1. Observamos el estado actual (la lista de notificaciones)
     final notificaciones = ref.watch(notificationNotifierProvider);
+    // 2. Accedemos a los metodos para ejecutar acciones del estado
     final notifier = ref.read(notificationNotifierProvider.notifier);
 
+    // Efecto secundario: Al abrir la pantalla, se marca todo como leido automaticamente.
     useEffect(() {
       Future.microtask(() => notifier.marcarComoLeidas());
       return null;
     }, []);
 
+    // 3. Construccion de la pantalla principal
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
@@ -26,6 +39,7 @@ class NotificacionesScreen extends HookConsumerWidget {
         foregroundColor: Colors.black,
         elevation: 0,
         actions: [
+          // Boton de eliminar, solo visible si hay notificaciones
           if (notificaciones.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_outline, color: Colors.red),
@@ -61,6 +75,7 @@ class NotificacionesScreen extends HookConsumerWidget {
         ],
       ),
       body: notificaciones.isEmpty
+          // 4. Estado vacio (Sin notificaciones)
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -78,13 +93,16 @@ class NotificacionesScreen extends HookConsumerWidget {
                 ],
               ),
             )
+          // 5. Construccion de la lista de notificaciones (Tarjetas)
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: notificaciones.length,
               itemBuilder: (context, index) {
                 final item = notificaciones[index];
+                
                 return Card(
                   elevation: 0,
+                  // Cambiamos el color completo de la tarjeta si es nueva
                   color: item.leido ? Colors.white : Colors.blue.shade500,
                   margin: const EdgeInsets.only(bottom: 10),
                   shape: RoundedRectangleBorder(
@@ -96,7 +114,7 @@ class NotificacionesScreen extends HookConsumerWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Icono
+                        // Encabezado: Icono
                         CircleAvatar(
                           backgroundColor: item.leido
                               ? Colors.grey.shade200
@@ -109,12 +127,12 @@ class NotificacionesScreen extends HookConsumerWidget {
 
                         const SizedBox(width: 16),
 
-                        // Textos
+                        // Textos descriptivos
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Titulo y fecha
+                              // Titulo y hora de registro a la derecha
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -191,6 +209,8 @@ class NotificacionesScreen extends HookConsumerWidget {
                               }),
 
                               const SizedBox(height: 8),
+                              
+                              // Pie de tarjeta principal: Fecha del dia
                               Text(
                                 DateFormat('dd MMM yyyy').format(item.fecha),
                                 style: TextStyle(

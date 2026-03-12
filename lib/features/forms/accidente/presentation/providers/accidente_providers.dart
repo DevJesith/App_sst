@@ -18,7 +18,7 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
 });
 
-/// Provider de DataSource loca.
+/// Provider de DataSourcelocal.
 /// Se encarga de las consultas directas a SQLite
 final accidenteLocaDataSourceProvider = Provider<AccidenteLocalDatasource>((
   ref,
@@ -28,7 +28,7 @@ final accidenteLocaDataSourceProvider = Provider<AccidenteLocalDatasource>((
 });
 
 /// Provider de Repositorio.
-/// Implementa la interfaz del dominio usando el DataSource local.
+/// Implementa la interfaz del dominio usando el DataSourcelocal.
 final accidenteRepositoryProvider = Provider<AccidenteRepository>((ref) {
   final localDataSource = ref.watch(accidenteLocaDataSourceProvider);
   return AccidenteRepositoryImpl(localDatasource: localDataSource);

@@ -5,6 +5,7 @@ import 'package:app_sst/features/notifications/data/repositories_impl/notificati
 import 'package:app_sst/features/notifications/domain/entities/notification.dart';
 import 'package:app_sst/services/notification_service.dart';
 import 'package:app_sst/services/sync_service.dart';
+import 'package:app_sst/services/storage_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/animation.dart';
 
@@ -52,7 +53,7 @@ class ConnectivityManager {
 
   // Instancia manual del repositorio (Clean Architecture)
   final _notificationRepo = NotificationRepositoryImpl(
-    localDatasource: NotificationLocalDatasource(database: AppDatabase()),
+    localDatasource: NotificationLocalDataSourceImpl(database: AppDatabase()),
   );
 
   bool _isSyncing = false;
@@ -89,11 +90,13 @@ class ConnectivityManager {
           );
 
           // Guardar en BD
+          final userId = await StorageService.obtenerSesion() ?? 0;
           await _notificationRepo.guardarNotificacion(
             Notifications(
               titulo: 'Sincronizacion Exitosa',
               cuerpo: cuerpoDetallado,
               fecha: DateTime.now(),
+              usuariosId: userId,
             ),
           );
 
