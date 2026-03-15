@@ -5,6 +5,7 @@
 class Usuarios {
   final int? id;
   final String documento;
+  final String telefono;
   final String nombre;
   final String apellido;
   final String email;
@@ -13,6 +14,7 @@ class Usuarios {
   Usuarios({
     this.id,
     this.documento = '',
+    this.telefono = '',
     this.nombre = '',
     this.apellido = '',
     required this.email,

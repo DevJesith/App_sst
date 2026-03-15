@@ -32,6 +32,7 @@ class AppDatabase {
       CREATE TABLE usuarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         documento TEXT NOT NULL UNIQUE,
+        telefono TEXT NOT NULL,
         nombre TEXT NOT NULL,
         apellido TEXT NOT NULL,
         email TEXT NOT NULL,
@@ -386,6 +387,7 @@ class AppDatabase {
   /// Inserta un nuevo usuario en la base de datos local.
   Future<int> insertarUsuario(
     String documento,
+    String telefono,
     String nombre,
     String apellido,
     String email,
@@ -394,6 +396,7 @@ class AppDatabase {
     final db = await database;
     return await db.insert('usuarios', {
       'documento': documento,
+      'telefono': telefono,
       'nombre': nombre,
       'apellido': apellido,
       'email': email,

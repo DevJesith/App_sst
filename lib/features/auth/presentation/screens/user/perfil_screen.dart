@@ -5,9 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-/// Pantalla de edicion d perfil de usuario.
+/// Pantalla de edicion del perfil de usuario.
 ///
-/// Diseño responsive
 class PerfilScreen extends HookConsumerWidget {
   const PerfilScreen({super.key});
 
@@ -20,6 +19,9 @@ class PerfilScreen extends HookConsumerWidget {
     final documentoController = useTextEditingController(
       text: usuarioActual?.documento ?? '',
     );
+    final telefonoController = useTextEditingController(
+      text: usuarioActual?.telefono ?? '',
+    );
     final nombreController = useTextEditingController(
       text: usuarioActual?.nombre ?? '',
     );
@@ -31,7 +33,16 @@ class PerfilScreen extends HookConsumerWidget {
     );
 
     final isLoading = useState(false);
+    final isEditing = useState(false);
     final formKey = useMemoized(() => GlobalKey<FormState>());
+
+    void cancelarEdicion() {
+      isEditing.value = false;
+      nombreController.text = usuarioActual?.nombre ?? '';
+      apellidoController.text = usuarioActual?.apellido ?? '';
+      emailController.text = usuarioActual?.email ?? '';
+      formKey.currentState?.reset();
+    }
 
     // Funcion para guardar cambios
     Future<void> guardarCambios() async {
@@ -45,9 +56,10 @@ class PerfilScreen extends HookConsumerWidget {
         final usuarioEditado = Usuarios(
           id: usuarioActual.id,
           documento: documentoController.text.trim(),
+          telefono: telefonoController.text.trim(),
           nombre: nombreController.text.trim(),
           apellido: apellidoController.text.trim(),
-          email: usuarioActual.email,
+          email: emailController.text.trim(),
           contrasena: usuarioActual.contrasena,
         );
 
@@ -64,7 +76,8 @@ class PerfilScreen extends HookConsumerWidget {
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pop(context); // Volver al inicio
+
+          isEditing.value = false;
         }
       } catch (e) {
         if (context.mounted) {
@@ -85,6 +98,20 @@ class PerfilScreen extends HookConsumerWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
+        actions: [
+          if (!isEditing.value)
+            IconButton(
+              tooltip: "Editar Perfil",
+              onPressed: () => isEditing.value = true,
+              icon: const Icon(Icons.edit_note, color: Colors.white),
+            )
+          else
+            IconButton(
+              tooltip: "Cancelar",
+              onPressed: cancelarEdicion,
+              icon: const Icon(Icons.close, color: Colors.white),
+            ),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -133,6 +160,27 @@ class PerfilScreen extends HookConsumerWidget {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
+
+                          if (isEditing.value)
+                            Container(
+                              margin: const EdgeInsets.only(top: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                "Modo Edicion",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -171,67 +219,108 @@ class PerfilScreen extends HookConsumerWidget {
                             ),
 
                             // Nombre
-                            inputReutilizables(
-                              controller: nombreController,
-                              nameInput: 'Nombres',
-                              validator: (v) => v!.isEmpty ? 'Requerido' : null,
-                              prefixIcon: const Icon(Icons.person_outline),
+                            Opacity(
+                              opacity: isEditing.value ? 1.0 : 0.6,
+                              child: inputReutilizables(
+                                controller: nombreController,
+                                nameInput: 'Nombres',
+                                readOnly: !isEditing.value,
+                                validator: (v) =>
+                                    v!.isEmpty ? 'Requerido' : null,
+                                prefixIcon: const Icon(Icons.person_outline),
+                              ),
                             ),
                             const SizedBox(height: 20),
 
                             // Apellido
-                            inputReutilizables(
-                              controller: apellidoController,
-                              nameInput: 'Apellidos',
-                              validator: (v) => v!.isEmpty ? 'Requerido' : null,
-                              prefixIcon: const Icon(Icons.badge_outlined),
+                            Opacity(
+                              opacity: isEditing.value ? 1.0 : 0.6,
+                              child: inputReutilizables(
+                                controller: apellidoController,
+                                nameInput: 'Apellidos',
+                                readOnly: !isEditing.value,
+                                validator: (v) =>
+                                    v!.isEmpty ? 'Requerido' : null,
+                                prefixIcon: const Icon(Icons.badge_outlined),
+                              ),
                             ),
                             const SizedBox(height: 20),
 
-                            inputReutilizables(
-                              controller: emailController,
-                              nameInput: 'Correo electronico',
-                              validator: (v) => v!.isEmpty ? 'Requerido' : null,
-                              prefixIcon: const Icon(Icons.badge_outlined),
+                            // Telefono
+                            Opacity(
+                              opacity: isEditing.value ? 1.0 : 0.6,
+                              child: inputReutilizables(
+                                controller: telefonoController,
+                                nameInput: 'Telefono',
+                                readOnly: !isEditing.value,
+                                validator: (v) =>
+                                    v!.isEmpty ? 'Requerido' : null,
+                                prefixIcon: const Icon(Icons.phone_outlined),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            Opacity(
+                              opacity: 0.7,
+                              child: inputReutilizables(
+                                controller: emailController,
+                                nameInput: 'Correo electrónico',
+                                readOnly: true,
+                                prefixIcon: const Icon(Icons.alternate_email),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 8, left: 12),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  '* El correo electrónico no se puede modificar. Si necesitas cambiarlo, radica una PQRS.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
                             ),
 
                             const SizedBox(height: 40),
 
                             // Botón Guardar
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: isLoading.value
-                                    ? null
-                                    : guardarCambios,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 15,
+                            if (isEditing.value)
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: isLoading.value
+                                      ? null
+                                      : guardarCambios,
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 15,
+                                    ),
+                                    backgroundColor: Colors.blue.shade700,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
-                                  backgroundColor: Colors.blue.shade700,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+                                  child: isLoading.value
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Text(
+                                          'Guardar Cambios',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                 ),
-                                child: isLoading.value
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Guardar Cambios',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
                               ),
-                            ),
                           ],
                         ),
                       ),

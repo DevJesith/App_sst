@@ -20,6 +20,7 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
     try {
       return await db.insertarUsuario(
         usuarios.documento,
+        usuarios.telefono,
         usuarios.nombre,
         usuarios.apellido,
         usuarios.email,
@@ -56,6 +57,7 @@ class UsuarioRepositoryImpl implements UsuariosRepository {
       final usuarioModel = UsuarioModel(
         id: usuario.id,
         documento: usuario.documento,
+        telefono: usuario.telefono,
         nombre: usuario.nombre,
         apellido: usuario.apellido,
         email: usuario.email,
