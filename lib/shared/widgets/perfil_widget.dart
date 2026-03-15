@@ -1,3 +1,5 @@
+import 'package:app_sst/core/utils/exports/export_utils.dart';
+import 'package:app_sst/features/auth/presentation/screens/admin/admin_pqrs_screen.dart';
 import 'package:app_sst/features/auth/presentation/screens/user/perfil_screen.dart';
 import 'package:app_sst/services/storage_service.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +30,7 @@ class CustomDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Diseño responsivo 
+    // Diseño responsivo
     final screenWidth = MediaQuery.of(context).size.width;
     final drawerWidth = screenWidth > 600 ? 350.0 : 280.0;
 
@@ -91,6 +93,40 @@ class CustomDrawer extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const FormulariosRecibidosScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.download,
+                      iconColor: Colors.green.shade700,
+                      title: "Exportar Base de Datos",
+                      subtitle: "Descargar archivo .db para respaldo",
+                      onTap: () async {
+                        await ExportUtils.exportDatabase(context);
+                      },
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.picture_as_pdf,
+                      iconColor: Colors.orange.shade700,
+                      title: "Generar Reporte PDF",
+                      subtitle: "Crear PDF con información de la BD",
+                      onTap: () async {
+                        // Llama a la utilidad refectorizada con JOINs
+                        await ExportUtils.generateDatabasePDF(context);
+                      },
+                    ),
+                    _buildMenuItem(
+                      icon: Icons.feedback,
+                      iconColor: Colors.teal.shade700,
+                      title: "Gestión de PQRS",
+                      subtitle: "Atender peticiones y quejas de usuarios",
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminPqrsScreen(),
                           ),
                         );
                       },
@@ -166,7 +202,8 @@ class CustomDrawer extends StatelessWidget {
                     ),
 
                     _buildMenuItem(
-                      icon: Icons.menu_book, // Icono corregido para capacitación
+                      icon:
+                          Icons.menu_book, // Icono corregido para capacitación
                       iconColor: Colors.teal,
                       title: "Capacitaciones",
                       subtitle: "Ver capacitaciones",

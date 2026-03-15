@@ -83,7 +83,7 @@ class IntroducionScreen extends HookConsumerWidget {
                         },
                         icon: const Icon(Icons.login),
                         label: const Text(
-                          'Ingresar al sistema',
+                          'Registrarme',
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,

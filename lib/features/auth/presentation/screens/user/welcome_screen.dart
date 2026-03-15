@@ -240,7 +240,7 @@ class WelcomeScreen extends HookConsumerWidget {
                           ),
                         ),
                         child: const Text(
-                          'Gestión de Formularios',
+                          'Gestión de Inspección',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

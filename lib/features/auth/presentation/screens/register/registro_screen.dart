@@ -14,12 +14,7 @@ import 'verificacion_code_screen.dart';
 
 /// Pantalla de registro de nuevos usuarios
 ///
-/// Maneja el flujo completo:
-/// 1. Captura de datos (Nombre, Apellido, Email, Password).
-/// 2. Validacion de campos y contraseñas.
-/// 3. Verificacion de correo existente.
-/// 4. Envio de codigo de verificacion (Email).
-/// 5. Navegacion a la pantalla de validacion de codigo.
+/// Maneja el flujo completo dividido en dos pasos
 class RegistroScreen extends HookConsumerWidget {
   const RegistroScreen({super.key});
 
@@ -31,25 +26,29 @@ class RegistroScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formKey = useMemoized(() => GlobalKey<FormState>());
+    // Formularios independientes
+    final formKeyStep1 = useMemoized(() => GlobalKey<FormState>());
+    final formKeyStep2 = useMemoized(() => GlobalKey<FormState>());
 
-    // Controladores
+    // Controladores Paso 1
     final documentoController = useTextEditingController();
     final nombreController = useTextEditingController();
     final apellidoController = useTextEditingController();
+    final telefonoController = useTextEditingController();
+
+    // Controladores Paso 2
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
     final confirmController = useTextEditingController();
 
     // Estados
+    final currentStep = useState(0);
     final isLoading = useState(false);
     final obscureText = useState(true);
     final obscureConfirmText = useState(true);
 
-    /// Inicia el proceso de registro.
-    /// No guarda en BD todavia, solo valida y envia el codigo
     Future<void> iniciarProcesoRegistro() async {
-      if (!formKey.currentState!.validate()) return;
+      if (!formKeyStep2.currentState!.validate()) return;
 
       //Validar contraseña
       if (passwordController.text.trim() != confirmController.text.trim()) {
@@ -110,6 +109,7 @@ class RegistroScreen extends HookConsumerWidget {
         // 3. Crear objeto usuario temporal
         final usuarioTemporal = Usuarios(
           documento: documentoController.text.trim(),
+          telefono: telefonoController.text.trim(),
           nombre: nombreController.text.trim(),
           apellido: apellidoController.text.trim(),
           email: email,
@@ -139,11 +139,393 @@ class RegistroScreen extends HookConsumerWidget {
       }
     }
 
+    Widget buildStep1() {
+      return Form(
+        key: formKeyStep1,
+        child: Column(
+          children: [
+            const Text(
+              'Paso 1 de 2: Información Personal',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Documento
+            inputReutilizables(
+              controller: documentoController,
+              nameInput: 'Numero de Documento',
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Completa el campo';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                hintText: '123456789',
+                prefixIcon: const Icon(Icons.badge),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.inactiveGray,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.activeBlue,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Nombre
+            inputReutilizables(
+              controller: nombreController,
+              nameInput: 'Nombre',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Completa el campo';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                hintText: 'Ingresa tu nombre(s)',
+                prefixIcon: const Icon(Icons.person),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.inactiveGray,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.activeBlue,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Apellido
+            inputReutilizables(
+              controller: apellidoController,
+              nameInput: 'Apellido',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Completa el campo';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                hintText: 'Ingresa tu apellido(s)',
+                prefixIcon: const Icon(Icons.badge),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.inactiveGray,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.activeBlue,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Telefono
+            inputReutilizables(
+              controller: telefonoController,
+              nameInput: 'Telefono',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Completa el campo';
+                }
+                return null;
+              },
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                hintText: 'Ingresa tu numero de telefono',
+                prefixIcon: const Icon(Icons.phone_outlined),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.inactiveGray,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.activeBlue,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            // Botón Siguiente
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (formKeyStep1.currentState!.validate()) {
+                    currentStep.value = 1;
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  backgroundColor: CupertinoColors.activeBlue,
+                ),
+                child: const Text(
+                  'Siguiente',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget buildStep2() {
+      return Form(
+        key: formKeyStep2,
+        child: Column(
+          children: [
+            const Text(
+              'Paso 2 de 2: Detalles de la Cuenta',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Email
+            inputReutilizables(
+              controller: emailController,
+              nameInput: 'Correo electrónico',
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Completa el campo';
+                }
+                final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                if (!emailRegex.hasMatch(value.trim())) {
+                  return 'Correo inválido';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                hintText: 'ejemplo@correo.com',
+                prefixIcon: const Icon(Icons.mail_outline),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.inactiveGray,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.activeBlue,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Contraseña
+            inputReutilizables(
+              controller: passwordController,
+              nameInput: 'Contraseña',
+              obscuredText: obscureText.value,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Ingresa una contraseña';
+                }
+                if (value.length < 6) {
+                  return 'Mínimo 6 caracteres';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscureText.value ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () => obscureText.value = !obscureText.value,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.inactiveGray,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.activeBlue,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                prefixIcon: const Icon(Icons.lock_outline),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 18,
+                  horizontal: 16,
+                ),
+                hintText: '******',
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Confirmar contraseña
+            inputReutilizables(
+              controller: confirmController,
+              nameInput: 'Confirmar contraseña',
+              obscuredText: obscureConfirmText.value,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Confirma tu contraseña';
+                }
+                if (value != passwordController.text) {
+                  return 'Las contraseñas no coinciden';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscureConfirmText.value
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                  ),
+                  onPressed: () =>
+                      obscureConfirmText.value = !obscureConfirmText.value,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.inactiveGray,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: CupertinoColors.activeBlue,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                prefixIcon: const Icon(Icons.lock_outline),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 18,
+                  horizontal: 16,
+                ),
+                hintText: '******',
+              ),
+            ),
+            const SizedBox(height: 30),
+
+            // Botones Atrás y Registrar
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: isLoading.value
+                        ? null
+                        : () {
+                            currentStep.value = 0;
+                          },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(
+                        color: CupertinoColors.activeBlue,
+                        width: 2,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Atrás',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: CupertinoColors.activeBlue,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: isLoading.value ? null : iniciarProcesoRegistro,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      backgroundColor: CupertinoColors.activeBlue,
+                    ),
+                    child: isLoading.value
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Registrar',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 55),
           child: Container(
             padding: const EdgeInsets.all(24),
             constraints: const BoxConstraints(maxWidth: 600),
@@ -158,299 +540,82 @@ class RegistroScreen extends HookConsumerWidget {
                 ),
               ],
             ),
-            child: Form(
-              key: formKey,
-              child: Column(
-                children: [
-                  const Icon(
-                    Icons.person_add,
-                    size: 80,
-                    color: CupertinoColors.activeBlue,
-                  ),
-                  const SizedBox(height: 20),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.person_add,
+                  size: 80,
+                  color: CupertinoColors.activeBlue,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Crear Cuenta',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 30),
 
-                  const Text(
-                    'Crear Cuenta',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Documento
-                  inputReutilizables(
-                    controller: documentoController,
-                    nameInput: 'Numero de Documento',
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Completa el campo';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      hintText: '123456789',
-                      prefixIcon: const Icon(Icons.badge),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.inactiveGray,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
+                // Progreso visual (Barra superior para indicar el paso)
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 6,
+                        decoration: BoxDecoration(
                           color: CupertinoColors.activeBlue,
-                          width: 2,
+                          borderRadius: BorderRadius.circular(3),
                         ),
-                        borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Nombre
-                  inputReutilizables(
-                    controller: nombreController,
-                    nameInput: 'Nombre',
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Completa el campo';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Ingresa tu nombre(s)',
-                      prefixIcon: const Icon(Icons.person),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.inactiveGray,
-                          width: 2,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: currentStep.value == 1
+                              ? CupertinoColors.activeBlue
+                              : CupertinoColors.systemGrey5,
+                          borderRadius: BorderRadius.circular(3),
                         ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.activeBlue,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                  ),
+                  ],
+                ),
+                const SizedBox(height: 24),
 
-                  const SizedBox(height: 16),
+                // Contenido dinámico con animación suave
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 350),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: ScaleTransition(
+                        scale: Tween<double>(begin: 0.96, end: 1.0).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        ),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: currentStep.value == 0
+                      ? KeyedSubtree(key: const ValueKey(0), child: buildStep1())
+                      : KeyedSubtree(key: const ValueKey(1), child: buildStep2()),
+                ),
 
-                  // Apellido
-                  inputReutilizables(
-                    controller: apellidoController,
-                    nameInput: 'Apellido',
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Completa el campo';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Ingresa tu apellido(s)',
-                      prefixIcon: const Icon(Icons.badge),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.inactiveGray,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.activeBlue,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Email
-                  inputReutilizables(
-                    controller: emailController,
-                    nameInput: 'Correo electrónico',
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Completa el campo';
-                      }
-                      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                      if (!emailRegex.hasMatch(value.trim())) {
-                        return 'Correo inválido';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'ejemplo@correo.com',
-                      prefixIcon: const Icon(Icons.mail_outline),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.inactiveGray,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.activeBlue,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Contraseña
-                  inputReutilizables(
-                    controller: passwordController,
-                    nameInput: 'Contraseña',
-                    obscuredText: obscureText.value,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Ingresa una contraseña';
-                      }
-                      if (value.length < 6) {
-                        return 'Mínimo 6 caracteres';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureText.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () => obscureText.value = !obscureText.value,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.inactiveGray,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.activeBlue,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 18,
-                        horizontal: 16,
-                      ),
-                      hintText: '******'
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Confirmar contraseña
-                  inputReutilizables(
-                    controller: confirmController,
-                    nameInput: 'Confirmar contraseña',
-                    obscuredText: obscureConfirmText.value,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Confirma tu contraseña';
-                      }
-                      if (value != passwordController.text) {
-                        return 'Las contraseñas no coinciden';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureConfirmText.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () => obscureConfirmText.value =
-                            !obscureConfirmText.value,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.inactiveGray,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: CupertinoColors.activeBlue,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 18,
-                        horizontal: 16,
-                      ),
-                      hintText: '******'
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // Boton Registrar
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading.value
-                          ? null
-                          : iniciarProcesoRegistro,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)
-                        ),
-                        backgroundColor: CupertinoColors.activeBlue,
-                      ),
-                      
-                      child: isLoading.value
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Continuar',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    },
-                    child: const Text('¿Ya tienes cuenta? Inicia sesión'),
-                  ),
-                ],
-              ),
+                const SizedBox(height: 24),
+                // Login enlace abajo
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    );
+                  },
+                  child: const Text('¿Ya tienes cuenta? Inicia sesión'),
+                ),
+              ],
             ),
           ),
         ),

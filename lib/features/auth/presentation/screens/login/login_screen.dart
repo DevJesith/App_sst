@@ -184,15 +184,19 @@ class LoginScreen extends HookConsumerWidget {
                         decoration: InputDecoration(
                           hintText: 'ejemplo@correo.com',
                           prefixIcon: const Icon(Icons.mail_outline),
-                          filled: true,
-                          fillColor: const Color(0xFFF0F2F5),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 16,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: CupertinoColors.inactiveGray,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: CupertinoColors.activeBlue,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(5),
                           ),
                         ),
                       ),
@@ -212,15 +216,19 @@ class LoginScreen extends HookConsumerWidget {
                         decoration: InputDecoration(
                           hintText: '••••••',
                           prefixIcon: const Icon(Icons.lock_outline),
-                          filled: true,
-                          fillColor: const Color(0xFFF0F2F5),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 18,
-                            horizontal: 16,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: CupertinoColors.inactiveGray,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: CupertinoColors.activeBlue,
+                              width: 2,
+                            ),
+                            borderRadius: BorderRadius.circular(5),
                           ),
                           suffixIcon: IconButton(
                             onPressed: () =>
@@ -269,8 +277,7 @@ class LoginScreen extends HookConsumerWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const PqrsFormScreen(),
+                                builder: (_) => const PqrsFormScreen(),
                               ),
                             );
                           },
@@ -279,7 +286,7 @@ class LoginScreen extends HookConsumerWidget {
                             style: TextStyle(
                               color: Colors.blueGrey,
                               fontSize: 13,
-                              fontWeight: FontWeight.bold
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),

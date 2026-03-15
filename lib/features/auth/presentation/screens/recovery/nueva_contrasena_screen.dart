@@ -6,6 +6,7 @@ import '../../../../../../shared/widgets/inputs_widgets.dart';
 import '../../../domain/entities/usuarios.dart';
 import '../../providers/auth_provider.dart';
 import '../login/login_screen.dart';
+import 'package:flutter/cupertino.dart';
 
 /// Pantalla para restablecer la contraseña.
 ///
@@ -36,6 +37,7 @@ class NuevaContrasenaScreen extends HookConsumerWidget {
         final usuarioActualizado = Usuarios(
           id: usuario.id,
           nombre: usuario.nombre,
+          telefono: usuario.telefono,
           apellido: usuario.apellido,
           email: usuario.email,
           contrasena: CryptoHelper.encriptar(passController.text.trim()),
@@ -101,56 +103,108 @@ class NuevaContrasenaScreen extends HookConsumerWidget {
                     const SizedBox(height: 20),
                     const Text(
                       'Crea una nueva contraseña',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 30),
-            
+
                     // Nueva contraseña
                     inputReutilizables(
                       controller: passController,
                       nameInput: 'Nueva Contraseña',
                       obscuredText: obscurePass.value,
                       prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscurePass.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () => obscurePass.value = !obscurePass.value,
-                      ),
+
                       validator: (v) {
                         if (v == null || v.isEmpty) return 'Requerido';
                         if (v.length < 6) return 'Minimo 6 caracteres';
                         return null;
                       },
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscurePass.value
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () =>
+                              obscurePass.value = !obscurePass.value,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: CupertinoColors.inactiveGray,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: CupertinoColors.activeOrange,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 18,
+                          horizontal: 16,
+                        ),
+                        hintText: '******',
+                      ),
                     ),
                     const SizedBox(height: 20),
-            
+
                     // Confirmar contraseña
                     inputReutilizables(
                       controller: confirmController,
                       nameInput: 'Confirmar Contraseña',
                       obscuredText: obscureConfirm.value,
                       prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureConfirm.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () =>
-                            obscureConfirm.value = !obscureConfirm.value,
-                      ),
+
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Confirma la contraseña';
-                        if (v != passController.text) return 'Las contraseñas no coinciden';
+                        if (v == null || v.isEmpty)
+                          return 'Confirma la contraseña';
+                        if (v != passController.text)
+                          return 'Las contraseñas no coinciden';
                         return null;
                       },
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureConfirm.value
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                          onPressed: () =>
+                              obscureConfirm.value = !obscureConfirm.value,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: CupertinoColors.inactiveGray,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: CupertinoColors.activeOrange,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 18,
+                          horizontal: 16,
+                        ),
+                        hintText: '******',
+                      ),
                     ),
                     const SizedBox(height: 30),
-            
+
                     // Boton
                     SizedBox(
                       width: double.infinity,
@@ -164,7 +218,9 @@ class NuevaContrasenaScreen extends HookConsumerWidget {
                           ),
                         ),
                         child: isLoading.value
-                            ? const CircularProgressIndicator(color: Colors.white)
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
                             : const Text(
                                 'Cambiar Contraseña',
                                 style: TextStyle(

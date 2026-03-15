@@ -231,7 +231,7 @@ class PqrsFormScreen extends HookConsumerWidget {
                       controller: descripcionController,
                       nameInput: "Descripcion detallada",
                       maxLenght: 250,
-                      maxLines: 5,
+                      // maxLines: 3,
                       prefixIcon: const Icon(Icons.description_outlined),
                       validator: (v) => v!.isEmpty ? 'Requerido' : null,
                     ),
